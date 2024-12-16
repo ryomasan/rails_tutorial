@@ -1,0 +1,14 @@
+ja:
+  hello: "こんにちは"
+  weight_history:
+    create:
+      success: "体重履歴が正常に作成されました。"
+      failure: "体重履歴の作成に失敗しました。"
+  activerecord:
+    models:
+      weight_history: "体重履歴"
+    attributes:
+      weight_history:
+        user_id: "ユーザーID"
+        weight: "体重"
+        memo: "メモ"

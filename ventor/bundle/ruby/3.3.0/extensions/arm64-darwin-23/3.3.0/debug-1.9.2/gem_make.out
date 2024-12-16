@@ -1,0 +1,19 @@
+current directory: /Users/ryoma/Desktop/rails_tutorial/ventor/bundle/ruby/3.3.0/gems/debug-1.9.2/ext/debug
+/Users/ryoma/.rbenv/versions/3.3.6/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /Users/ryoma/Desktop/rails_tutorial/ventor/bundle/ruby/3.3.0/gems/debug-1.9.2/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20241216-5628-v567rn sitelibdir\=./.gem.20241216-5628-v567rn clean
+
+current directory: /Users/ryoma/Desktop/rails_tutorial/ventor/bundle/ruby/3.3.0/gems/debug-1.9.2/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20241216-5628-v567rn sitelibdir\=./.gem.20241216-5628-v567rn
+compiling debug.c
+compiling iseq_collector.c
+linking shared-object debug/debug.bundle
+
+current directory: /Users/ryoma/Desktop/rails_tutorial/ventor/bundle/ruby/3.3.0/gems/debug-1.9.2/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20241216-5628-v567rn sitelibdir\=./.gem.20241216-5628-v567rn install
+/usr/bin/install -c -m 0755 debug.bundle ./.gem.20241216-5628-v567rn/debug
+
+current directory: /Users/ryoma/Desktop/rails_tutorial/ventor/bundle/ruby/3.3.0/gems/debug-1.9.2/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20241216-5628-v567rn sitelibdir\=./.gem.20241216-5628-v567rn clean
