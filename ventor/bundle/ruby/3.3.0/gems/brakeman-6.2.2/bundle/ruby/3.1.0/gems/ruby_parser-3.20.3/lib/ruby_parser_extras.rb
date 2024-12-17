@@ -1,5 +1,6 @@
 # encoding: ASCII-8BIT
 # frozen_string_literal: true
+
 # TODO: remove encoding comment
 
 require "sexp"
@@ -10,8 +11,8 @@ require "rp_stringscanner"
 
 class Sexp
   def check_line_numbers
-    raise "bad nil line for:\n%s" % [self.pretty_inspect] if nil_line?
-    raise "bad line number for:\n%s" % [self.pretty_inspect] unless
+    raise "bad nil line for:\n%s" % [ self.pretty_inspect ] if nil_line?
+    raise "bad line number for:\n%s" % [ self.pretty_inspect ] unless
       Integer === self.line &&
       self.line >= 1 &&
       self.line <= self.line_min
@@ -21,7 +22,7 @@ class Sexp
   # Returns the minimum line number of the children of self.
 
   def line_min
-    @line_min ||= [self.deep_each.map(&:line).min, self.line].compact.min
+    @line_min ||= [ self.deep_each.map(&:line).min, self.line ].compact.min
   end
 
   def nil_line?
@@ -59,11 +60,11 @@ module RubyParserStuff
     $good20[n] = n
   end
 
-  def debug20 n, v = nil, r = nil
+  def debug20(n, v = nil, r = nil)
     raise "not yet #{n} #{v.inspect} => #{r.inspect}" unless $good20[n]
   end
 
-  def self.deprecate old, new
+  def self.deprecate(old, new)
     define_method old do |*args|
       warn "DEPRECATED: #{old} -> #{new} from #{caller.first}"
       send new, *args
@@ -78,7 +79,7 @@ module RubyParserStuff
   end if ENV["PURE_RUBY"] || ENV["CHECK_LINE_NUMS"]
 
   if ENV["CHECK_LINE_NUMS"] then
-    def _racc_do_reduce arg, act
+    def _racc_do_reduce(arg, act)
       x = super
 
       @racc_vstack.grep(Sexp).each do |sexp|
@@ -88,8 +89,8 @@ module RubyParserStuff
     end
   end
 
-  ARG_TYPES = [:arglist, :call_args, :array, :args].map { |k|
-    [k, true]
+  ARG_TYPES = [ :arglist, :call_args, :array, :args ].map { |k|
+    [ k, true ]
   }.to_h
 
   has_enc = "".respond_to? :encoding
@@ -109,7 +110,7 @@ module RubyParserStuff
     Encoding::EUC_JP
   ] if has_enc
 
-  JUMP_TYPE = [:return, :next, :break, :yield].map { |k| [k, true] }.to_h
+  JUMP_TYPE = [ :return, :next, :break, :yield ].map { |k| [ k, true ] }.to_h
 
   TAB_WIDTH = 8
 
@@ -132,7 +133,7 @@ module RubyParserStuff
     self.reset
   end
 
-  def arg_concat node1, node2 # TODO: nuke
+  def arg_concat(node1, node2) # TODO: nuke
     raise "huh" unless node2
 
     splat = s(:splat, node2)
@@ -141,12 +142,12 @@ module RubyParserStuff
     node1 << splat
   end
 
-  def argl x
+  def argl(x)
     x = s(:arglist, x) if x and x.sexp_type == :array
     x
   end
 
-  def args args
+  def args(args)
     result = s(:args)
 
     ss = args.grep Sexp
@@ -214,17 +215,17 @@ module RubyParserStuff
     result
   end
 
-  def end_args args
+  def end_args(args)
     lexer.lex_state     = RubyLexer::State::Values::EXPR_BEG
     lexer.command_start = true
     self.args args
   end
 
-  def attrset_id? id
+  def attrset_id?(id)
     id =~ /^\[\]=$|^\w+=$/
   end
 
-  def endless_method_name defn_or_defs
+  def endless_method_name(defn_or_defs)
     name = defn_or_defs[1]
     name = defn_or_defs[2] unless Symbol === name
 
@@ -235,7 +236,7 @@ module RubyParserStuff
     # TODO? token_info_drop(p, "def", loc->beg_pos);
   end
 
-  def array_to_hash array
+  def array_to_hash(array)
     case array.sexp_type
     when :kwsplat then
       array
@@ -244,7 +245,7 @@ module RubyParserStuff
     end
   end
 
-  def aryset receiver, index
+  def aryset(receiver, index)
     index ||= s()
     l = receiver.line
     result = s(:attrasgn, receiver, :"[]=",
@@ -258,23 +259,23 @@ module RubyParserStuff
     id = id.to_sym
 
     result = case id
-             when /^@@/ then
+    when /^@@/ then
                asgn = in_def || in_single > 0
                s((asgn ? :cvasgn : :cvdecl), id)
-             when /^@/ then
+    when /^@/ then
                s(:iasgn, id)
-             when /^\$/ then
+    when /^\$/ then
                s(:gasgn, id)
-             when /^[A-Z]/ then
+    when /^[A-Z]/ then
                s(:cdecl, id)
-             else
+    else
                case self.env[id]
                when :lvar, :dvar, nil then
                  s(:lasgn, id)
                else
                  raise "wtf? unknown type: #{self.env[id]}"
                end
-             end
+    end
 
     self.env[id] ||= :lvar if result.sexp_type == :lasgn
 
@@ -283,7 +284,7 @@ module RubyParserStuff
     result
   end
 
-  def backref_assign_error ref
+  def backref_assign_error(ref)
     # TODO: need a test for this... obviously
     case ref.sexp_type
     when :nth_ref then
@@ -301,7 +302,7 @@ module RubyParserStuff
     return head if tail.nil?
     return tail if head.nil?
 
-    line = [head.line, tail.line].compact.min
+    line = [ head.line, tail.line ].compact.min
 
     head = remove_begin(head)
     head = s(:block, head).line(line) unless head.sexp_type == :block
@@ -310,7 +311,7 @@ module RubyParserStuff
     head << tail
   end
 
-  def block_dup_check call_or_args, block
+  def block_dup_check(call_or_args, block)
     syntax_error "Both block arg and actual block given." if
       block and call_or_args.block_pass?
   end
@@ -321,7 +322,7 @@ module RubyParserStuff
     result
   end
 
-  def call_args args
+  def call_args(args)
     result = s(:call_args)
 
     a = args.grep(Sexp).first
@@ -333,7 +334,7 @@ module RubyParserStuff
 
     args.each do |arg|
       # ruby 3.0+ TODO: next if arg in [String, Integer] # eg ["(", 1]
-      next if arg.class == Array && arg.map(&:class) == [String, Integer]
+      next if arg.class == Array && arg.map(&:class) == [ String, Integer ]
 
       case arg
       when Sexp then
@@ -358,7 +359,7 @@ module RubyParserStuff
     result
   end
 
-  def clean_mlhs sexp
+  def clean_mlhs(sexp)
     case sexp.sexp_type
     when :masgn then
       if sexp.size == 2 and sexp[1].sexp_type == :array then
@@ -379,7 +380,7 @@ module RubyParserStuff
     end
   end
 
-  def cond node
+  def cond(node)
     return nil if node.nil?
     node = value_expr node
 
@@ -411,7 +412,7 @@ module RubyParserStuff
     end.line node.line
   end
 
-  def dedent sexp
+  def dedent(sexp)
     dedent_count = dedent_size sexp
 
     skip_one = false
@@ -432,21 +433,21 @@ module RubyParserStuff
                   skip_one = false
                   s1, *rest = str.lines
                   s1 + rest.map { |l| remove_whitespace_width l, dedent_count }.join
-                else
+          else
                   str.lines.map { |l| remove_whitespace_width l, dedent_count }.join
-                end
+          end
 
           s(:str, str).line obj.line
         else
-          warn "unprocessed sexp %p" % [obj]
+          warn "unprocessed sexp %p" % [ obj ]
         end
       else
-        warn "unprocessed: %p" % [obj]
+        warn "unprocessed: %p" % [ obj ]
       end
     }
   end
 
-  def dedent_size sexp
+  def dedent_size(sexp)
     skip_one = false
     sexp.flat_map { |s|
       case s
@@ -468,15 +469,15 @@ module RubyParserStuff
           end
           lines
         else
-          warn "unprocessed sexp %p" % [s]
+          warn "unprocessed sexp %p" % [ s ]
         end
       else
-        warn "unprocessed: %p" % [s]
+        warn "unprocessed: %p" % [ s ]
       end.map { |l| whitespace_width l }
     }.compact.min
   end
 
-  def dedent_string string, width
+  def dedent_string(string, width)
     characters_skipped = 0
     indentation_skipped = 0
 
@@ -499,29 +500,29 @@ module RubyParserStuff
     id = id.to_sym if String === id
 
     result = case id.to_s
-             when /^@@/ then
+    when /^@@/ then
                s(:cvar, id)
-             when /^@/ then
+    when /^@/ then
                s(:ivar, id)
-             when /^\$/ then
+    when /^\$/ then
                s(:gvar, id)
-             when /^[A-Z]/ then
+    when /^[A-Z]/ then
                s(:const, id)
-             else
+    else
                type = env[id]
                if type then
                  s(type, id)
                else
                  new_call(nil, id)
                end
-             end
+    end
 
     raise "identifier #{id.inspect} is not valid" unless result
 
     result
   end
 
-  def hack_encoding str, extra = nil
+  def hack_encoding(str, extra = nil)
     encodings = ENCODING_ORDER.dup
     encodings.unshift(extra) unless extra.nil?
 
@@ -565,7 +566,7 @@ module RubyParserStuff
   # the input string to whatever was found, and then encode that to
   # UTF-8 for compatibility with the lexer.
 
-  def handle_encoding str
+  def handle_encoding(str)
     str = str.dup
     has_enc = str.respond_to? :encoding
     encoding = nil
@@ -596,7 +597,7 @@ module RubyParserStuff
     str
   end
 
-  def invert_block_call val
+  def invert_block_call(val)
     ret, iter = val
     type, call = ret
 
@@ -604,26 +605,26 @@ module RubyParserStuff
 
     ret = s(type).line ret.line
 
-    [iter, ret]
+    [ iter, ret ]
   end
 
-  def inverted? val
+  def inverted?(val)
     JUMP_TYPE[val[0].sexp_type]
   end
 
-  def list_append list, item # TODO: nuke me *sigh*
+  def list_append(list, item) # TODO: nuke me *sigh*
     return s(:array, item) unless list
     list = s(:array, list) unless Sexp === list && list.sexp_type == :array
     list << item
   end
 
-  def list_prepend item, list # TODO: nuke me *sigh*
+  def list_prepend(item, list) # TODO: nuke me *sigh*
     list = s(:array, list) unless Sexp === list && list.sexp_type == :array
     list.insert 1, item
     list
   end
 
-  def literal_concat head, tail # TODO: ugh. rewrite
+  def literal_concat(head, tail) # TODO: ugh. rewrite
     return tail unless head
     return head unless tail
 
@@ -670,21 +671,21 @@ module RubyParserStuff
         head.push(tail)
       end
     else
-      x = [head, tail]
+      x = [ head, tail ]
       raise "unknown type: #{x.inspect}"
     end
 
-    return head
+    head
   end
 
-  def local_pop in_def
+  def local_pop(in_def)
     lexer.cond.pop # group = local_pop
     lexer.cmdarg.pop
     self.env.unextend
     self.in_def = in_def
   end
 
-  def logical_op type, left, right
+  def logical_op(type, left, right)
     left = value_expr left
 
     if left and left.sexp_type == type and not left.paren then
@@ -707,13 +708,13 @@ module RubyParserStuff
     result
   end
 
-  def new_aref val
+  def new_aref(val)
     val[2] ||= s(:arglist)
     val[2].sexp_type = :arglist if val[2].sexp_type == :array # REFACTOR
     new_call val[0], :"[]", val[2]
   end
 
-  def new_arg val
+  def new_arg(val)
     arg, = val
 
     case arg
@@ -732,27 +733,27 @@ module RubyParserStuff
     result
   end
 
-  def ary_to_pat ary
+  def ary_to_pat(ary)
     pat = ary.dup
     pat.sexp_type = :array_TAIL
 
     new_array_pattern nil, nil, pat, ary.line
   end
 
-  def new_array_pattern const, pre_arg, arypat, loc
+  def new_array_pattern(const, pre_arg, arypat, loc)
     result = s(:array_pat, const).line loc
     result << pre_arg if pre_arg
 
     if arypat && arypat.sexp_type == :array_TAIL then
       result.concat arypat.sexp_body
     else
-      raise "NO?: %p" % [arypat]
+      raise "NO?: %p" % [ arypat ]
     end
 
     result
   end
 
-  def array_pat_concat lhs, rhs
+  def array_pat_concat(lhs, rhs)
     case lhs.sexp_type
     when :PATTERN then
       lhs.sexp_type = :array_pat
@@ -768,13 +769,13 @@ module RubyParserStuff
     end
   end
 
-  def new_array_pattern_tail pre_args, has_rest, rest_arg, post_args
+  def new_array_pattern_tail(pre_args, has_rest, rest_arg, post_args)
     # TODO: remove has_rest once all tests pass !!!
     rest_arg = if has_rest then
                  :"*#{rest_arg}"
-               else
+    else
                  nil
-               end
+    end
 
     result = s(:array_TAIL).line 666
 
@@ -787,7 +788,7 @@ module RubyParserStuff
     result
   end
 
-  def new_assign lhs, rhs
+  def new_assign(lhs, rhs)
     return nil unless lhs
 
     rhs = value_expr rhs
@@ -806,25 +807,25 @@ module RubyParserStuff
     lhs
   end
 
-  def new_attrasgn recv, meth, call_op = :"."
+  def new_attrasgn(recv, meth, call_op = :".")
     call_op = call_op.first if Array === call_op
 
     meth = :"#{meth}="
 
     result = case call_op.to_sym
-             when :"."
+    when :"."
                s(:attrasgn, recv, meth)
-             when :"&."
+    when :"&."
                s(:safe_attrasgn, recv, meth)
-             else
+    else
                raise "unknown call operator: `#{type.inspect}`"
-             end
+    end
 
     result.line = recv.line
     result
   end
 
-  def new_begin val
+  def new_begin(val)
     (_, line), _, body, _ = val
 
     result = body ? s(:begin, body) : s(:nil)
@@ -833,7 +834,7 @@ module RubyParserStuff
     result
   end
 
-  def new_body val
+  def new_body(val)
     body, resbody, elsebody, ensurebody = val
 
     result = body
@@ -868,21 +869,21 @@ module RubyParserStuff
     result
   end
 
-  def new_brace_body args, body, lineno
+  def new_brace_body(args, body, lineno)
     new_iter(nil, args, body).line lineno
   end
 
-  def new_call recv, meth, args = nil, call_op = :"."
+  def new_call(recv, meth, args = nil, call_op = :".")
     call_op = call_op.first if Array === call_op
 
     result = case call_op.to_sym
-             when :"."
+    when :"."
                s(:call, recv, meth)
-             when :"&."
+    when :"&."
                s(:safe_call, recv, meth)
-             else
+    else
                raise "unknown call operator: `#{type.inspect}`"
-             end
+    end
 
     # TODO: need a test with f(&b) to produce block_pass
     # TODO: need a test with f(&b) { } to produce warning
@@ -903,14 +904,14 @@ module RubyParserStuff
     result
   end
 
-  def new_in pat, body, cases, line
+  def new_in(pat, body, cases, line)
     s(:in, pat, body, cases).line line
   end
 
-  def new_case expr, body, line
+  def new_case(expr, body, line)
     result = s(:case, expr)
 
-    while body and [:when, :in].include? body.sexp_type
+    while body and [ :when, :in ].include? body.sexp_type
       result << body
       body = body.delete_at 3
     end
@@ -928,7 +929,7 @@ module RubyParserStuff
     result
   end
 
-  def new_class val
+  def new_class(val)
     (_, line), path, superclass, _, body, (_, line_max) = val
 
     path = path.first if path.instance_of? Array
@@ -949,30 +950,30 @@ module RubyParserStuff
     result
   end
 
-  def new_compstmt val
+  def new_compstmt(val)
     result = void_stmts(val.grep(Sexp)[0])
     result = remove_begin(result) if result
     result
   end
 
-  def new_const_op_asgn val
+  def new_const_op_asgn(val)
     lhs, (asgn_op, _), rhs = val
     asgn_op = asgn_op.to_sym
 
     result = case asgn_op
-             when :"||" then
+    when :"||" then
                s(:op_asgn_or, lhs, rhs)
-             when :"&&" then
+    when :"&&" then
                s(:op_asgn_and, lhs, rhs)
-             else
+    else
                s(:op_asgn, lhs, asgn_op, rhs)
-             end
+    end
 
     result.line = lhs.line
     result
   end
 
-  def new_defn val
+  def new_defn(val)
     _, (name, line), in_def, args, body, (_, line_max) = val
 
     body ||= s(:nil).line line
@@ -990,10 +991,10 @@ module RubyParserStuff
 
     result.comments = self.comments.pop
 
-    [result, in_def]
+    [ result, in_def ]
   end
 
-  def new_endless_defn val
+  def new_endless_defn(val)
     (name, line, in_def), args, _, body, _, resbody = val
 
     result =
@@ -1014,7 +1015,7 @@ module RubyParserStuff
     result
   end
 
-  def new_endless_defs val
+  def new_endless_defs(val)
     (recv, (name, line, in_def)), args, _, body, _, resbody = val
 
     result =
@@ -1036,7 +1037,7 @@ module RubyParserStuff
     result
   end
 
-  def new_defs val
+  def new_defs(val)
     _, recv, (name, line), in_def, args, body, (_, line_max) = val
 
     body ||= s(:nil).line line
@@ -1057,19 +1058,19 @@ module RubyParserStuff
 
     result.comments = self.comments.pop
 
-    [result, in_def]
+    [ result, in_def ]
   end
 
-  def new_do_body args, body, lineno
+  def new_do_body(args, body, lineno)
     new_iter(nil, args, body).line(lineno)
   end
 
-  def new_find_pattern const, pat
+  def new_find_pattern(const, pat)
     pat.sexp_type = :find_pat
     pat.insert 1, const
   end
 
-  def new_find_pattern_tail lhs, mid, rhs
+  def new_find_pattern_tail(lhs, mid, rhs)
     lhs_id, line = lhs
     rhs_id, _line = rhs
 
@@ -1083,19 +1084,19 @@ module RubyParserStuff
     s(:find_pat_TAIL, lhs_id, *mid.sexp_body, rhs_id).line line
   end
 
-  def new_for expr, var, body
+  def new_for(expr, var, body)
     result = s(:for, expr, var).line(var.line)
     result << body if body
     result
   end
 
-  def new_hash val
+  def new_hash(val)
     _, line, assocs = val
 
     s(:hash).line(line).concat assocs.sexp_body
   end
 
-  def new_hash_pattern const, hash_pat, loc
+  def new_hash_pattern(const, hash_pat, loc)
     _, pat, kw_args, kw_rest_arg = hash_pat
 
     line = (const||hash_pat).line
@@ -1107,7 +1108,7 @@ module RubyParserStuff
     result
   end
 
-  def new_hash_pattern_tail kw_args, kw_rest_arg, line # TODO: remove line arg
+  def new_hash_pattern_tail(kw_args, kw_rest_arg, line) # TODO: remove line arg
     # kw_rest_arg = assignable(kw_rest_arg, nil).line line if kw_rest_arg
 
     result = s(:hash_pat).line line
@@ -1116,7 +1117,7 @@ module RubyParserStuff
     if kw_rest_arg then
       name = kw_rest_arg.value
       # TODO: I _hate_ this:
-      assignable [name, kw_rest_arg.line] if name != :**
+      assignable [ name, kw_rest_arg.line ] if name != :**
       result << kw_rest_arg
     end
 
@@ -1135,14 +1136,14 @@ module RubyParserStuff
   def pop_pvtbl
   end
 
-  def new_if c, t, f
-    l = [c.line, t && t.line, f && f.line].compact.min
+  def new_if(c, t, f)
+    l = [ c.line, t && t.line, f && f.line ].compact.min
     c = cond c
     c, t, f = c.last, f, t if c.sexp_type == :not and canonicalize_conditions
     s(:if, c, t, f).line(l)
   end
 
-  def new_iter call, args, body
+  def new_iter(call, args, body)
     body ||= nil
 
     args ||= s(:args)
@@ -1163,7 +1164,7 @@ module RubyParserStuff
     result
   end
 
-  def new_masgn lhs, rhs, wrap = false
+  def new_masgn(lhs, rhs, wrap = false)
     _, ary = lhs
 
     line = rhs.line
@@ -1177,14 +1178,14 @@ module RubyParserStuff
     lhs
   end
 
-  def new_masgn_arg rhs, wrap = false
+  def new_masgn_arg(rhs, wrap = false)
     rhs = value_expr(rhs)
     # HACK: could be array if lhs isn't right
     rhs = s(:to_ary, rhs).line rhs.line if wrap
     rhs
   end
 
-  def new_match lhs, rhs
+  def new_match(lhs, rhs)
     if lhs then
       case lhs.sexp_type
       when :dregx, :dregx_once then
@@ -1208,7 +1209,7 @@ module RubyParserStuff
     new_call(lhs, :"=~", argl(rhs)).line lhs.line
   end
 
-  def new_module val
+  def new_module(val)
     (_, line_min), path, _, body, (_, line_max) = val
 
     path = path.first if path.instance_of? Array
@@ -1228,28 +1229,28 @@ module RubyParserStuff
     result
   end
 
-  def new_op_asgn val
+  def new_op_asgn(val)
     lhs, (op, _line), rhs = val
     op = op.to_sym
 
     name = gettable(lhs.last).line lhs.line
     arg = remove_begin rhs
     result = case op # REFACTOR
-             when :"||" then
+    when :"||" then
                lhs << arg
                s(:op_asgn_or, name, lhs).line lhs.line
-             when :"&&" then
+    when :"&&" then
                lhs << arg
                s(:op_asgn_and, name, lhs).line lhs.line
-             else
+    else
                lhs << new_call(name, op, argl(arg))
                lhs
-             end
+    end
 
     result
   end
 
-  def new_op_asgn1 val
+  def new_op_asgn1(val)
     lhs, _, args, _, (op, _), rhs = val
 
     args.sexp_type = :arglist if args
@@ -1259,18 +1260,18 @@ module RubyParserStuff
     result
   end
 
-  def new_op_asgn2 val
+  def new_op_asgn2(val)
     recv, (call_op, _), (meth, _), (op, _), arg = val
     meth = :"#{meth}="
 
     result = case call_op.to_sym
-             when :"."
+    when :"."
                s(:op_asgn2, recv, meth, op.to_sym, arg)
-             when :"&."
+    when :"&."
                s(:safe_op_asgn2, recv, meth, op.to_sym, arg)
-             else
+    else
                raise "unknown call operator: `#{type.inspect}`"
-             end
+    end
 
     result.line = recv.line
     result
@@ -1280,7 +1281,7 @@ module RubyParserStuff
     s(:array).line lexer.lineno
   end
 
-  def new_qsym_list_entry val
+  def new_qsym_list_entry(val)
     _, (str, line), _ = val
     s(:lit, str.to_sym).line line
   end
@@ -1289,13 +1290,13 @@ module RubyParserStuff
     s(:array).line lexer.lineno
   end
 
-  def new_qword_list_entry val
+  def new_qword_list_entry(val)
     _, (str, line), _ = val
     str.force_encoding("ASCII-8BIT") unless str.valid_encoding?
     s(:str, str).line line
   end
 
-  def new_regexp val
+  def new_regexp(val)
     (_, line), node, (options, line_max) = val
 
     node ||= s(:str, "").line line
@@ -1311,7 +1312,7 @@ module RubyParserStuff
         "n" => Regexp::ENC_NONE,
         "e" => Regexp::ENC_EUC,
         "s" => Regexp::ENC_SJIS,
-        "u" => Regexp::ENC_UTF8,
+        "u" => Regexp::ENC_UTF8
       }[c]
       raise "unknown regexp option: #{c}" unless v
       o += v
@@ -1322,7 +1323,7 @@ module RubyParserStuff
       node.sexp_type = :lit
       node[1] = if k then
                   Regexp.new(node[1], o, k)
-                else
+      else
                   begin
                     Regexp.new(node[1], o)
                   rescue RegexpError => e
@@ -1335,7 +1336,7 @@ module RubyParserStuff
                       Regexp.new(node[1], Regexp::ENC_NONE)
                     end
                   end
-                end
+      end
     when :dstr then
       if options =~ /o/ then
         node.sexp_type = :dregx_once
@@ -1352,21 +1353,21 @@ module RubyParserStuff
     node
   end
 
-  def new_resbody cond, body
+  def new_resbody(cond, body)
     if body && body.sexp_type == :block then
       body.shift # remove block and splat it in directly
     else
-      body = [body]
+      body = [ body ]
     end
 
     s(:resbody, cond, *body).line cond.line
   end
 
-  def new_rescue body, resbody
+  def new_rescue(body, resbody)
     s(:rescue, body, resbody).line body.line
   end
 
-  def new_sclass val
+  def new_sclass(val)
     (_, line), _, recv, in_def, _, in_single, body, _ = val
 
     result = s(:sclass, recv)
@@ -1385,7 +1386,7 @@ module RubyParserStuff
     result
   end
 
-  def new_string val
+  def new_string(val)
     (str, line), = val
 
     str.force_encoding("UTF-8")
@@ -1394,7 +1395,7 @@ module RubyParserStuff
     s(:str, str).line line
   end
 
-  def new_super args
+  def new_super(args)
     if args && args.sexp_type == :block_pass then
       s(:super, args).line args.line
     else
@@ -1403,7 +1404,7 @@ module RubyParserStuff
     end
   end
 
-  def new_symbol val
+  def new_symbol(val)
     name = val.last
     s(:lit, name.to_sym).line lexer.lineno
   end
@@ -1413,7 +1414,7 @@ module RubyParserStuff
     s(:array).line lexer.lineno
   end
 
-  def new_symbol_list_entry val
+  def new_symbol_list_entry(val)
     _, sym, _ = val
 
     sym ||= s(:str, "").line lexer.lineno
@@ -1430,7 +1431,7 @@ module RubyParserStuff
     sym
   end
 
-  def new_undef n, m = nil
+  def new_undef(n, m = nil)
     if m then
       block_append(n, s(:undef, m).line(m.line))
     else
@@ -1438,32 +1439,32 @@ module RubyParserStuff
     end
   end
 
-  def new_until block, expr, pre
+  def new_until(block, expr, pre)
     new_until_or_while :until, block, expr, pre
   end
 
-  def new_until_or_while type, block, expr, pre
+  def new_until_or_while(type, block, expr, pre)
     other = type == :until ? :while : :until
-    line = [block && block.line, expr.line].compact.min
+    line = [ block && block.line, expr.line ].compact.min
     block, pre = block.last, false if block && block.sexp_type == :begin
 
     expr = cond expr
 
     result = unless expr.sexp_type == :not and canonicalize_conditions then
                s(type,  expr,      block, pre)
-             else
+    else
                s(other, expr.last, block, pre)
-             end
+    end
 
     result.line = line
     result
   end
 
-  def new_when cond, body
+  def new_when(cond, body)
     s(:when, cond, body)
   end
 
-  def new_while block, expr, pre
+  def new_while(block, expr, pre)
     new_until_or_while :while, block, expr, pre
   end
 
@@ -1471,12 +1472,12 @@ module RubyParserStuff
     s(:array).line lexer.lineno
   end
 
-  def new_word_list_entry val
+  def new_word_list_entry(val)
     _, word, _ = val
     word.sexp_type == :evstr ? s(:dstr, "", word).line(word.line) : word
   end
 
-  def new_xstring val
+  def new_xstring(val)
     _, node = val
 
     node ||= s(:str, "").line lexer.lineno
@@ -1495,7 +1496,7 @@ module RubyParserStuff
     node
   end
 
-  def new_yield args = nil
+  def new_yield(args = nil)
     # TODO: raise args.inspect unless [:arglist].include? args.first # HACK
     raise "write a test 4" if args && args.sexp_type == :block_pass
     raise SyntaxError, "Block argument should not be given." if
@@ -1503,13 +1504,13 @@ module RubyParserStuff
 
     args ||= s(:arglist).line lexer.lineno
 
-    args.sexp_type = :arglist if [:call_args, :array].include? args.sexp_type
+    args.sexp_type = :arglist if [ :call_args, :array ].include? args.sexp_type
     args = s(:arglist, args).line args.line unless args.sexp_type == :arglist
 
     s(:yield, *args.sexp_body).line args.line
   end
 
-  def prev_value_to_lineno v
+  def prev_value_to_lineno(v)
     s, n = v
     if String === s then
       n
@@ -1523,11 +1524,11 @@ module RubyParserStuff
 
     if token and token.first != RubyLexer::EOF then
       self.last_token_type = token
-      return token
+      token
     elsif !token
-      return self.lexer.next_token
+      self.lexer.next_token
     else
-      return [false, false]
+      [ false, false ]
     end
   end
 
@@ -1536,7 +1537,7 @@ module RubyParserStuff
     super
   rescue Racc::ParseError => e
     # I don't like how the exception obscures the error message
-    e.message.replace "%s:%p :: %s" % [self.file, lexer.lineno, e.message.strip]
+    e.message.replace "%s:%p :: %s" % [ self.file, lexer.lineno, e.message.strip ]
     warn e.message if $DEBUG
     raise
   end
@@ -1563,7 +1564,7 @@ module RubyParserStuff
 
   alias parse process
 
-  def remove_begin node
+  def remove_begin(node)
     line = node.line
 
     node = node.last while node and node.sexp_type == :begin and node.size == 2
@@ -1586,7 +1587,7 @@ module RubyParserStuff
     self.last_token_type = nil
   end
 
-  def ret_args node
+  def ret_args(node)
     if node then
       raise "write a test 5" if node.sexp_type == :block_pass
 
@@ -1612,7 +1613,7 @@ module RubyParserStuff
     result
   end
 
-  def debug n
+  def debug(n)
     if ENV["PRY"] then
       require "pry"; binding.pry
     end
@@ -1620,13 +1621,13 @@ module RubyParserStuff
     raise RubyParser::SyntaxError, "debug #{n}"
   end
 
-  def syntax_error msg
+  def syntax_error(msg)
     raise RubyParser::SyntaxError, msg
   end
 
   alias yyerror syntax_error
 
-  def void_stmts node
+  def void_stmts(node)
     return nil unless node
     return node unless node.sexp_type == :block
 
@@ -1639,11 +1640,11 @@ module RubyParserStuff
     node
   end
 
-  def warning s
+  def warning(s)
     # do nothing for now
   end
 
-  def whitespace_width line, remove_width = nil
+  def whitespace_width(line, remove_width = nil)
     col = 0
     idx = 0
 
@@ -1673,7 +1674,7 @@ module RubyParserStuff
 
   alias remove_whitespace_width whitespace_width
 
-  def wrap type, node
+  def wrap(type, node)
     value, line = node
     value = value.to_sym if value.respond_to? :to_sym
     s(type, value).line line
@@ -1684,7 +1685,7 @@ module RubyParserStuff
 
     class KWtable
       attr_accessor :name, :state, :id0, :id1
-      def initialize(name, id=[], state=nil)
+      def initialize(name, id = [], state = nil)
         @name  = name
         @id0, @id1 = id
         @state = state
@@ -1712,56 +1713,56 @@ module RubyParserStuff
     expr_woot = EXPR_FNAME|EXPR_FITEM
 
     wordlist = [
-                ["alias",    [:kALIAS,    :kALIAS      ], expr_woot  ],
-                ["and",      [:kAND,      :kAND        ], EXPR_BEG   ],
-                ["begin",    [:kBEGIN,    :kBEGIN      ], EXPR_BEG   ],
-                ["break",    [:kBREAK,    :kBREAK      ], EXPR_MID   ],
-                ["case",     [:kCASE,     :kCASE       ], EXPR_BEG   ],
-                ["class",    [:kCLASS,    :kCLASS      ], EXPR_CLASS ],
-                ["def",      [:kDEF,      :kDEF        ], EXPR_FNAME ],
-                ["defined?", [:kDEFINED,  :kDEFINED    ], EXPR_ARG   ],
-                ["do",       [:kDO,       :kDO         ], EXPR_BEG   ],
-                ["else",     [:kELSE,     :kELSE       ], EXPR_BEG   ],
-                ["elsif",    [:kELSIF,    :kELSIF      ], EXPR_BEG   ],
-                ["end",      [:kEND,      :kEND        ], EXPR_END   ],
-                ["ensure",   [:kENSURE,   :kENSURE     ], EXPR_BEG   ],
-                ["false",    [:kFALSE,    :kFALSE      ], EXPR_END   ],
-                ["for",      [:kFOR,      :kFOR        ], EXPR_BEG   ],
-                ["if",       [:kIF,       :kIF_MOD     ], EXPR_BEG   ],
-                ["in",       [:kIN,       :kIN         ], EXPR_BEG   ],
-                ["module",   [:kMODULE,   :kMODULE     ], EXPR_BEG   ],
-                ["next",     [:kNEXT,     :kNEXT       ], EXPR_MID   ],
-                ["nil",      [:kNIL,      :kNIL        ], EXPR_END   ],
-                ["not",      [:kNOT,      :kNOT        ], EXPR_ARG   ],
-                ["or",       [:kOR,       :kOR         ], EXPR_BEG   ],
-                ["redo",     [:kREDO,     :kREDO       ], EXPR_END   ],
-                ["rescue",   [:kRESCUE,   :kRESCUE_MOD ], EXPR_MID   ],
-                ["retry",    [:kRETRY,    :kRETRY      ], EXPR_END   ],
-                ["return",   [:kRETURN,   :kRETURN     ], EXPR_MID   ],
-                ["self",     [:kSELF,     :kSELF       ], EXPR_END   ],
-                ["super",    [:kSUPER,    :kSUPER      ], EXPR_ARG   ],
-                ["then",     [:kTHEN,     :kTHEN       ], EXPR_BEG   ],
-                ["true",     [:kTRUE,     :kTRUE       ], EXPR_END   ],
-                ["undef",    [:kUNDEF,    :kUNDEF      ], expr_woot  ],
-                ["unless",   [:kUNLESS,   :kUNLESS_MOD ], EXPR_BEG   ],
-                ["until",    [:kUNTIL,    :kUNTIL_MOD  ], EXPR_BEG   ],
-                ["when",     [:kWHEN,     :kWHEN       ], EXPR_BEG   ],
-                ["while",    [:kWHILE,    :kWHILE_MOD  ], EXPR_BEG   ],
-                ["yield",    [:kYIELD,    :kYIELD      ], EXPR_ARG   ],
-                ["BEGIN",    [:klBEGIN,   :klBEGIN     ], EXPR_END   ],
-                ["END",      [:klEND,     :klEND       ], EXPR_END   ],
-                ["__FILE__", [:k__FILE__, :k__FILE__   ], EXPR_END   ],
-                ["__LINE__", [:k__LINE__, :k__LINE__   ], EXPR_END   ],
-                ["__ENCODING__", [:k__ENCODING__, :k__ENCODING__], EXPR_END],
+                [ "alias",    [ :kALIAS,    :kALIAS      ], expr_woot  ],
+                [ "and",      [ :kAND,      :kAND        ], EXPR_BEG   ],
+                [ "begin",    [ :kBEGIN,    :kBEGIN      ], EXPR_BEG   ],
+                [ "break",    [ :kBREAK,    :kBREAK      ], EXPR_MID   ],
+                [ "case",     [ :kCASE,     :kCASE       ], EXPR_BEG   ],
+                [ "class",    [ :kCLASS,    :kCLASS      ], EXPR_CLASS ],
+                [ "def",      [ :kDEF,      :kDEF        ], EXPR_FNAME ],
+                [ "defined?", [ :kDEFINED,  :kDEFINED    ], EXPR_ARG   ],
+                [ "do",       [ :kDO,       :kDO         ], EXPR_BEG   ],
+                [ "else",     [ :kELSE,     :kELSE       ], EXPR_BEG   ],
+                [ "elsif",    [ :kELSIF,    :kELSIF      ], EXPR_BEG   ],
+                [ "end",      [ :kEND,      :kEND        ], EXPR_END   ],
+                [ "ensure",   [ :kENSURE,   :kENSURE     ], EXPR_BEG   ],
+                [ "false",    [ :kFALSE,    :kFALSE      ], EXPR_END   ],
+                [ "for",      [ :kFOR,      :kFOR        ], EXPR_BEG   ],
+                [ "if",       [ :kIF,       :kIF_MOD     ], EXPR_BEG   ],
+                [ "in",       [ :kIN,       :kIN         ], EXPR_BEG   ],
+                [ "module",   [ :kMODULE,   :kMODULE     ], EXPR_BEG   ],
+                [ "next",     [ :kNEXT,     :kNEXT       ], EXPR_MID   ],
+                [ "nil",      [ :kNIL,      :kNIL        ], EXPR_END   ],
+                [ "not",      [ :kNOT,      :kNOT        ], EXPR_ARG   ],
+                [ "or",       [ :kOR,       :kOR         ], EXPR_BEG   ],
+                [ "redo",     [ :kREDO,     :kREDO       ], EXPR_END   ],
+                [ "rescue",   [ :kRESCUE,   :kRESCUE_MOD ], EXPR_MID   ],
+                [ "retry",    [ :kRETRY,    :kRETRY      ], EXPR_END   ],
+                [ "return",   [ :kRETURN,   :kRETURN     ], EXPR_MID   ],
+                [ "self",     [ :kSELF,     :kSELF       ], EXPR_END   ],
+                [ "super",    [ :kSUPER,    :kSUPER      ], EXPR_ARG   ],
+                [ "then",     [ :kTHEN,     :kTHEN       ], EXPR_BEG   ],
+                [ "true",     [ :kTRUE,     :kTRUE       ], EXPR_END   ],
+                [ "undef",    [ :kUNDEF,    :kUNDEF      ], expr_woot  ],
+                [ "unless",   [ :kUNLESS,   :kUNLESS_MOD ], EXPR_BEG   ],
+                [ "until",    [ :kUNTIL,    :kUNTIL_MOD  ], EXPR_BEG   ],
+                [ "when",     [ :kWHEN,     :kWHEN       ], EXPR_BEG   ],
+                [ "while",    [ :kWHILE,    :kWHILE_MOD  ], EXPR_BEG   ],
+                [ "yield",    [ :kYIELD,    :kYIELD      ], EXPR_ARG   ],
+                [ "BEGIN",    [ :klBEGIN,   :klBEGIN     ], EXPR_END   ],
+                [ "END",      [ :klEND,     :klEND       ], EXPR_END   ],
+                [ "__FILE__", [ :k__FILE__, :k__FILE__   ], EXPR_END   ],
+                [ "__LINE__", [ :k__LINE__, :k__LINE__   ], EXPR_END   ],
+                [ "__ENCODING__", [ :k__ENCODING__, :k__ENCODING__ ], EXPR_END ]
                ].map { |args|
       KWtable.new(*args)
     }
 
     # :startdoc:
 
-    WORDLIST = Hash[*wordlist.map { |o| [o.name, o] }.flatten]
+    WORDLIST = Hash[*wordlist.map { |o| [ o.name, o ] }.flatten]
 
-    def self.keyword str
+    def self.keyword(str)
       WORDLIST[str]
     end
   end
@@ -1769,11 +1770,11 @@ module RubyParserStuff
   class Environment
     attr_reader :env, :dyn
 
-    def [] k
+    def [](k)
       self.all[k]
     end
 
-    def []= k, v
+    def []=(k, v)
       raise "no" if v == true
       self.current[k] = v
     end
@@ -1787,12 +1788,12 @@ module RubyParserStuff
       @env.first
     end
 
-    def extend dyn = false
+    def extend(dyn = false)
       @dyn.unshift dyn
       @env.unshift({})
     end
 
-    def initialize dyn = false
+    def initialize(dyn = false)
       @dyn = []
       @env = []
       self.reset
@@ -1816,9 +1817,9 @@ module RubyParserStuff
     attr_reader :stack
     attr_accessor :debug
 
-    def initialize name, debug=false
+    def initialize(name, debug = false)
       @name = name
-      @stack = [false]
+      @stack = [ false ]
       @debug = debug
     end
 
@@ -1839,10 +1840,10 @@ module RubyParserStuff
       log :lexpop if debug
     end
 
-    def log action
+    def log(action)
       c = caller[1]
       c = caller[2] if c =~ /expr_result/
-      warn "%s_stack.%s: %p at %s" % [name, action, @stack, c.clean_caller]
+      warn "%s_stack.%s: %p at %s" % [ name, action, @stack, c.clean_caller ]
       nil
     end
 
@@ -1853,24 +1854,24 @@ module RubyParserStuff
       r
     end
 
-    def push val
+    def push(val)
       @stack.push val
       log :push if debug
     end
 
     def reset
-      @stack = [false]
+      @stack = [ false ]
       log :reset if debug
     end
 
-    def restore oldstate
+    def restore(oldstate)
       @stack.replace oldstate
       log :restore if debug
     end
 
-    def store base = false
+    def store(base = false)
       result = @stack.dup
-      @stack.replace [base]
+      @stack.replace [ base ]
       log :store if debug
       result
     end

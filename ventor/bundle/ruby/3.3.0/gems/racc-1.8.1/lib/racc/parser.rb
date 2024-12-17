@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #--
 # Copyright (c) 1999-2006 Minero Aoki
 #
@@ -176,13 +177,11 @@ end
 # Note: parser.rb is ruby license, but your parser is not.
 # Your own parser is completely yours.
 module Racc
-
   unless defined?(Racc_No_Extensions)
     Racc_No_Extensions = false # :nodoc:
   end
 
   class Parser
-
     Racc_Runtime_Version = ::Racc::VERSION
     Racc_Runtime_Core_Version_R = ::Racc::VERSION
 
@@ -230,7 +229,7 @@ module Racc
     end
 
     def _racc_init_sysvars
-      @racc_state  = [0]
+      @racc_state  = [ 0 ]
       @racc_tstack = []
       @racc_vstack = []
 
@@ -309,7 +308,7 @@ module Racc
             act = action_default[@racc_state[-1]]
           end
           while act = _racc_evalact(act, arg)
-            ;
+
           end
         end
       }
@@ -336,7 +335,7 @@ module Racc
       catch(:racc_end_parse) {
         until i = action_pointer[@racc_state[-1]]
           while act = _racc_evalact(action_default[@racc_state[-1]], arg)
-            ;
+
           end
         end
         recv.__send__(mid) do |tok, val|
@@ -355,7 +354,7 @@ module Racc
             act = action_default[@racc_state[-1]]
           end
           while act = _racc_evalact(act, arg)
-            ;
+
           end
 
           while !(i = action_pointer[@racc_state[-1]]) ||
@@ -368,7 +367,7 @@ module Racc
               act = action_default[@racc_state[-1]]
             end
             while act = _racc_evalact(act, arg)
-              ;
+
             end
           end
         end
@@ -574,7 +573,7 @@ module Racc
       if toks.empty?
         out.print ' <none>'
       else
-        toks.each {|t| out.print ' ', racc_token2str(t) }
+        toks.each { |t| out.print ' ', racc_token2str(t) }
       end
       out.puts " --> #{racc_token2str(sim)}"
       racc_print_stacks tstack, vstack
@@ -594,7 +593,7 @@ module Racc
     end
 
     def racc_next_state(curstate, state)
-      @racc_debug_out.puts  "goto    #{curstate}"
+      @racc_debug_out.puts "goto    #{curstate}"
       racc_print_states state
       @racc_debug_out.puts
     end
@@ -611,7 +610,7 @@ module Racc
     def racc_print_states(s)
       out = @racc_debug_out
       out.print '        ['
-      s.each {|st| out.print ' ', st }
+      s.each { |st| out.print ' ', st }
       out.puts ' ]'
     end
 
@@ -624,7 +623,5 @@ module Racc
     def token_to_str(t)
       self.class::Racc_token_to_s_table[t]
     end
-
   end
-
 end
