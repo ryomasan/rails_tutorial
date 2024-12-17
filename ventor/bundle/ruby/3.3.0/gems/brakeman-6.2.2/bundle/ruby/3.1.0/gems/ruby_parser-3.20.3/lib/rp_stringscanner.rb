@@ -7,26 +7,26 @@ class RPStringScanner < StringScanner
       where = caller.drop_while { |s| s =~ /(getch|nextc).$/ }.first
       where = where.split(/:/).first(2).join(":")
       if ENV["TALLY"] then
-        d getch:where
+        d getch: where
       else
-        d getch:[c, where]
+        d getch: [ c, where ]
       end
       c
     end
 
-    def scan re
+    def scan(re)
       s = super
       where = caller.drop_while { |x| x =~ /scan.$/ }.first
       where = where.split(/:/).first(2).join(":")
       if ENV["TALLY"] then
-        d scan:[where]
+        d scan: [ where ]
       else
-        d scan:[s, where] if s
+        d scan: [ s, where ] if s
       end
       s
     end
 
-    def d o
+    def d(o)
       STDERR.puts o.inspect
     end
   end

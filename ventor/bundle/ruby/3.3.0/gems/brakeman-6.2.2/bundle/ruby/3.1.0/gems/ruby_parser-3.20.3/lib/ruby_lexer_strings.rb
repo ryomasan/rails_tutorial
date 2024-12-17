@@ -10,7 +10,7 @@ class RubyLexer
     r
   end
 
-  def heredoc here                              # ../compare/parse30.y:7678
+  def heredoc(here)                              # ../compare/parse30.y:7678
     _, term, func, _indent_max, _lineno, range = here
 
     start_line = lineno
@@ -42,7 +42,7 @@ class RubyLexer
       self.lex_strterm = nil
       self.lex_state = EXPR_END
 
-      return :tSTRING_END, [term, func, range]
+      return :tSTRING_END, [ term, func, range ]
     end
 
     if expand then
@@ -56,7 +56,7 @@ class RubyLexer
         return :tSTRING_DVAR, matched
       when scan(/#[{]/) then
         self.command_start = true
-        return :tSTRING_DBEG, [matched, lineno]
+        return :tSTRING_DBEG, [ matched, lineno ]
       when scan(/#/) then
         string_buffer << "#"
       end
@@ -116,16 +116,16 @@ class RubyLexer
       func |= STR_FUNC_INDENT unless mods.empty?
       func |= STR_FUNC_DEDENT if mods == "~"
       func |= case quote
-              when "\'" then
+      when "\'" then
                 STR_SQUOTE
-              when '"' then
+      when '"' then
                 STR_DQUOTE
-              when "`" then
+      when "`" then
                 token = :tXSTRING_BEG
                 STR_XQUOTE
-              else
+      else
                 debug 1
-              end
+      end
     when scan(/[#{heredoc_indent_mods}]?([\'\"\`])(?!\1*\Z)/) then
       rb_compile_error "unterminated here document identifier"
     when scan(/([#{heredoc_indent_mods}]?)(#{IDENT_CHAR}+)/) then
@@ -150,7 +150,7 @@ class RubyLexer
     range = nil
     range = char_pos..char_pos_end unless rest_of_line.empty?
 
-    self.lex_strterm = [:heredoc, term, func, indent, old_lineno, range, byte_pos]
+    self.lex_strterm = [ :heredoc, term, func, indent, old_lineno, range, byte_pos ]
 
     result nil, token, quote, old_lineno
   end
@@ -189,7 +189,7 @@ class RubyLexer
     c
   end
 
-  def parse_string quote                         # ../compare/parse30.y:7273
+  def parse_string(quote)                         # ../compare/parse30.y:7273
     _, func, term, paren = quote
 
     qwords = func =~ STR_FUNC_QWORDS
@@ -289,28 +289,28 @@ class RubyLexer
     token_type, string_type =
       case c
       when "Q" then
-        [:tSTRING_BEG,   STR_DQUOTE]
+        [ :tSTRING_BEG,   STR_DQUOTE ]
       when "q" then
-        [:tSTRING_BEG,   STR_SQUOTE]
+        [ :tSTRING_BEG,   STR_SQUOTE ]
       when "W" then
         eat_whitespace
-        [:tWORDS_BEG,    STR_DQUOTE | STR_FUNC_QWORDS]
+        [ :tWORDS_BEG,    STR_DQUOTE | STR_FUNC_QWORDS ]
       when "w" then
         eat_whitespace
-        [:tQWORDS_BEG,   STR_SQUOTE | STR_FUNC_QWORDS]
+        [ :tQWORDS_BEG,   STR_SQUOTE | STR_FUNC_QWORDS ]
       when "I" then
         eat_whitespace
-        [:tSYMBOLS_BEG,  STR_DQUOTE | STR_FUNC_QWORDS]
+        [ :tSYMBOLS_BEG,  STR_DQUOTE | STR_FUNC_QWORDS ]
       when "i" then
         eat_whitespace
-        [:tQSYMBOLS_BEG, STR_SQUOTE | STR_FUNC_QWORDS]
+        [ :tQSYMBOLS_BEG, STR_SQUOTE | STR_FUNC_QWORDS ]
       when "x" then
-        [:tXSTRING_BEG,  STR_XQUOTE]
+        [ :tXSTRING_BEG,  STR_XQUOTE ]
       when "r" then
-        [:tREGEXP_BEG,   STR_REGEXP]
+        [ :tREGEXP_BEG,   STR_REGEXP ]
       when "s" then
         self.lex_state = EXPR_FNAME
-        [:tSYMBEG,       STR_SSYM]
+        [ :tSYMBEG,       STR_SSYM ]
       else
         rb_compile_error "unknown type of %string. Expected [QqWwIixrs], found '#{c}'."
       end
@@ -328,7 +328,7 @@ class RubyLexer
     end
   end
 
-  def read_escape flags = nil                    # ../compare/parse30.y:6712
+  def read_escape(flags = nil)                    # ../compare/parse30.y:6712
     case
     when scan(/\\/) then                  # Backslash
       '\\'
@@ -381,7 +381,7 @@ class RubyLexer
     when scan(/^[89]/i) then # bad octal or hex... MRI ignores them :(
       matched
     when scan(/u(\h{4})/) then
-      [match[1].to_i(16)].pack("U")
+      [ match[1].to_i(16) ].pack("U")
     when scan(/u(\h{1,3})/) then
       debug 7
       rb_compile_error "Invalid escape character syntax"
@@ -399,7 +399,7 @@ class RubyLexer
 
     options = scan(/\p{Alpha}+/) || ""
 
-    rb_compile_error("unknown regexp options: %s" % [options]) if
+    rb_compile_error("unknown regexp options: %s" % [ options ]) if
       options =~ /[^ixmonesu]/
 
     options
@@ -415,7 +415,7 @@ class RubyLexer
       return :tSTRING_DVAR, matched
     when scan(/#[{]/) then
       self.command_start = true
-      return :tSTRING_DBEG, [matched, lineno]
+      return :tSTRING_DBEG, [ matched, lineno ]
     when scan(/#/) then
       # do nothing but swallow
     end
@@ -428,16 +428,16 @@ class RubyLexer
     nil
   end
 
-  def string type, beg, nnd = nil
+  def string(type, beg, nnd = nil)
     # label = (IS_LABEL_POSSIBLE() ? str_label : 0);
     # p->lex.strterm = NEW_STRTERM(str_dquote | label, '"', 0);
     # p->lex.ptok = p->lex.pcur-1;
 
     type |= STR_FUNC_LABEL if is_label_possible?
-    self.lex_strterm = [:strterm, type, beg, nnd || "\0"]
+    self.lex_strterm = [ :strterm, type, beg, nnd || "\0" ]
   end
 
-  def string_term func                          # ../compare/parse30.y:7254
+  def string_term(func)                          # ../compare/parse30.y:7254
     self.lex_strterm = nil
 
     return result EXPR_END, :tREGEXP_END, self.regx_options if
@@ -452,10 +452,10 @@ class RubyLexer
 
     self.lex_state = EXPR_END
 
-    return :tSTRING_END, [self.matched, func]
+    return :tSTRING_END, [ self.matched, func ]
   end
 
-  def tokadd c                                  # ../compare/parse30.y:6548
+  def tokadd(c)                                  # ../compare/parse30.y:6548
     string_buffer << c
   end
 
@@ -480,11 +480,11 @@ class RubyLexer
       tokadd "\\"
       tokadd chr
     else
-      rb_compile_error "Invalid escape character syntax: %p" % [self.rest.lines.first]
+      rb_compile_error "Invalid escape character syntax: %p" % [ self.rest.lines.first ]
     end
   end
 
-  def tokadd_string func, term, paren           # ../compare/parse30.y:7020
+  def tokadd_string(func, term, paren)           # ../compare/parse30.y:7020
     qwords = func =~ STR_FUNC_QWORDS
     escape = func =~ STR_FUNC_ESCAPE
     expand = func =~ STR_FUNC_EXPAND
@@ -493,9 +493,9 @@ class RubyLexer
     paren_re = regexp_cache[paren] if paren != "\0"
     term_re  = if term == "\n"
                  /\r?\n/
-               else
+    else
                  regexp_cache[term]
-               end
+    end
 
     until end_of_stream? do
       case
@@ -613,12 +613,12 @@ class RubyLexer
     end
   end # tokadd_string
 
-  def tokadd_utf8 term, func, regexp_literal    # ../compare/parse30.y:6646
+  def tokadd_utf8(term, func, regexp_literal)    # ../compare/parse30.y:6646
     tokadd "\\u" if regexp_literal
 
     case
     when scan(/\h{4}/) then
-      codepoint = [matched.to_i(16)].pack("U")
+      codepoint = [ matched.to_i(16) ].pack("U")
 
       tokadd regexp_literal ? matched : codepoint
     when scan(/\{\s*(\h{1,6}(?:\s+\h{1,6})*)\s*\}/) then

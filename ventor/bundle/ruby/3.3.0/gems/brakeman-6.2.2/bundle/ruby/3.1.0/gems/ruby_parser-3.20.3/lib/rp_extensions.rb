@@ -14,13 +14,13 @@ end
 
 class Array
   def prepend *vals
-    self[0,0] = vals
+    self[0, 0] = vals
   end
 end unless [].respond_to?(:prepend)
 
 # :stopdoc:
 class Symbol
-  def end_with? o
+  def end_with?(o)
     self.to_s.end_with? o
   end
 end unless :woot.respond_to?(:end_with?)

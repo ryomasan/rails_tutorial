@@ -6,7 +6,6 @@ require "racc/parser"
 # attempt to parse.
 
 class RubyParser
-
   VERSIONS = []
 
   attr_accessor :current
@@ -15,11 +14,11 @@ class RubyParser
     name  = "V#{RUBY_VERSION[/^\d+\.\d+/].delete "."}"
     klass = if const_defined? name then
               const_get name
-            else
+    else
               latest = VERSIONS.first
               warn "NOTE: RubyParser::#{name} undefined, using #{latest}."
               latest
-            end
+    end
 
     klass.new
   end
@@ -28,7 +27,7 @@ class RubyParser
     VERSIONS.first.new
   end
 
-  def process s, f = "(string)", t = 10
+  def process(s, f = "(string)", t = 10)
     e = nil
     VERSIONS.each do |klass|
       self.current = parser = klass.new
@@ -50,11 +49,11 @@ class RubyParser
   class Parser < Racc::Parser
     include RubyParserStuff
 
-    def self.inherited x
+    def self.inherited(x)
       RubyParser::VERSIONS << x
     end
 
-    def self.version= v
+    def self.version=(v)
        @version = v
     end
 
