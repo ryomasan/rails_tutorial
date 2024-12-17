@@ -12,35 +12,20 @@
 
   <div>
     <%= form.label :user_id, style: "display: block" %>
-    <%= form.text_field :user_id %>
+    <%= form.text_field :user_id id: "user" %>
   </div>
 
   <div>
     <%= form.label :weight, style: "display: block" %>
-    <%= form.number_field :weight %>
+    <%= form.number_field :weight id: "weight" %>
   </div>
 
   <div>
     <%= form.label :memo, style: "display: block" %>
-    <%= form.text_field :memo %>
+    <%= form.text_field :memo, id: "memo" %>
   </div>
 
   <div>
     <%= form.submit %>
   </div>
 <% end %>
-
-<%
-=begin%>
- <script>
-  document.getElementById('weight_history_form').addEventListener('submit', function(event) {
-    // フォームの入力内容を取得してコンソールに表示
-    const name = document.querySelector('[name="weight_history[user_id]"]');
-    const weight = document.querySelector('[name="weight_history[weight]"]');
-    const date = document.querySelector('[name="weight_history[memo]"]');
-    console.log('Weight:', weight);
-    console.log('Date:', date);
-  });
-</script>
-<%
-=end%>

@@ -14,9 +14,9 @@ class WeightHistoriesTest < ApplicationSystemTestCase
     visit weight_histories_url
     click_on "New weight history"
 
-    fill_in "Memo", with: @weight_history.memo
-    fill_in "User", with: @weight_history.user_id
-    fill_in "Weight", with: @weight_history.weight
+    fill_in "memo", with: @weight_history.memo
+    fill_in "user", with: @weight_history.user_id
+    fill_in "weight", with: @weight_history.weight
     click_on "Create Weight history"
 
     assert_text "Weight history was successfully created"
@@ -27,9 +27,9 @@ class WeightHistoriesTest < ApplicationSystemTestCase
     visit weight_history_url(@weight_history)
     click_on "Edit this weight history", match: :first
 
-    fill_in "Memo", with: @weight_history.memo
-    fill_in "User", with: @weight_history.user_id
-    fill_in "Weight", with: @weight_history.weight
+    fill_in "memo", with: @weight_history.memo
+    fill_in "user", with: @weight_history.user_id
+    fill_in "weight", with: @weight_history.weight
     click_on "Update Weight history"
 
     assert_text "Weight history was successfully updated"
