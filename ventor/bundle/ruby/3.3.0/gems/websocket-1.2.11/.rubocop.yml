@@ -3,12 +3,13 @@ require: rubocop-rspec
 AllCops:
   DisplayCopNames: true
   TargetRubyVersion: 2.1
+  NewCops: enable
 
 # New version of Rubocop does not support 2.0
 Gemspec/RequiredRubyVersion:
   Enabled: false
 
-Layout/IndentHeredoc:
+Layout/HeredocIndentation:
   Enabled: false
 
 # Target: 15
@@ -31,7 +32,7 @@ Metrics/CyclomaticComplexity:
   Exclude:
     - spec/support/handshake_requests.rb
 
-Metrics/LineLength:
+Layout/LineLength:
   Enabled: false
 
 # Target: 10

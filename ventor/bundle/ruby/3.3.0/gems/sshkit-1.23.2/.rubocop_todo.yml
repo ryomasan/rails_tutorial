@@ -88,7 +88,7 @@ Layout/ExtraSpacing:
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles, IndentationWidth.
 # SupportedStyles: special_inside_parentheses, consistent, align_brackets
-Layout/IndentArray:
+Layout/FirstArrayElementIndentation:
   Exclude:
     - 'test/functional/backends/test_netssh.rb'
     - 'test/unit/backends/test_netssh.rb'
@@ -98,7 +98,7 @@ Layout/IndentArray:
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles, IndentationWidth.
 # SupportedStyles: special_inside_parentheses, consistent, align_braces
-Layout/IndentHash:
+Layout/FirstHashElementIndentation:
   Exclude:
     - 'test/functional/backends/test_local.rb'
     - 'test/functional/backends/test_netssh.rb'
@@ -239,7 +239,7 @@ Layout/SpaceInsidePercentLiteralDelimiters:
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: final_newline, final_blank_line
-Layout/TrailingBlankLines:
+Layout/TrailingEmptyLines:
   Exclude:
     - 'lib/sshkit/backends/netssh/known_hosts.rb'
 
@@ -275,15 +275,15 @@ Style/BarePercentLiterals:
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: braces, no_braces, context_dependent
-Style/BracesAroundHashParameters:
-  Exclude:
-    - 'lib/sshkit/backends/abstract.rb'
-    - 'test/functional/backends/test_netssh.rb'
-    - 'test/unit/backends/test_abstract.rb'
-    - 'test/unit/formatters/test_dot.rb'
-    - 'test/unit/test_color.rb'
-    - 'test/unit/test_host.rb'
-    - 'test/unit/test_mapping_interaction_handler.rb'
+# Style/BracesAroundHashParameters:
+#   Exclude:
+#     - 'lib/sshkit/backends/abstract.rb'
+#     - 'test/functional/backends/test_netssh.rb'
+#     - 'test/unit/backends/test_abstract.rb'
+#     - 'test/unit/formatters/test_dot.rb'
+#     - 'test/unit/test_color.rb'
+#     - 'test/unit/test_host.rb'
+#     - 'test/unit/test_mapping_interaction_handler.rb'
 
 # Offense count: 1
 Style/CaseEquality:
@@ -439,7 +439,7 @@ Style/MethodDefParentheses:
 # Offense count: 3
 # Configuration parameters: SupportedStyles.
 # SupportedStyles: snake_case, camelCase
-Style/MethodName:
+Naming/MethodName:
   EnforcedStyle: snake_case
   Exclude:
     - 'test/unit/test_color.rb'
@@ -460,7 +460,7 @@ Style/NumericPredicate:
     - 'lib/sshkit/command.rb'
 
 # Offense count: 1
-Style/OpMethod:
+Naming/BinaryOperatorParameterName:
   Exclude:
     - 'lib/sshkit/host.rb'
 
@@ -575,7 +575,7 @@ Style/SymbolArray:
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyleForMultiline, SupportedStylesForMultiline.
 # SupportedStylesForMultiline: comma, consistent_comma, no_comma
-Style/TrailingCommaInLiteral:
+Style/TrailingCommaInArrayLiteral:
   Exclude:
     - 'lib/sshkit/host.rb'
     - 'test/unit/backends/test_netssh.rb'
@@ -597,13 +597,13 @@ Style/UnlessElse:
 
 # Offense count: 1
 # Cop supports --auto-correct.
-Style/UnneededCapitalW:
+Style/RedundantCapitalW:
   Exclude:
     - 'test/functional/backends/test_netssh.rb'
 
 # Offense count: 3
 # Cop supports --auto-correct.
-Style/UnneededPercentQ:
+Style/RedundantPercentQ:
   Exclude:
     - 'sshkit.gemspec'
     - 'test/unit/test_command.rb'
@@ -611,7 +611,7 @@ Style/UnneededPercentQ:
 # Offense count: 1
 # Configuration parameters: EnforcedStyle, SupportedStyles.
 # SupportedStyles: snake_case, normalcase, non_integer
-Style/VariableNumber:
+Naming/VariableNumber:
   Exclude:
     - 'test/unit/backends/test_connection_pool.rb'
 
