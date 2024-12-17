@@ -88,49 +88,48 @@ module Bootsnap
       end
 
       private
+        def scan! # (expensive) returns [entries, dirs]
+          PathScanner.call(expanded_path)
+        end
 
-      def scan! # (expensive) returns [entries, dirs]
-        PathScanner.call(expanded_path)
-      end
-
-      # last time a directory was modified in this subtree. +dirs+ should be a
-      # list of relative paths to directories under +path+. e.g. for /a/b and
-      # /a/b/c, pass ('/a/b', ['c'])
-      def latest_mtime(path, dirs)
-        max = -1
-        ["", *dirs].each do |dir|
-          curr = begin
-            File.mtime("#{path}/#{dir}").to_i
-                 rescue Errno::ENOENT, Errno::ENOTDIR, Errno::EINVAL
-                   -1
+        # last time a directory was modified in this subtree. +dirs+ should be a
+        # list of relative paths to directories under +path+. e.g. for /a/b and
+        # /a/b/c, pass ('/a/b', ['c'])
+        def latest_mtime(path, dirs)
+          max = -1
+          ["", *dirs].each do |dir|
+            curr = begin
+              File.mtime("#{path}/#{dir}").to_i
+                   rescue Errno::ENOENT, Errno::ENOTDIR, Errno::EINVAL
+                     -1
+            end
+            max = curr if curr > max
           end
-          max = curr if curr > max
+          max
         end
-        max
-      end
 
-      # a Path can be either stable of volatile, depending on how frequently we
-      # expect its contents may change. Stable paths aren't rescanned nearly as
-      # often.
-      STABLE   = :stable
-      VOLATILE = :volatile
+        # a Path can be either stable of volatile, depending on how frequently we
+        # expect its contents may change. Stable paths aren't rescanned nearly as
+        # often.
+        STABLE   = :stable
+        VOLATILE = :volatile
 
-      # Built-in ruby lib stuff doesn't change, but things can occasionally be
-      # installed into sitedir, which generally lives under rubylibdir.
-      RUBY_LIBDIR  = RbConfig::CONFIG["rubylibdir"]
-      RUBY_SITEDIR = RbConfig::CONFIG["sitedir"]
+        # Built-in ruby lib stuff doesn't change, but things can occasionally be
+        # installed into sitedir, which generally lives under rubylibdir.
+        RUBY_LIBDIR  = RbConfig::CONFIG["rubylibdir"]
+        RUBY_SITEDIR = RbConfig::CONFIG["sitedir"]
 
-      def stability
-        @stability ||= if Gem.path.detect { |p| expanded_path.start_with?(p.to_s) }
-          STABLE
-        elsif Bootsnap.bundler? && expanded_path.start_with?(Bundler.bundle_path.to_s)
-          STABLE
-        elsif expanded_path.start_with?(RUBY_LIBDIR) && !expanded_path.start_with?(RUBY_SITEDIR)
-          STABLE
-        else
-          VOLATILE
+        def stability
+          @stability ||= if Gem.path.detect { |p| expanded_path.start_with?(p.to_s) }
+            STABLE
+          elsif Bootsnap.bundler? && expanded_path.start_with?(Bundler.bundle_path.to_s)
+            STABLE
+          elsif expanded_path.start_with?(RUBY_LIBDIR) && !expanded_path.start_with?(RUBY_SITEDIR)
+            STABLE
+          else
+            VOLATILE
+          end
         end
-      end
     end
   end
 end

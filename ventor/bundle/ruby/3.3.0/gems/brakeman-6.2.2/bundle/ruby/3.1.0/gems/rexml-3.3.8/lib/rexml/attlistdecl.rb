@@ -1,7 +1,8 @@
 # frozen_string_literal: false
-#vim:ts=2 sw=2 noexpandtab:
-require_relative 'child'
-require_relative 'source'
+
+# vim:ts=2 sw=2 noexpandtab:
+require_relative "child"
+require_relative "source"
 
 module REXML
   # This class needs:
@@ -28,7 +29,7 @@ module REXML
     # weak on convenience.  Have I mentioned how much I hate DTDs?
     def initialize(source)
       super()
-      if (source.kind_of? Array)
+      if source.kind_of? Array
         @element_name, @pairs, @contents = *source
       end
     end
@@ -52,7 +53,7 @@ module REXML
     end
 
     # Write out exactly what we got in.
-    def write out, indent=-1
+    def write(out, indent = -1)
       out << @contents
     end
 

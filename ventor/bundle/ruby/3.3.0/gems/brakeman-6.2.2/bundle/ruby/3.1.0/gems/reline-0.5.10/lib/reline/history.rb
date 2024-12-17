@@ -4,7 +4,7 @@ class Reline::History < Array
   end
 
   def to_s
-    'HISTORY'
+    "HISTORY"
   end
 
   def delete_at(index)
@@ -44,7 +44,7 @@ class Reline::History < Array
         end
       end
     end
-    super(*(val.map{ |v|
+    super(*(val.map { |v|
       String.new(v, encoding: Reline.encoding_system_needs)
     }))
   end

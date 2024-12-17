@@ -1,17 +1,18 @@
 # frozen_string_literal: false
+
 require_relative "parent"
 require_relative "parseexception"
 require_relative "namespace"
-require_relative 'entity'
-require_relative 'attlistdecl'
-require_relative 'xmltokens'
+require_relative "entity"
+require_relative "attlistdecl"
+require_relative "xmltokens"
 
 module REXML
   class ReferenceWriter
     def initialize(id_type,
                    public_id_literal,
                    system_literal,
-                   context=nil)
+                   context = nil)
       @id_type = id_type
       @public_id_literal = public_id_literal
       @system_literal = system_literal
@@ -55,9 +56,9 @@ module REXML
     SYSTEM = "SYSTEM"
     PUBLIC = "PUBLIC"
     DEFAULT_ENTITIES = {
-      'gt'=>EntityConst::GT,
-      'lt'=>EntityConst::LT,
-      'quot'=>EntityConst::QUOT,
+      "gt"=>EntityConst::GT,
+      "lt"=>EntityConst::LT,
+      "quot"=>EntityConst::QUOT,
       "apos"=>EntityConst::APOS
     }
 
@@ -77,7 +78,7 @@ module REXML
     #  Doctype.new( Source.new( "<!DOCTYPE foo 'bar'>" ) )
     #
     # is _deprecated_.  Do not use it.  It will probably disappear.
-    def initialize( first, parent=nil )
+    def initialize(first, parent = nil)
       @entities = DEFAULT_ENTITIES
       @long_name = @uri = nil
       if first.kind_of? String
@@ -85,20 +86,20 @@ module REXML
         @name = first
         @external_id = parent
       elsif first.kind_of? DocType
-        super( parent )
+        super(parent)
         @name = first.name
         @external_id = first.external_id
         @long_name = first.instance_variable_get(:@long_name)
         @uri = first.instance_variable_get(:@uri)
       elsif first.kind_of? Array
-        super( parent )
+        super(parent)
         @name = first[0]
         @external_id = first[1]
         @long_name = first[2]
         @uri = first[3]
       elsif first.kind_of? Source
-        super( parent )
-        parser = Parsers::BaseParser.new( first )
+        super(parent)
+        parser = Parsers::BaseParser.new(first)
         event = parser.pull
         if event[0] == :start_doctype
           @name, @external_id, @long_name, @uri, = event[1..-1]
@@ -112,17 +113,17 @@ module REXML
       :doctype
     end
 
-    def attributes_of element
+    def attributes_of(element)
       rv = []
       each do |child|
-        child.each do |key,val|
-          rv << Attribute.new(key,val)
+        child.each do |key, val|
+          rv << Attribute.new(key, val)
         end if child.kind_of? AttlistDecl and child.element_name == element
       end
       rv
     end
 
-    def attribute_of element, attribute
+    def attribute_of(element, attribute)
       att_decl = find do |child|
         child.kind_of? AttlistDecl and
         child.element_name == element and
@@ -146,11 +147,11 @@ module REXML
     #   Ignored
     # ie_hack::
     #   Ignored
-    def write( output, indent=0, transitive=false, ie_hack=false )
+    def write(output, indent = 0, transitive = false, ie_hack = false)
       f = REXML::Formatters::Default.new
-      indent( output, indent )
+      indent(output, indent)
       output << START
-      output << ' '
+      output << " "
       output << @name
       if @external_id
         reference_writer = ReferenceWriter.new(@external_id,
@@ -160,10 +161,10 @@ module REXML
         reference_writer.write(output)
       end
       unless @children.empty?
-        output << ' ['
+        output << " ["
         @children.each { |child|
           output << "\n"
-          f.write( child, output )
+          f.write(child, output)
         }
         output << "\n]"
       end
@@ -178,11 +179,11 @@ module REXML
       end
     end
 
-    def entity( name )
+    def entity(name)
       @entities[name].unnormalized if @entities[name]
     end
 
-    def add child
+    def add(child)
       super(child)
       @entities = DEFAULT_ENTITIES.clone if @entities == DEFAULT_ENTITIES
       @entities[ child.name ] = child if child.kind_of? Entity
@@ -219,7 +220,7 @@ module REXML
     #
     # Method contributed by Henrik Martensson
     def notations
-      children().select {|node| node.kind_of?(REXML::NotationDecl)}
+      children().select { |node| node.kind_of?(REXML::NotationDecl) }
     end
 
     # Retrieves a named notation. Only notations declared in the internal
@@ -240,46 +241,46 @@ module REXML
   # This is an abstract class.  You never use this directly; it serves as a
   # parent class for the specific declarations.
   class Declaration < Child
-    def initialize src
+    def initialize(src)
       super()
       @string = src
     end
 
     def to_s
-      @string+'>'
+      @string+">"
     end
 
     # == DEPRECATED
     # See REXML::Formatters
     #
-    def write( output, indent )
+    def write(output, indent)
       output << to_s
     end
   end
 
   public
   class ElementDecl < Declaration
-    def initialize( src )
+    def initialize(src)
       super
     end
   end
 
   class ExternalEntity < Child
-    def initialize( src )
+    def initialize(src)
       super()
       @entity = src
     end
     def to_s
       @entity
     end
-    def write( output, indent )
+    def write(output, indent)
       output << @entity
     end
   end
 
   class NotationDecl < Child
     attr_accessor :public, :system
-    def initialize name, middle, pub, sys
+    def initialize(name, middle, pub, sys)
       super(nil)
       @name = name
       @middle = middle
@@ -297,15 +298,13 @@ module REXML
       notation
     end
 
-    def write( output, indent=-1 )
+    def write(output, indent = -1)
       output << to_s
     end
 
     # This method retrieves the name of the notation.
     #
     # Method contributed by Henrik Martensson
-    def name
-      @name
-    end
+    attr_reader :name
   end
 end

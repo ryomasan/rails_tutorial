@@ -1,15 +1,15 @@
-require 'io/console'
-require 'forwardable'
-require 'reline/version'
-require 'reline/config'
-require 'reline/key_actor'
-require 'reline/key_stroke'
-require 'reline/line_editor'
-require 'reline/history'
-require 'reline/terminfo'
-require 'reline/io'
-require 'reline/face'
-require 'rbconfig'
+require "io/console"
+require "forwardable"
+require "reline/version"
+require "reline/config"
+require "reline/key_actor"
+require "reline/key_stroke"
+require "reline/line_editor"
+require "reline/history"
+require "reline/terminfo"
+require "reline/io"
+require "reline/face"
+require "rbconfig"
 
 module Reline
   # NOTE: For making compatible with the rb-readline gem
@@ -124,9 +124,7 @@ module Reline
       @config.completion_ignore_case
     end
 
-    def completion_quote_character
-      @completion_quote_character
-    end
+    attr_reader :completion_quote_character
 
     def completion_proc=(p)
       raise ArgumentError unless p.respond_to?(:call) or p.nil?
@@ -148,9 +146,7 @@ module Reline
       @auto_indent_proc = p
     end
 
-    def pre_input_hook=(p)
-      @pre_input_hook = p
-    end
+    attr_writer :pre_input_hook
 
     def dig_perfect_match_proc=(p)
       raise ArgumentError unless p.respond_to?(:call) or p.nil?
@@ -248,10 +244,10 @@ module Reline
     }
     Reline::DEFAULT_DIALOG_CONTEXT = Array.new
 
-    def readmultiline(prompt = '', add_hist = false, &confirm_multiline_termination)
+    def readmultiline(prompt = "", add_hist = false, &confirm_multiline_termination)
       @mutex.synchronize do
         unless confirm_multiline_termination
-          raise ArgumentError.new('#readmultiline needs block to confirm multiline termination')
+          raise ArgumentError.new("#readmultiline needs block to confirm multiline termination")
         end
 
         io_gate.with_raw_input do
@@ -259,7 +255,7 @@ module Reline
         end
 
         whole_buffer = line_editor.whole_buffer.dup
-        whole_buffer.taint if RUBY_VERSION < '2.7'
+        whole_buffer.taint if RUBY_VERSION < "2.7"
         if add_hist and whole_buffer and whole_buffer.chomp("\n").size > 0
           Reline::HISTORY << whole_buffer
         end
@@ -274,14 +270,14 @@ module Reline
       end
     end
 
-    def readline(prompt = '', add_hist = false)
+    def readline(prompt = "", add_hist = false)
       @mutex.synchronize do
         io_gate.with_raw_input do
           inner_readline(prompt, add_hist, false)
         end
 
         line = line_editor.line.dup
-        line.taint if RUBY_VERSION < '2.7'
+        line.taint if RUBY_VERSION < "2.7"
         if add_hist and line and line.chomp("\n").size > 0
           Reline::HISTORY << line.chomp("\n")
         end
@@ -292,11 +288,11 @@ module Reline
     end
 
     private def inner_readline(prompt, add_hist, multiline, &confirm_multiline_termination)
-      if ENV['RELINE_STDERR_TTY']
+      if ENV["RELINE_STDERR_TTY"]
         if io_gate.win?
-          $stderr = File.open(ENV['RELINE_STDERR_TTY'], 'a')
+          $stderr = File.open(ENV["RELINE_STDERR_TTY"], "a")
         else
-          $stderr.reopen(ENV['RELINE_STDERR_TTY'], 'w')
+          $stderr.reopen(ENV["RELINE_STDERR_TTY"], "w")
         end
         $stderr.sync = true
         $stderr.puts "Reline is used by #{Process.pid}"

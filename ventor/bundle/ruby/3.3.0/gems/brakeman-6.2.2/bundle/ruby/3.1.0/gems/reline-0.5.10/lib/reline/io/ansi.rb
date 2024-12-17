@@ -1,32 +1,32 @@
-require 'io/console'
-require 'io/wait'
+require "io/console"
+require "io/wait"
 
 class Reline::ANSI < Reline::IO
   CAPNAME_KEY_BINDINGS = {
-    'khome' => :ed_move_to_beg,
-    'kend'  => :ed_move_to_end,
-    'kdch1' => :key_delete,
-    'kpp' => :ed_search_prev_history,
-    'knp' => :ed_search_next_history,
-    'kcuu1' => :ed_prev_history,
-    'kcud1' => :ed_next_history,
-    'kcuf1' => :ed_next_char,
-    'kcub1' => :ed_prev_char,
+    "khome" => :ed_move_to_beg,
+    "kend"  => :ed_move_to_end,
+    "kdch1" => :key_delete,
+    "kpp" => :ed_search_prev_history,
+    "knp" => :ed_search_next_history,
+    "kcuu1" => :ed_prev_history,
+    "kcud1" => :ed_next_history,
+    "kcuf1" => :ed_next_char,
+    "kcub1" => :ed_prev_char,
   }
 
   ANSI_CURSOR_KEY_BINDINGS = {
     # Up
-    'A' => [:ed_prev_history, {}],
+    "A" => [:ed_prev_history, {}],
     # Down
-    'B' => [:ed_next_history, {}],
+    "B" => [:ed_next_history, {}],
     # Right
-    'C' => [:ed_next_char, { ctrl: :em_next_word, meta: :em_next_word }],
+    "C" => [:ed_next_char, { ctrl: :em_next_word, meta: :em_next_word }],
     # Left
-    'D' => [:ed_prev_char, { ctrl: :ed_prev_word, meta: :ed_prev_word }],
+    "D" => [:ed_prev_char, { ctrl: :ed_prev_word, meta: :ed_prev_word }],
     # End
-    'F' => [:ed_move_to_end, {}],
+    "F" => [:ed_move_to_end, {}],
     # Home
-    'H' => [:ed_move_to_beg, {}],
+    "H" => [:ed_move_to_beg, {}],
   }
 
   if Reline::Terminfo.enabled?
@@ -97,12 +97,10 @@ class Reline::ANSI < Reline::IO
 
   def set_default_key_bindings_terminfo(config)
     key_bindings = CAPNAME_KEY_BINDINGS.map do |capname, key_binding|
-      begin
-        key_code = Reline::Terminfo.tigetstr(capname)
-        [ key_code.bytes, key_binding ]
-      rescue Reline::Terminfo::TerminfoError
-        # capname is undefined
-      end
+      key_code = Reline::Terminfo.tigetstr(capname)
+      [ key_code.bytes, key_binding ]
+    rescue Reline::Terminfo::TerminfoError
+      # capname is undefined
     end.compact.to_h
 
     key_bindings.each_pair do |key, func|
@@ -151,13 +149,9 @@ class Reline::ANSI < Reline::IO
     end
   end
 
-  def input=(val)
-    @input = val
-  end
+  attr_writer :input
 
-  def output=(val)
-    @output = val
-  end
+  attr_writer :output
 
   def with_raw_input
     if @input.tty?
@@ -194,7 +188,7 @@ class Reline::ANSI < Reline::IO
       buffer << c
     end
     string = buffer.delete_suffix(END_BRACKETED_PASTE).force_encoding(encoding)
-    string.valid_encoding? ? string : ''
+    string.valid_encoding? ? string : ""
   end
 
   # if the usage expects to wait indefinitely, use Float::INFINITY for timeout_second
@@ -218,14 +212,12 @@ class Reline::ANSI < Reline::IO
   end
 
   def retrieve_keybuffer
-    begin
-      return unless @input.wait_readable(0.001)
-      str = @input.read_nonblock(1024)
-      str.bytes.each do |c|
-        @buf.push(c)
-      end
-    rescue EOFError
+    return unless @input.wait_readable(0.001)
+    str = @input.read_nonblock(1024)
+    str.bytes.each do |c|
+      @buf.push(c)
     end
+  rescue EOFError
   end
 
   def get_screen_size
@@ -247,7 +239,7 @@ class Reline::ANSI < Reline::IO
 
   def cursor_pos
     if both_tty?
-      res = +''
+      res = +""
       m = nil
       @input.raw do |stdin|
         @output << "\e[6n"
@@ -308,7 +300,7 @@ class Reline::ANSI < Reline::IO
     seq = "\e[?25l"
     if Reline::Terminfo.enabled? && Reline::Terminfo.term_supported?
       begin
-        seq = Reline::Terminfo.tigetstr('civis')
+        seq = Reline::Terminfo.tigetstr("civis")
       rescue Reline::Terminfo::TerminfoError
         # civis is undefined
       end
@@ -320,7 +312,7 @@ class Reline::ANSI < Reline::IO
     seq = "\e[?25h"
     if Reline::Terminfo.enabled? && Reline::Terminfo.term_supported?
       begin
-        seq = Reline::Terminfo.tigetstr('cnorm')
+        seq = Reline::Terminfo.tigetstr("cnorm")
       rescue Reline::Terminfo::TerminfoError
         # cnorm is undefined
       end
@@ -346,8 +338,8 @@ class Reline::ANSI < Reline::IO
   end
 
   def set_winch_handler(&handler)
-    @old_winch_handler = Signal.trap('WINCH', &handler)
-    @old_cont_handler = Signal.trap('CONT') do
+    @old_winch_handler = Signal.trap("WINCH", &handler)
+    @old_cont_handler = Signal.trap("CONT") do
       @input.raw!(intr: true) if @input.tty?
       # Rerender the screen. Note that screen size might be changed while suspended.
       handler.call
@@ -366,7 +358,7 @@ class Reline::ANSI < Reline::IO
   def deprep(otio)
     # Disable bracketed paste
     @output.write "\e[?2004l" if Reline.core.config.enable_bracketed_paste && both_tty?
-    Signal.trap('WINCH', @old_winch_handler) if @old_winch_handler
-    Signal.trap('CONT', @old_cont_handler) if @old_cont_handler
+    Signal.trap("WINCH", @old_winch_handler) if @old_winch_handler
+    Signal.trap("CONT", @old_cont_handler) if @old_cont_handler
   end
 end

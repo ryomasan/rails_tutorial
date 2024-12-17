@@ -1,4 +1,5 @@
 # frozen_string_literal: false
+
 require "bigdecimal/ludcmp"
 require "bigdecimal/jacobian"
 
@@ -29,9 +30,9 @@ require "bigdecimal/jacobian"
 module Newton
   include LUSolve
   include Jacobian
-  module_function
 
-  def norm(fv,zero=0.0) # :nodoc:
+  module_function
+  def norm(fv, zero = 0.0) # :nodoc:
     s = zero
     n = fv.size
     for i in 0...n do
@@ -41,7 +42,7 @@ module Newton
   end
 
   # See also Newton
-  def nlsolve(f,x)
+  def nlsolve(f, x)
     nRetry = 0
     n = x.size
 
@@ -50,16 +51,16 @@ module Newton
     one  = f.one
     two  = f.two
     p5 = one/two
-    d  = norm(f0,zero)
+    d  = norm(f0, zero)
     minfact = f.ten*f.ten*f.ten
     minfact = one/minfact
     e = f.eps
     while d >= e do
       nRetry += 1
       # Not yet converged. => Compute Jacobian matrix
-      dfdx = jacobian(f,f0,x)
+      dfdx = jacobian(f, f0, x)
       # Solve dfdx*dx = -f0 to estimate dx
-      dx = lusolve(dfdx,f0,ludecomp(dfdx,n,zero,one),zero)
+      dx = lusolve(dfdx, f0, ludecomp(dfdx, n, zero, one), zero)
       fact = two
       xs = x.dup
       begin
@@ -71,7 +72,7 @@ module Newton
           x[i] = xs[i] - dx[i]*fact
         end
         f0 = f.values(x)
-        dn = norm(f0,zero)
+        dn = norm(f0, zero)
       end while(dn>=d)
       d = dn
     end

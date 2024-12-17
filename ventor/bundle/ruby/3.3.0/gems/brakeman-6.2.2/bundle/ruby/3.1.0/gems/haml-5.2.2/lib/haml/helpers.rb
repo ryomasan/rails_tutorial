@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'erb'
+require "erb"
 
 module Haml
   # This module contains various helpful methods to make it easier to do various tasks.
@@ -37,7 +37,7 @@ MESSAGE
         # it's actually used.
         if e.backtrace.first =~ /^\(eval\):\d+:in `format_script/
           e.backtrace.shift
-          e.backtrace.first.gsub!(/^\(haml\):(\d+)/) {|s| "(haml):#{$1.to_i - 1}"}
+          e.backtrace.first.gsub!(/^\(haml\):(\d+)/) { |s| "(haml):#{$1.to_i - 1}" }
         end
         raise e
       end
@@ -110,7 +110,7 @@ MESSAGE
     #   @yield The block within which to escape newlines
     def find_and_preserve(input = nil, tags = haml_buffer.options[:preserve], &block)
       return find_and_preserve(capture_haml(&block), input || tags) if block
-      tags = tags.map { |tag| Regexp.escape(tag) }.join('|')
+      tags = tags.map { |tag| Regexp.escape(tag) }.join("|")
       re = /<(#{tags})([^>]*)>(.*?)(<\/\1>)/im
       input.to_s.gsub(re) do |s|
         s =~ re # Can't rely on $1, etc. existing since Rails' SafeBuffer#gsub is incompatible
@@ -133,7 +133,7 @@ MESSAGE
     def preserve(input = nil, &block)
       return preserve(capture_haml(&block)) if block
       s = input.to_s.chomp("\n")
-      s.gsub!(/\n/, '&#x000A;')
+      s.gsub!(/\n/, "&#x000A;")
       s.delete!("\r")
       s
     end
@@ -197,7 +197,7 @@ MESSAGE
     # @param [Enumerable<#to_s,#to_s>] opts Each key/value pair will become an attribute pair for each list item element.
     # @yield [item] A block which contains Haml code that goes within list items
     # @yieldparam item An element of `enum`
-    def list_of(enum, opts={}, &block)
+    def list_of(enum, opts = {}, &block)
       opts_attributes = opts.map { |k, v| " #{k}='#{v}'" }.join
       enum.map do |i|
         result = capture_haml(i, &block)
@@ -209,7 +209,7 @@ MESSAGE
           result.strip!
         end
 
-        %Q!<li#{opts_attributes}>#{result}</li>!
+        "<li#{opts_attributes}>#{result}</li>"
       end.join("\n")
     end
 
@@ -225,11 +225,11 @@ MESSAGE
     #
     # @param lang [String] The value of `xml:lang` and `lang`
     # @return [{#to_s => String}] The attribute hash
-    def html_attrs(lang = 'en-US')
+    def html_attrs(lang = "en-US")
       if haml_buffer.options[:format] == :xhtml
-        {:xmlns => "http://www.w3.org/1999/xhtml", 'xml:lang' => lang, :lang => lang}
+        { :xmlns => "http://www.w3.org/1999/xhtml", "xml:lang" => lang, :lang => lang }
       else
-        {:lang => lang}
+        { lang: lang }
       end
     end
 
@@ -371,7 +371,7 @@ MESSAGE
     # @yield [args] A block of Haml code that will be converted to a string
     # @yieldparam args [Array] `args`
     def capture_haml(*args, &block)
-      buffer = eval('if defined? _hamlout then _hamlout else nil end', block.binding) || haml_buffer
+      buffer = eval("if defined? _hamlout then _hamlout else nil end", block.binding) || haml_buffer
       with_haml_buffer(buffer) do
         position = haml_buffer.buffer.length
 
@@ -380,7 +380,7 @@ MESSAGE
 
         captured = haml_buffer.buffer.slice!(position..-1)
 
-        if captured == '' and value != haml_buffer.buffer
+        if captured == "" and value != haml_buffer.buffer
           captured = (value.is_a?(String) ? value : nil)
         end
 
@@ -425,7 +425,7 @@ MESSAGE
 
     # @return [String] The indentation string for the current line
     def haml_indent
-      '  ' * haml_buffer.tabulation
+      "  " * haml_buffer.tabulation
     end
 
     # Creates an HTML tag with the given name and optionally text and attributes.
@@ -488,11 +488,11 @@ MESSAGE
     def haml_tag(name, *rest, &block)
       ret = ErrorReturn.new("haml_tag")
 
-      text = rest.shift.to_s unless [Symbol, Hash, NilClass].any? {|t| rest.first.is_a? t}
+      text = rest.shift.to_s unless [Symbol, Hash, NilClass].any? { |t| rest.first.is_a? t }
       flags = []
       flags << rest.shift while rest.first.is_a? Symbol
       attrs = (rest.shift || {})
-      attrs.keys.each {|key| attrs[key.to_s] = attrs.delete(key)} unless attrs.empty?
+      attrs.keys.each { |key| attrs[key.to_s] = attrs.delete(key) } unless attrs.empty?
       name, attrs = merge_name_and_attributes(name.to_s, attrs)
 
       attributes = Haml::AttributeBuilder.build_attributes(haml_buffer.html?,
@@ -585,7 +585,7 @@ MESSAGE
     #   (specifically the form that takes a block)
     def haml_tag_if(condition, *tag)
       if condition
-        haml_tag(*tag){ yield }
+        haml_tag(*tag) { yield }
       else
         yield
       end
@@ -593,7 +593,7 @@ MESSAGE
     end
 
     # Characters that need to be escaped to HTML entities from user input
-    HTML_ESCAPE = {'&' => '&amp;', '<' => '&lt;', '>' => '&gt;', '"' => '&quot;', "'" => '&#39;'}.freeze
+    HTML_ESCAPE = { "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", '"' => "&quot;", "'" => "&#39;" }.freeze
 
     HTML_ESCAPE_REGEX = /['"><&]/
 
@@ -644,54 +644,53 @@ MESSAGE
     # @param block [Proc] A Ruby block
     # @return [Boolean] Whether or not `block` is defined directly in a Haml template
     def block_is_haml?(block)
-      eval('!!defined?(_hamlout)', block.binding)
+      eval("!!defined?(_hamlout)", block.binding)
     end
 
     private
+      # Parses the tag name used for \{#haml\_tag}
+      # and merges it with the Ruby attributes hash.
+      def merge_name_and_attributes(name, attributes_hash = {})
+        # skip merging if no ids or classes found in name
+        return name, attributes_hash unless name =~ /^(.+?)?([\.#].*)$/
 
-    # Parses the tag name used for \{#haml\_tag}
-    # and merges it with the Ruby attributes hash.
-    def merge_name_and_attributes(name, attributes_hash = {})
-      # skip merging if no ids or classes found in name
-      return name, attributes_hash unless name =~ /^(.+?)?([\.#].*)$/
+        return $1 || "div", AttributeBuilder.merge_attributes!(
+          Haml::Parser.parse_class_and_id($2), attributes_hash)
+      end
 
-      return $1 || "div", AttributeBuilder.merge_attributes!(
-        Haml::Parser.parse_class_and_id($2), attributes_hash)
-    end
+      # Runs a block of code with the given buffer as the currently active buffer.
+      #
+      # @param buffer [Haml::Buffer] The Haml buffer to use temporarily
+      # @yield A block in which the given buffer should be used
+      def with_haml_buffer(buffer)
+        @haml_buffer, old_buffer = buffer, @haml_buffer
+        old_buffer.active, old_was_active = false, old_buffer.active? if old_buffer
+        @haml_buffer.active, was_active = true, @haml_buffer.active?
+        yield
+      ensure
+        @haml_buffer.active = was_active
+        old_buffer.active = old_was_active if old_buffer
+        @haml_buffer = old_buffer
+      end
 
-    # Runs a block of code with the given buffer as the currently active buffer.
-    #
-    # @param buffer [Haml::Buffer] The Haml buffer to use temporarily
-    # @yield A block in which the given buffer should be used
-    def with_haml_buffer(buffer)
-      @haml_buffer, old_buffer = buffer, @haml_buffer
-      old_buffer.active, old_was_active = false, old_buffer.active? if old_buffer
-      @haml_buffer.active, was_active = true, @haml_buffer.active?
-      yield
-    ensure
-      @haml_buffer.active = was_active
-      old_buffer.active = old_was_active if old_buffer
-      @haml_buffer = old_buffer
-    end
+      # The current {Haml::Buffer} object.
+      #
+      # @return [Haml::Buffer]
+      def haml_buffer
+        @haml_buffer if defined? @haml_buffer
+      end
 
-    # The current {Haml::Buffer} object.
-    #
-    # @return [Haml::Buffer]
-    def haml_buffer
-      @haml_buffer if defined? @haml_buffer
-    end
-
-    # Gives a proc the same local `_hamlout` and `_erbout` variables
-    # that the current template has.
-    #
-    # @param proc [#call] The proc to bind
-    # @return [Proc] A new proc with the new variables bound
-    def haml_bind_proc(&proc)
-      _hamlout = haml_buffer
-      #double assignment is to avoid warnings
-      _erbout = _erbout = _hamlout.buffer
-      proc { |*args| proc.call(*args) }
-    end
+      # Gives a proc the same local `_hamlout` and `_erbout` variables
+      # that the current template has.
+      #
+      # @param proc [#call] The proc to bind
+      # @return [Proc] A new proc with the new variables bound
+      def haml_bind_proc(&proc)
+        _hamlout = haml_buffer
+        # double assignment is to avoid warnings
+        _erbout = _erbout = _hamlout.buffer
+        proc { |*args| proc.call(*args) }
+      end
   end
 end
 

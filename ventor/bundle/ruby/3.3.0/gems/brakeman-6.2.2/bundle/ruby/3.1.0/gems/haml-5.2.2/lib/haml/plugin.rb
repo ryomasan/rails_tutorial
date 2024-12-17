@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module Haml
-
   # This module makes Haml work with Rails using the template handler API.
   class Plugin
     class << self
@@ -20,8 +19,8 @@ module Haml
       end
       options[:filename] = template.identifier
 
-      preamble = '@output_buffer = output_buffer ||= ActionView::OutputBuffer.new if defined?(ActionView::OutputBuffer);'
-      postamble = ''
+      preamble = "@output_buffer = output_buffer ||= ActionView::OutputBuffer.new if defined?(ActionView::OutputBuffer);"
+      postamble = ""
 
       if self.class.annotate_rendered_view_with_filenames
         # short_identifier is only available in Rails 6+. On older versions, 'inspect' gives similar results.

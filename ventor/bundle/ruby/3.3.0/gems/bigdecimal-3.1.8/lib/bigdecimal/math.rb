@@ -1,5 +1,6 @@
 # frozen_string_literal: false
-require 'bigdecimal'
+
+require "bigdecimal"
 
 #
 #--
@@ -70,7 +71,7 @@ module BigMath
       end
     end
     x1   = x
-    x2   = x.mult(x,n)
+    x2   = x.mult(x, n)
     sign = 1
     y    = x
     d    = y
@@ -79,10 +80,10 @@ module BigMath
     while d.nonzero? && ((m = n - (y.exponent - d.exponent).abs) > 0)
       m = BigDecimal.double_fig if m < BigDecimal.double_fig
       sign = -sign
-      x1  = x2.mult(x1,n)
+      x1  = x2.mult(x1, n)
       i  += two
       z  *= (i-one) * i
-      d   = sign * x1.div(z,m)
+      d   = sign * x1.div(z, m)
       y  += d
     end
     neg ? -y : y
@@ -114,7 +115,7 @@ module BigMath
       end
     end
     x1 = one
-    x2 = x.mult(x,n)
+    x2 = x.mult(x, n)
     sign = 1
     y = one
     d = y
@@ -123,10 +124,10 @@ module BigMath
     while d.nonzero? && ((m = n - (y.exponent - d.exponent).abs) > 0)
       m = BigDecimal.double_fig if m < BigDecimal.double_fig
       sign = -sign
-      x1  = x2.mult(x1,n)
+      x1  = x2.mult(x1, n)
       i  += two
       z  *= (i-one) * i
-      d   = sign * x1.div(z,m)
+      d   = sign * x1.div(z, m)
       y  += d
     end
     y
@@ -157,11 +158,11 @@ module BigMath
     d = y
     t = x
     r = BigDecimal("3")
-    x2 = x.mult(x,n)
+    x2 = x.mult(x, n)
     while d.nonzero? && ((m = n - (y.exponent - d.exponent).abs) > 0)
       m = BigDecimal.double_fig if m < BigDecimal.double_fig
-      t = -t.mult(x2,n)
-      d = t.div(r,m)
+      t = -t.mult(x2, n)
+      d = t.div(r, m)
       y += d
       r += 2
     end
@@ -198,7 +199,7 @@ module BigMath
     while d.nonzero? && ((m = n - (pi.exponent - d.exponent).abs) > 0)
       m = BigDecimal.double_fig if m < BigDecimal.double_fig
       t   = t*m25
-      d   = t.div(k,m)
+      d   = t.div(k, m)
       k   = k+two
       pi  = pi + d
     end
@@ -208,8 +209,8 @@ module BigMath
     t = BigDecimal("956")
     while d.nonzero? && ((m = n - (pi.exponent - d.exponent).abs) > 0)
       m = BigDecimal.double_fig if m < BigDecimal.double_fig
-      t   = t.div(m57121,n)
-      d   = t.div(k,m)
+      t   = t.div(m57121, n)
+      d   = t.div(k, m)
       pi  = pi + d
       k   = k+two
     end

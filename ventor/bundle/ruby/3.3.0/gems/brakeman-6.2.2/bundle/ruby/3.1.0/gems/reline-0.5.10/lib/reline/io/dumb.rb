@@ -1,7 +1,7 @@
-require 'io/wait'
+require "io/wait"
 
 class Reline::Dumb < Reline::IO
-  RESET_COLOR = '' # Do not send color reset sequence
+  RESET_COLOR = "" # Do not send color reset sequence
 
   def initialize(encoding: nil)
     @input = STDIN
@@ -18,19 +18,17 @@ class Reline::Dumb < Reline::IO
   def encoding
     if @encoding
       @encoding
-    elsif RUBY_PLATFORM =~ /mswin|mingw/
+    elsif RUBY_PLATFORM.match?(/mswin|mingw/)
       Encoding::UTF_8
     else
-      Encoding::default_external
+      Encoding.default_external
     end
   end
 
   def set_default_key_bindings(_)
   end
 
-  def input=(val)
-    @input = val
-  end
+  attr_writer :input
 
   def with_raw_input
     yield

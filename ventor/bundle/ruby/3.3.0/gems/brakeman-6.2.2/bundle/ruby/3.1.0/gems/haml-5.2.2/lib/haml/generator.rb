@@ -7,14 +7,14 @@ module Haml
     include Temple::Mixins::CompiledDispatcher
     include Temple::Mixins::Options
 
-    define_options freeze_static: RUBY_VERSION >= '2.1'
+    define_options freeze_static: RUBY_VERSION >= "2.1"
 
     def call(exp)
       compile(exp)
     end
 
     def on_multi(*exp)
-      exp.map { |e| compile(e) }.join('; ')
+      exp.map { |e| compile(e) }.join("; ")
     end
 
     def on_static(text)
@@ -34,9 +34,8 @@ module Haml
     end
 
     private
-
-    def concat(str)
-      "_hamlout.buffer << (#{str});"
-    end
+      def concat(str)
+        "_hamlout.buffer << (#{str});"
+      end
   end
 end

@@ -1,10 +1,11 @@
 # frozen_string_literal: false
+
 require_relative "text"
 
 module REXML
   class CData < Text
-    START = '<![CDATA['
-    STOP = ']]>'
+    START = "<![CDATA["
+    STOP = "]]>"
     ILLEGAL = /(\]\]>)/
 
     #   Constructor.  CData is data between <![CDATA[ ... ]]>
@@ -13,8 +14,8 @@ module REXML
     #  CData.new( source )
     #  CData.new( "Here is some CDATA" )
     #  CData.new( "Some unprocessed data", respect_whitespace_TF, parent_element )
-    def initialize( first, whitespace=true, parent=nil )
-      super( first, whitespace, parent, false, true, ILLEGAL )
+    def initialize(first, whitespace = true, parent = nil)
+      super(first, whitespace, parent, false, true, ILLEGAL)
     end
 
     # Make a copy of this object
@@ -57,9 +58,9 @@ module REXML
     # _Examples_
     #  c = CData.new( " Some text " )
     #  c.write( $stdout )     #->  <![CDATA[ Some text ]]>
-    def write( output=$stdout, indent=-1, transitive=false, ie_hack=false )
-      Kernel.warn( "#{self.class.name}.write is deprecated", uplevel: 1)
-      indent( output, indent )
+    def write(output = $stdout, indent = -1, transitive = false, ie_hack = false)
+      Kernel.warn("#{self.class.name}.write is deprecated", uplevel: 1)
+      indent(output, indent)
       output << START
       output << @string
       output << STOP

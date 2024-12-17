@@ -1,6 +1,6 @@
 # coding: utf-8
 
-class HighLine #:nodoc:
+class HighLine # :nodoc:
   # Returns a HighLine::String from any given String.
   # @param s [String]
   # @return [HighLine::String] from the given string.
@@ -60,7 +60,7 @@ class HighLine #:nodoc:
         # @todo Chain existing method_missing?
         undef :method_missing if method_defined? :method_missing
         def method_missing(method, *_args)
-          if method.to_s =~ STYLE_METHOD_NAME_PATTERN
+          if STYLE_METHOD_NAME_PATTERN.match?(method.to_s)
             color(method)
           else
             super
@@ -84,7 +84,7 @@ class HighLine #:nodoc:
           end.join
 
           raise "Bad RGB color #{colors.inspect}" unless
-            color_code =~ /^[a-fA-F0-9]{6}/
+            /^[a-fA-F0-9]{6}/.match?(color_code)
 
           color_code
         end

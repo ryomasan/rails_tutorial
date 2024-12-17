@@ -40,8 +40,8 @@ module ActionView
     module CaptureHelper
       def capture_with_haml(*args, &block)
         if Haml::Helpers.block_is_haml?(block)
-          #double assignment is to avoid warnings
-          _hamlout = _hamlout = eval('_hamlout', block.binding) # Necessary since capture_haml checks _hamlout
+          # double assignment is to avoid warnings
+          _hamlout = _hamlout = eval("_hamlout", block.binding) # Necessary since capture_haml checks _hamlout
 
           capture_haml(*args, &block)
         else
@@ -103,7 +103,7 @@ module ActionView
         return html_tag unless respond_to?(:error_wrapping)
         return error_wrapping(html_tag) if method(:error_wrapping).arity == 1
         return html_tag unless object.respond_to?(:errors) && object.errors.respond_to?(:on)
-        return error_wrapping(html_tag, object.errors.on(@method_name))
+        error_wrapping(html_tag, object.errors.on(@method_name))
       end
     end
 
@@ -115,7 +115,7 @@ module ActionView
             oldproc = proc
             proc = haml_bind_proc do |*args|
               concat "\n"
-              with_tabs(1) {oldproc.call(*args)}
+              with_tabs(1) { oldproc.call(*args) }
             end
           end
           res = form_tag_without_haml(url_for_options, options, *parameters_for_url, &proc) << "\n"

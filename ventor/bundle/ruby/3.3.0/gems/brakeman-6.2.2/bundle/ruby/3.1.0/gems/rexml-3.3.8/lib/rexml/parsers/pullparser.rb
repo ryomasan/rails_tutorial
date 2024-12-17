@@ -1,9 +1,10 @@
 # frozen_string_literal: false
-require 'forwardable'
 
-require_relative '../parseexception'
-require_relative 'baseparser'
-require_relative '../xmltokens'
+require "forwardable"
+
+require_relative "../parseexception"
+require_relative "baseparser"
+require_relative "../xmltokens"
 
 module REXML
   module Parsers
@@ -30,19 +31,19 @@ module REXML
       include XMLTokens
       extend Forwardable
 
-      def_delegators( :@parser, :has_next? )
-      def_delegators( :@parser, :entity )
-      def_delegators( :@parser, :empty? )
-      def_delegators( :@parser, :source )
+      def_delegators(:@parser, :has_next?)
+      def_delegators(:@parser, :entity)
+      def_delegators(:@parser, :empty?)
+      def_delegators(:@parser, :source)
 
-      def initialize stream
+      def initialize(stream)
         @entities = {}
         @listeners = nil
-        @parser = BaseParser.new( stream )
+        @parser = BaseParser.new(stream)
         @my_stack = []
       end
 
-      def add_listener( listener )
+      def add_listener(listener)
         @listeners = [] unless @listeners
         @listeners << listener
       end
@@ -51,11 +52,11 @@ module REXML
         @parser.entity_expansion_count
       end
 
-      def entity_expansion_limit=( limit )
+      def entity_expansion_limit=(limit)
         @parser.entity_expansion_limit = limit
       end
 
-      def entity_expansion_text_limit=( limit )
+      def entity_expansion_text_limit=(limit)
         @parser.entity_expansion_text_limit = limit
       end
 
@@ -65,7 +66,7 @@ module REXML
         end
       end
 
-      def peek depth=0
+      def peek(depth = 0)
         if @my_stack.length <= depth
           (depth - @my_stack.length + 1).times {
             e = PullEvent.new(@parser.pull)
@@ -82,15 +83,15 @@ module REXML
         case event[0]
         when :entitydecl
           @entities[ event[1] ] =
-            event[2] unless event[2] =~ /PUBLIC|SYSTEM/
+            event[2] unless /PUBLIC|SYSTEM/.match?(event[2])
         when :text
-          unnormalized = @parser.unnormalize( event[1], @entities )
+          unnormalized = @parser.unnormalize(event[1], @entities)
           event << unnormalized
         end
-        PullEvent.new( event )
+        PullEvent.new(event)
       end
 
-      def unshift token
+      def unshift(token)
         @my_stack.unshift token
       end
     end
@@ -108,14 +109,14 @@ module REXML
         @contents = arg
       end
 
-      def []( start, endd=nil)
+      def [](start, endd = nil)
         if start.kind_of? Range
-          @contents.slice( start.begin+1 .. start.end )
+          @contents.slice(start.begin+1 .. start.end)
         elsif start.kind_of? Numeric
           if endd.nil?
-            @contents.slice( start+1 )
+            @contents.slice(start+1)
           else
-            @contents.slice( start+1, endd )
+            @contents.slice(start+1, endd)
           end
         else
           raise "Illegal argument #{start.inspect} (#{start.class})"

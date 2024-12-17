@@ -166,27 +166,26 @@ class HighLine
     end
 
     private
+      # Yield a block using stty shell commands to preserve the terminal state.
+      def run_preserving_stty
+        save_stty
+        yield
+      ensure
+        restore_stty
+      end
 
-    # Yield a block using stty shell commands to preserve the terminal state.
-    def run_preserving_stty
-      save_stty
-      yield
-    ensure
-      restore_stty
-    end
+      # Saves terminal state using shell stty command.
+      def save_stty
+        @stty_save = begin
+                       `stty -g`.chomp if input.tty?
+                     rescue StandardError
+                       nil
+                     end
+      end
 
-    # Saves terminal state using shell stty command.
-    def save_stty
-      @stty_save = begin
-                     `stty -g`.chomp if input.tty?
-                   rescue StandardError
-                     nil
-                   end
-    end
-
-    # Restores terminal state using shell stty command.
-    def restore_stty
-      system("stty", @stty_save) if @stty_save
-    end
+      # Restores terminal state using shell stty command.
+      def restore_stty
+        system("stty", @stty_save) if @stty_save
+      end
   end
 end

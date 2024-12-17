@@ -4,7 +4,6 @@
 ##
 
 module Erubis
-
   ##
   ## tiny and the simplest implementation of eRuby
   ##
@@ -15,8 +14,7 @@ module Erubis
   ##   print eruby.evalute(context)    # eval ruby code with context object
   ##
   class TinyEruby
-
-    def initialize(input=nil)
+    def initialize(input = nil)
       @src = convert(input) if input
     end
     attr_reader :src
@@ -30,35 +28,35 @@ module Erubis
         m = Regexp.last_match
         text = input[pos...m.begin(0)]
         pos  = m.end(0)
-        #src << " _buf << '" << escape_text(text) << "';"
+        # src << " _buf << '" << escape_text(text) << "';"
         text.gsub!(/['\\]/, '\\\\\&')
         src << " _buf << '" << text << "';" unless text.empty?
         if !indicator              # <% %>
           src << code << ";"
-        elsif indicator == '#'     # <%# %>
+        elsif indicator == "#"     # <%# %>
           src << ("\n" * code.count("\n"))
         else                       # <%= %>
           src << " _buf << (" << code << ").to_s;"
         end
       end
-      #rest = $' || input                        # ruby1.8
+      # rest = $' || input                        # ruby1.8
       rest = pos == 0 ? input : input[pos..-1]   # ruby1.9
-      #src << " _buf << '" << escape_text(rest) << "';"
+      # src << " _buf << '" << escape_text(rest) << "';"
       rest.gsub!(/['\\]/, '\\\\\&')
       src << " _buf << '" << rest << "';" unless rest.empty?
       src << "\n_buf.to_s\n"       # postamble
-      return src
+      src
     end
 
-    #def escape_text(text)
+    # def escape_text(text)
     #  return text.gsub!(/['\\]/, '\\\\\&') || text
-    #end
+    # end
 
-    def result(_binding=TOPLEVEL_BINDING)
+    def result(_binding = TOPLEVEL_BINDING)
       eval @src, _binding
     end
 
-    def evaluate(_context=Object.new)
+    def evaluate(_context = Object.new)
       if _context.is_a?(Hash)
         _obj = Object.new
         _context.each do |k, v| _obj.instance_variable_set("@#{k}", v) end
@@ -66,7 +64,6 @@ module Erubis
       end
       _context.instance_eval @src
     end
-
   end
 
 
@@ -75,9 +72,8 @@ module Erubis
   end
 
   class PI::TinyEruby
-
-    def initialize(input=nil, options={})
-      @escape  = options[:escape] || 'Erubis::XmlHelper.escape_xml'
+    def initialize(input = nil, options = {})
+      @escape  = options[:escape] || "Erubis::XmlHelper.escape_xml"
       @src = convert(input) if input
     end
 
@@ -93,7 +89,7 @@ module Erubis
         len   = match.begin(0) - pos
         text  = input[pos, len]
         pos   = match.end(0)
-        #src << " _buf << '" << escape_text(text) << "';"
+        # src << " _buf << '" << escape_text(text) << "';"
         text.gsub!(/['\\]/, '\\\\\&')
         src << " _buf << '" << text << "';" unless text.empty?
         if stmt                # <?rb ... ?>
@@ -107,29 +103,29 @@ module Erubis
         else                       # ${...}, $!{...}
           if !indicator
             src << " _buf << " << @escape << "(" << expr << ");"
-          elsif indicator == '!'
+          elsif indicator == "!"
             src << " _buf << (" << expr << ").to_s;"
           end
         end
       end
-      #rest = $' || input                        # ruby1.8
+      # rest = $' || input                        # ruby1.8
       rest = pos == 0 ? input : input[pos..-1]   # ruby1.9
-      #src << " _buf << '" << escape_text(rest) << "';"
+      # src << " _buf << '" << escape_text(rest) << "';"
       rest.gsub!(/['\\]/, '\\\\\&')
       src << " _buf << '" << rest << "';" unless rest.empty?
       src << "\n_buf.to_s\n"       # postamble
-      return src
+      src
     end
 
-    #def escape_text(text)
+    # def escape_text(text)
     #  return text.gsub!(/['\\]/, '\\\\\&') || text
-    #end
+    # end
 
-    def result(_binding=TOPLEVEL_BINDING)
+    def result(_binding = TOPLEVEL_BINDING)
       eval @src, _binding
     end
 
-    def evaluate(_context=Object.new)
+    def evaluate(_context = Object.new)
       if _context.is_a?(Hash)
         _obj = Object.new
         _context.each do |k, v| _obj.instance_variable_set("@#{k}", v) end
@@ -137,8 +133,5 @@ module Erubis
       end
       _context.instance_eval @src
     end
-
   end
-
-
 end

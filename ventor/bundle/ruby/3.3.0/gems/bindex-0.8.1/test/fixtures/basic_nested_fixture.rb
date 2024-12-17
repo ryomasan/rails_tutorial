@@ -9,9 +9,8 @@ module Skiptrace
     end
 
     private
-
-    def raise_an_error
-      raise
-    end
+      def raise_an_error
+        raise
+      end
   end
 end

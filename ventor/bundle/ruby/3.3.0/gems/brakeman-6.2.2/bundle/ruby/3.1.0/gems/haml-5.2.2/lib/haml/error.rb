@@ -3,7 +3,6 @@
 module Haml
   # An exception raised by Haml code.
   class Error < StandardError
-
     MESSAGES = {
       bad_script_indent:            '"%s" is indented at wrong level: expected %d, but was at %d.',
       cant_run_filter:              'Can\'t run "%s" filter; you must require its dependencies first',
@@ -20,13 +19,13 @@ module Haml
       inconsistent_indentation:     "Inconsistent indentation: %s used for indentation, but the rest of the document was indented using %s.",
       indenting_at_start:           "Indenting at the beginning of the document is illegal.",
       install_haml_contrib:         'To use the "%s" filter, please install the haml-contrib gem.',
-      invalid_attribute_list:       'Invalid attribute list: %s.',
+      invalid_attribute_list:       "Invalid attribute list: %s.",
       invalid_filter_name:          'Invalid filter name ":%s".',
       invalid_tag:                  'Invalid tag: "%s".',
       missing_if:                   'Got "%s" with no preceding "if"',
       no_ruby_code:                 "There's no Ruby code for %s to evaluate.",
       self_closing_content:         "Self-closing tags can't have content.",
-      unbalanced_brackets:          'Unbalanced brackets.',
+      unbalanced_brackets:          "Unbalanced brackets.",
       no_end:                       <<-END
 You don't need to use "- end" in Haml. Un-indent to close a block:
 - if foo?
@@ -34,7 +33,7 @@ You don't need to use "- end" in Haml. Un-indent to close a block:
 - else
   Not foo.
 %p This line is un-indented, so it isn't part of the "if" block
-END
+      END
     }.freeze
 
     def self.message(key, *args)

@@ -12,7 +12,7 @@ module Bootsnap
     attr_reader :logger
 
     def log_stats!
-      stats = {hit: 0, revalidated: 0, miss: 0, stale: 0}
+      stats = { hit: 0, revalidated: 0, miss: 0, stale: 0 }
       self.instrumentation = ->(event, _path) { stats[event] += 1 }
       Kernel.at_exit do
         stats.each do |event, count|
@@ -129,7 +129,7 @@ module Bootsnap
       end
     end
 
-    if RbConfig::CONFIG["host_os"] =~ /mswin|mingw|cygwin/
+    if /mswin|mingw|cygwin/.match?(RbConfig::CONFIG["host_os"])
       def absolute_path?(path)
         path[1] == ":"
       end
@@ -151,14 +151,13 @@ module Bootsnap
     alias_method :rb_get_path, :rb_get_path # rubocop:disable Lint/DuplicateMethods
 
     private
+      def enabled?(key)
+        !ENV["DISABLE_#{key}"]
+      end
 
-    def enabled?(key)
-      !ENV["DISABLE_#{key}"]
-    end
-
-    def bool_env(key, default: false)
-      value = ENV.fetch(key) { default }
-      !["0", "false", false].include?(value)
-    end
+      def bool_env(key, default: false)
+        value = ENV.fetch(key) { default }
+        !["0", "false", false].include?(value)
+      end
   end
 end

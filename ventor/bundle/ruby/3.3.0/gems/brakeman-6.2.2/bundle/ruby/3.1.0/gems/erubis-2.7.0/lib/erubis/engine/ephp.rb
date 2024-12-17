@@ -3,23 +3,21 @@
 ## copyright(c) 2006-2011 kuwata-lab.com all rights reserved.
 ##
 
-require 'erubis/engine'
-require 'erubis/enhancer'
+require "erubis/engine"
+require "erubis/enhancer"
 
 
 module Erubis
-
-
   module PhpGenerator
     include Generator
 
-    def self.supported_properties()  # :nodoc:
-      return []
+    def self.supported_properties  # :nodoc:
+      []
     end
 
-    def init_generator(properties={})
+    def init_generator(properties = {})
       super
-      @escapefunc ||= 'htmlspecialchars'
+      @escapefunc ||= "htmlspecialchars"
     end
 
     def add_preamble(src)
@@ -27,7 +25,7 @@ module Erubis
     end
 
     def escape_text(text)
-      return text.gsub!(/<\?xml\b/, '<<?php ?>?xml') || text
+      text.gsub!(/<\?xml\b/, "<<?php ?>?xml") || text
     end
 
     def add_text(src, text)
@@ -51,7 +49,7 @@ module Erubis
 
     def add_stmt(src, code)
       src << "<?php"
-      src << " " if code[0] != ?\ #
+      src << " " if code[0] != ?\  #
       if code[-1] == ?\n
         code.chomp!
         src << code << "?>\n"
@@ -63,7 +61,6 @@ module Erubis
     def add_postamble(src)
       # empty
     end
-
   end
 
 
@@ -80,20 +77,17 @@ module Erubis
   end
 
 
-  #class XmlEphp < Ephp
+  # class XmlEphp < Ephp
   #  include EscapeEnhancer
-  #end
+  # end
 
 
   class PI::Ephp < PI::Engine
     include PhpGenerator
 
-    def init_converter(properties={})
-      @pi = 'php'
+    def init_converter(properties = {})
+      @pi = "php"
       super(properties)
     end
-
   end
-
-
 end

@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 begin
-  require 'erubis/tiny'
+  require "erubis/tiny"
 rescue LoadError
-  require 'erb'
+  require "erb"
 end
-require 'set'
-require 'stringio'
-require 'strscan'
+require "set"
+require "stringio"
+require "strscan"
 
 module Haml
   # A module containing various useful functions.
@@ -64,9 +64,9 @@ module Haml
         # Get rid of the Unicode BOM if possible
         # Shortcut for UTF-8 which might be the majority case
         if str.encoding == Encoding::UTF_8
-          return str.gsub(/\A\uFEFF/, '')
-        elsif str.encoding.name =~ /^UTF-(16|32)(BE|LE)?$/
-          return str.gsub(Regexp.new("\\A\uFEFF".encode(str.encoding)), '')
+          return str.gsub(/\A\uFEFF/, "")
+        elsif /^UTF-(16|32)(BE|LE)?$/.match?(str.encoding.name)
+          return str.gsub(Regexp.new("\\A\uFEFF".encode(str.encoding)), "")
         else
           return str
         end
@@ -75,15 +75,13 @@ module Haml
       encoding = str.encoding
       newlines = Regexp.new("\r\n|\r|\n".encode(encoding).force_encoding(Encoding::ASCII_8BIT))
       str.force_encoding(Encoding::ASCII_8BIT).split(newlines).each_with_index do |line, i|
-        begin
-          line.encode(encoding)
-        rescue Encoding::UndefinedConversionError => e
-          yield <<MSG.rstrip, i + 1
+        line.encode(encoding)
+      rescue Encoding::UndefinedConversionError => e
+        yield <<MSG.rstrip, i + 1
 Invalid #{encoding.name} character #{e.error_char.dump}
 MSG
-        end
       end
-      return str
+      str
     end
 
     # Like {\#check\_encoding}, but also checks for a Ruby-style `-# coding:` comment
@@ -114,7 +112,7 @@ MSG
       elsif bom; str.force_encoding(Encoding::UTF_8)
       end
 
-      return check_encoding(str, &block)
+      check_encoding(str, &block)
     end
 
     # Like `Object#inspect`, but preserves non-ASCII characters rather than escaping them.
@@ -126,7 +124,7 @@ MSG
     def inspect_obj(obj)
       case obj
       when String
-        %Q!"#{obj.gsub(/[\x00-\x7F]+/) {|s| s.dump[1...-1]}}"!
+        %Q!"#{obj.gsub(/[\x00-\x7F]+/) { |s| s.dump[1...-1] }}"!
       when Symbol
         ":#{inspect_obj(obj.to_s)}"
       else
@@ -166,7 +164,7 @@ MSG
     #   and the rest of the string.
     #   `["Foo (Bar (Baz bang) bop)", " (Bang (bop bip))"]` in the example above.
     def balance(scanner, start, finish, count = 0)
-      str = ''.dup
+      str = "".dup
       scanner = StringScanner.new(scanner) unless scanner.is_a? StringScanner
       regexp = Regexp.new("(.*?)[\\#{start.chr}\\#{finish.chr}]", Regexp::MULTILINE)
       while scanner.scan(regexp)
@@ -183,9 +181,9 @@ MSG
     # @return [String] The name of the indentation (e.g. `"12 spaces"`, `"1 tab"`)
     def human_indentation(indentation)
       if !indentation.include?(?\t)
-        noun = 'space'
+        noun = "space"
       elsif !indentation.include?(?\s)
-        noun = 'tab'
+        noun = "tab"
       else
         return indentation.inspect
       end
@@ -199,7 +197,7 @@ MSG
     end
 
     def unescape_interpolation(str, escape_html = nil)
-      res = ''.dup
+      res = "".dup
       rest = Haml::Util.handle_interpolation str.dump do |scan|
         escapes = (scan[2].size - 1) / 2
         char = scan[3] # '{', '@' or '$'
@@ -207,13 +205,13 @@ MSG
         if escapes % 2 == 1
           res << "\##{char}"
         else
-          interpolated = if char == '{'
+          interpolated = if char == "{"
             balance(scan, ?{, ?}, 1)[0][0...-1]
           else
             scan.scan(/\w+/)
           end
           content = eval("\"#{interpolated}\"")
-          content = "#{char}#{content}" if char == '@' || char == '$'
+          content = "#{char}#{content}" if char == "@" || char == "$"
           content = "Haml::Helpers.html_escape((#{content}))" if escape_html
 
           res << "\#{#{content}}"
@@ -223,36 +221,35 @@ MSG
     end
 
     private
+      # Parses a magic comment at the beginning of a Haml file.
+      # The parsing rules are basically the same as Ruby's.
+      #
+      # @return [(Boolean, String or nil)]
+      #   Whether the document begins with a UTF-8 BOM,
+      #   and the declared encoding of the document (or nil if none is declared)
+      def parse_haml_magic_comment(str)
+        scanner = StringScanner.new(str.dup.force_encoding(Encoding::ASCII_8BIT))
+        bom = scanner.scan(/\xEF\xBB\xBF/n)
+        return bom unless scanner.scan(/-\s*#\s*/n)
+        if (coding = try_parse_haml_emacs_magic_comment(scanner))
+          return bom, coding
+        end
 
-    # Parses a magic comment at the beginning of a Haml file.
-    # The parsing rules are basically the same as Ruby's.
-    #
-    # @return [(Boolean, String or nil)]
-    #   Whether the document begins with a UTF-8 BOM,
-    #   and the declared encoding of the document (or nil if none is declared)
-    def parse_haml_magic_comment(str)
-      scanner = StringScanner.new(str.dup.force_encoding(Encoding::ASCII_8BIT))
-      bom = scanner.scan(/\xEF\xBB\xBF/n)
-      return bom unless scanner.scan(/-\s*#\s*/n)
-      if (coding = try_parse_haml_emacs_magic_comment(scanner))
-        return bom, coding
+        return bom unless scanner.scan(/.*?coding[=:]\s*([\w-]+)/in)
+        return bom, scanner[1]
       end
 
-      return bom unless scanner.scan(/.*?coding[=:]\s*([\w-]+)/in)
-      return bom, scanner[1]
-    end
-
-    def try_parse_haml_emacs_magic_comment(scanner)
-      pos = scanner.pos
-      return unless scanner.scan(/.*?-\*-\s*/n)
-      # From Ruby's parse.y
-      return unless scanner.scan(/([^\s'":;]+)\s*:\s*("(?:\\.|[^"])*"|[^"\s;]+?)[\s;]*-\*-/n)
-      name, val = scanner[1], scanner[2]
-      return unless name =~ /(en)?coding/in
-      val = $1 if val =~ /^"(.*)"$/n
-      return val
-    ensure
-      scanner.pos = pos
-    end
+      def try_parse_haml_emacs_magic_comment(scanner)
+        pos = scanner.pos
+        return unless scanner.scan(/.*?-\*-\s*/n)
+        # From Ruby's parse.y
+        return unless scanner.scan(/([^\s'":;]+)\s*:\s*("(?:\\.|[^"])*"|[^"\s;]+?)[\s;]*-\*-/n)
+        name, val = scanner[1], scanner[2]
+        return unless name =~ /(en)?coding/in
+        val = $1 if val =~ /^"(.*)"$/n
+        val
+      ensure
+        scanner.pos = pos
+      end
   end
 end

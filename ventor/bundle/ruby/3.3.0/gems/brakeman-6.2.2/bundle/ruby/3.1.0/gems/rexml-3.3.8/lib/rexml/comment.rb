@@ -1,4 +1,5 @@
 # frozen_string_literal: false
+
 require_relative "child"
 
 module REXML
@@ -21,7 +22,7 @@ module REXML
     # @param second If the first argument is a Source, this argument
     # should be nil, not supplied, or a Parent to be set as the parent
     # of this object
-    def initialize( first, second = nil )
+    def initialize(first, second = nil)
       super(second)
       if first.kind_of? String
         @string = first
@@ -47,9 +48,9 @@ module REXML
     #    Ignored by this class. The contents of comments are never modified.
     # ie_hack::
     #    Needed for conformity to the child API, but not used by this class.
-    def write( output, indent=-1, transitive=false, ie_hack=false )
+    def write(output, indent = -1, transitive = false, ie_hack = false)
       Kernel.warn("Comment.write is deprecated.  See REXML::Formatters", uplevel: 1)
-      indent( output, indent )
+      indent(output, indent)
       output << START
       output << @string
       output << STOP
@@ -67,7 +68,7 @@ module REXML
     ##
     # Compares this Comment to another; the contents of the comment are used
     # in the comparison.
-    def ==( other )
+    def ==(other)
       other.kind_of? Comment and
       (other <=> self) == 0
     end
@@ -77,4 +78,4 @@ module REXML
     end
   end
 end
-#vim:ts=2 sw=2 noexpandtab:
+# vim:ts=2 sw=2 noexpandtab:

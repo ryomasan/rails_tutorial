@@ -49,29 +49,28 @@ module Haml
     end
 
     private
-
-    def escape_once(value)
-      if @escape_safe_buffer
-        ::Haml::Helpers.escape_once_without_haml_xss(value)
-      else
-        ::Haml::Helpers.escape_once(value)
+      def escape_once(value)
+        if @escape_safe_buffer
+          ::Haml::Helpers.escape_once_without_haml_xss(value)
+        else
+          ::Haml::Helpers.escape_once(value)
+        end
       end
-    end
 
-    def escape(value)
-      if @escape_safe_buffer
-        ::Haml::Helpers.html_escape_without_haml_xss(value)
-      else
-        ::Haml::Helpers.html_escape(value)
+      def escape(value)
+        if @escape_safe_buffer
+          ::Haml::Helpers.html_escape_without_haml_xss(value)
+        else
+          ::Haml::Helpers.html_escape(value)
+        end
       end
-    end
 
-    def escape_once_code(value)
-      "::Haml::Helpers.escape_once#{('_without_haml_xss' if @escape_safe_buffer)}((#{value}))"
-    end
+      def escape_once_code(value)
+        "::Haml::Helpers.escape_once#{('_without_haml_xss' if @escape_safe_buffer)}((#{value}))"
+      end
 
-    def escape_code(value)
-      "::Haml::Helpers.html_escape#{('_without_haml_xss' if @escape_safe_buffer)}((#{value}))"
-    end
+      def escape_code(value)
+        "::Haml::Helpers.html_escape#{('_without_haml_xss' if @escape_safe_buffer)}((#{value}))"
+      end
   end
 end

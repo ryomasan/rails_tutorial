@@ -1,18 +1,19 @@
 # frozen_string_literal: false
-require_relative 'streamparser'
-require_relative 'baseparser'
-require_relative '../light/node'
+
+require_relative "streamparser"
+require_relative "baseparser"
+require_relative "../light/node"
 
 module REXML
   module Parsers
     class LightParser
-      def initialize stream
+      def initialize(stream)
         @stream = stream
-        @parser = REXML::Parsers::BaseParser.new( stream )
+        @parser = REXML::Parsers::BaseParser.new(stream)
       end
 
-      def add_listener( listener )
-        @parser.add_listener( listener )
+      def add_listener(listener)
+        @parser.add_listener(listener)
       end
 
       def rewind
@@ -30,14 +31,14 @@ module REXML
           when :start_element, :start_doctype
             new_node = event
             context << new_node
-            new_node[1,0] = [context]
+            new_node[1, 0] = [context]
             context = new_node
           when :end_element, :end_doctype
             context = context[1]
           else
             new_node = event
             context << new_node
-            new_node[1,0] = [context]
+            new_node[1, 0] = [context]
           end
         end
         root

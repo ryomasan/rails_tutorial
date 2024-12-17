@@ -1,11 +1,12 @@
 # frozen_string_literal: false
+
 #
 #--
 # bigdecimal/util extends various native classes to provide the #to_d method,
 # and provides BigDecimal#to_d and BigDecimal#to_digits.
 #++
 
-require 'bigdecimal'
+require "bigdecimal"
 
 class Integer < Numeric
   # call-seq:
@@ -47,7 +48,7 @@ class Float < Numeric
   #
   # See also Kernel.BigDecimal.
   #
-  def to_d(precision=0)
+  def to_d(precision = 0)
     BigDecimal(self, precision)
   end
 end
@@ -92,7 +93,7 @@ class BigDecimal < Numeric
       self.to_s
     else
       i       = self.to_i.to_s
-      _,f,_,z = self.frac.split
+      _, f, _, z = self.frac.split
       i + "." + ("0"*(-z)) + f
     end
   end

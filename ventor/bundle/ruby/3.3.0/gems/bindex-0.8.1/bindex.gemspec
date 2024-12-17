@@ -1,6 +1,6 @@
-$LOAD_PATH << File.expand_path('../lib', __FILE__)
+$LOAD_PATH << File.expand_path("../lib", __FILE__)
 
-require 'skiptrace/version'
+require "skiptrace/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "bindex"

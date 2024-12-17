@@ -125,35 +125,34 @@ module Bootsnap
       end
 
       private
+        STRIP_EXTENSION = /\.[^.]*?$/
+        private_constant(:STRIP_EXTENSION)
 
-      STRIP_EXTENSION = /\.[^.]*?$/.freeze
-      private_constant(:STRIP_EXTENSION)
-
-      # Might Ruby automatically search for this extension if
-      # someone tries to 'require' the file without it? E.g. Ruby
-      # will implicitly try 'x.rb' if you ask for 'x'.
-      #
-      # This is complex and platform-dependent, and the Ruby docs are a little
-      # handwavy about what will be tried when and in what order.
-      # So optimistically pretend that all known elidable extensions
-      # will be tried on all platforms, and that people are unlikely
-      # to name files in a way that assumes otherwise.
-      # (E.g. It's unlikely that someone will know that their code
-      # will _never_ run on MacOS, and therefore think they can get away
-      # with calling a Ruby file 'x.dylib.rb' and then requiring it as 'x.dylib'.)
-      #
-      # See <https://ruby-doc.org/core-2.6.4/Kernel.html#method-i-require>.
-      def extension_elidable?(feature)
-        feature.to_s.end_with?(".rb", ".so", ".o", ".dll", ".dylib")
-      end
-
-      def strip_extension_if_elidable(feature)
-        if extension_elidable?(feature)
-          feature.sub(STRIP_EXTENSION, "")
-        else
-          feature
+        # Might Ruby automatically search for this extension if
+        # someone tries to 'require' the file without it? E.g. Ruby
+        # will implicitly try 'x.rb' if you ask for 'x'.
+        #
+        # This is complex and platform-dependent, and the Ruby docs are a little
+        # handwavy about what will be tried when and in what order.
+        # So optimistically pretend that all known elidable extensions
+        # will be tried on all platforms, and that people are unlikely
+        # to name files in a way that assumes otherwise.
+        # (E.g. It's unlikely that someone will know that their code
+        # will _never_ run on MacOS, and therefore think they can get away
+        # with calling a Ruby file 'x.dylib.rb' and then requiring it as 'x.dylib'.)
+        #
+        # See <https://ruby-doc.org/core-2.6.4/Kernel.html#method-i-require>.
+        def extension_elidable?(feature)
+          feature.to_s.end_with?(".rb", ".so", ".o", ".dll", ".dylib")
         end
-      end
+
+        def strip_extension_if_elidable(feature)
+          if extension_elidable?(feature)
+            feature.sub(STRIP_EXTENSION, "")
+          else
+            feature
+          end
+        end
     end
   end
 end

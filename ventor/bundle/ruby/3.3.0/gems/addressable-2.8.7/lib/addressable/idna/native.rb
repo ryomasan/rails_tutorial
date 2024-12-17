@@ -25,9 +25,9 @@ module Addressable
       IDN::Punycode.encode(value.to_s)
     end
 
-     def self.punycode_decode(value)
-       IDN::Punycode.decode(value.to_s)
-     end
+    def self.punycode_decode(value)
+      IDN::Punycode.decode(value.to_s)
+    end
 
     class << self
       # @deprecated Use {String#unicode_normalize(:nfkc)} instead
@@ -40,27 +40,27 @@ module Addressable
     end
 
     def self.to_ascii(value)
-      value.to_s.split('.', -1).map do |segment|
+      value.to_s.split(".", -1).map do |segment|
         if segment.size > 0 && segment.size < 64
           IDN::Idna.toASCII(segment, IDN::Idna::ALLOW_UNASSIGNED)
         elsif segment.size >= 64
           segment
         else
-          ''
+          ""
         end
-      end.join('.')
+      end.join(".")
     end
 
     def self.to_unicode(value)
-      value.to_s.split('.', -1).map do |segment|
+      value.to_s.split(".", -1).map do |segment|
         if segment.size > 0 && segment.size < 64
           IDN::Idna.toUnicode(segment, IDN::Idna::ALLOW_UNASSIGNED)
         elsif segment.size >= 64
           segment
         else
-          ''
+          ""
         end
-      end.join('.')
+      end.join(".")
     end
   end
 end

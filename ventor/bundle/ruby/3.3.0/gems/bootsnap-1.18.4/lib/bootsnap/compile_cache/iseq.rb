@@ -88,7 +88,7 @@ module Bootsnap
 
           Bootsnap::CompileCache::ISeq.fetch(path.to_s)
         rescue RuntimeError => error
-          if error.message =~ /unmatched platform/
+          if /unmatched platform/.match?(error.message)
             puts("unmatched platform for file #{path}")
           end
           raise

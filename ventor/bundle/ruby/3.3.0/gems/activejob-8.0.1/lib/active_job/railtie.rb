@@ -38,12 +38,12 @@ module ActiveJob
             MSG
 
             value = case app.config.active_job.enqueue_after_transaction_commit
-            when :always
-              true
-            when :never
-              false
-            else
-              false
+                    when :always
+                      true
+                    when :never
+                      false
+                    else
+                      false
             end
 
             ActiveJob::Base.enqueue_after_transaction_commit = value

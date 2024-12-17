@@ -3,25 +3,22 @@
 ## copyright(c) 2006-2011 kuwata-lab.com all rights reserved.
 ##
 
-require 'erubis/util'
+require "erubis/util"
 
 module Erubis
-
-
   ##
   ## code generator, called by Converter module
   ##
   module Generator
-
-    def self.supported_properties()  # :nodoc:
-      return [
+    def self.supported_properties  # :nodoc:
+      [
               [:escapefunc,    nil,    "escape function name"],
             ]
     end
 
     attr_accessor :escapefunc
 
-    def init_generator(properties={})
+    def init_generator(properties = {})
       @escapefunc = properties[:escapefunc]
     end
 
@@ -40,7 +37,7 @@ module Erubis
     ## return escaped expression code (ex. 'h(...)' or 'htmlspecialchars(...)')
     def escaped_expr(code)
       code.strip!
-      return "#{@escapefunc}(#{code})"
+      "#{@escapefunc}(#{code})"
     end
 
     ## (abstract) add @preamble to src
@@ -77,9 +74,5 @@ module Erubis
     def add_postamble(src)
       not_implemented
     end
-
-
   end
-
-
 end

@@ -22,16 +22,16 @@ class WeightHistoriesController < ApplicationController
   # POST /weight_histories or /weight_histories.json
   def create
     @weight_history = WeightHistory.new(weight_history_params)
-      logger.debug(@weight_history)
-      respond_to do |format|
-      # if @weight_history.save
-      #   format.html { redirect_to @weight_history, notice: "Weight history was successfully created." }
-      #   format.json { render :show, status: :created, location: @weight_history }
-      # else
-      #   format.html { render :new, status: :unprocessable_entity }
-      #   format.json { render json: @weight_history.errors, status: :unprocessable_entity }
-      # end
-      if @weight_history.save
+    logger.debug(@weight_history)
+    respond_to do |format|
+    # if @weight_history.save
+    #   format.html { redirect_to @weight_history, notice: "Weight history was successfully created." }
+    #   format.json { render :show, status: :created, location: @weight_history }
+    # else
+    #   format.html { render :new, status: :unprocessable_entity }
+    #   format.json { render json: @weight_history.errors, status: :unprocessable_entity }
+    # end
+    if @weight_history.save
       # HTMLリクエストに対してリダイレクト
       format.html { redirect_to @weight_history, notice: "Weight history was successfully created." }
       # JSONリクエストに対してレスポンスを返す
@@ -42,7 +42,7 @@ class WeightHistoriesController < ApplicationController
           location: weight_history_path(@weight_history)
         }, status: :created
       }
-      else
+    else
       # 保存に失敗した場合
       format.html { render :new, status: :unprocessable_entity }
       # JSONリクエストに対してエラーレスポンスを返す
@@ -52,8 +52,8 @@ class WeightHistoriesController < ApplicationController
           errors: @weight_history.errors.full_messages
         }, status: :unprocessable_entity
       }
-      end
     end
+  end
   end
 
   # PATCH/PUT /weight_histories/1 or /weight_histories/1.json

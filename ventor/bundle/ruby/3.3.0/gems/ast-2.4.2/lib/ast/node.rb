@@ -69,7 +69,7 @@ module AST
     # your code does not expect the argument to be frozen, use `#dup`.
     #
     # The `properties` hash is passed to {#assign_properties}.
-    def initialize(type, children=[], properties={})
+    def initialize(type, children = [], properties = {})
       @type, @children = type.to_sym, children.to_a.freeze
 
       assign_properties(properties)
@@ -130,7 +130,7 @@ module AST
     # @param  [Array, nil]  children
     # @param  [Hash, nil]   properties
     # @return [AST::Node]
-    def updated(type=nil, children=nil, properties=nil)
+    def updated(type = nil, children = nil, properties = nil)
       new_type       = type       || @type
       new_children   = children   || @children
       new_properties = properties || {}
@@ -184,7 +184,7 @@ module AST
     #
     # @param  [Integer] indent Base indentation level.
     # @return [String]
-    def to_sexp(indent=0)
+    def to_sexp(indent = 0)
       indented = "  " * indent
       sexp = "#{indented}(#{fancy_type}"
 
@@ -208,7 +208,7 @@ module AST
     #
     # @param  [Integer] indent Base indentation level.
     # @return [String]
-    def inspect(indent=0)
+    def inspect(indent = 0)
       indented = "  " * indent
       sexp = "#{indented}s(:#{@type}"
 
@@ -255,14 +255,13 @@ module AST
     end
 
     protected
-
-    # Returns `@type` with all underscores replaced by dashes. This allows
-    # to write symbol literals without quotes in Ruby sources and yet have
-    # nicely looking s-expressions.
-    #
-    # @return [String]
-    def fancy_type
-      @type.to_s.gsub('_', '-')
-    end
+      # Returns `@type` with all underscores replaced by dashes. This allows
+      # to write symbol literals without quotes in Ruby sources and yet have
+      # nicely looking s-expressions.
+      #
+      # @return [String]
+      def fancy_type
+        @type.to_s.gsub("_", "-")
+      end
   end
 end

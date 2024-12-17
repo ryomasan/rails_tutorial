@@ -7,7 +7,7 @@ module Bootsnap
     module PathScanner
       REQUIRABLE_EXTENSIONS = [DOT_RB] + DL_EXTENSIONS
       NORMALIZE_NATIVE_EXTENSIONS = !DL_EXTENSIONS.include?(LoadPathCache::DOT_SO)
-      ALTERNATIVE_NATIVE_EXTENSIONS_PATTERN = /\.(o|bundle|dylib)\z/.freeze
+      ALTERNATIVE_NATIVE_EXTENSIONS_PATTERN = /\.(o|bundle|dylib)\z/
 
       BUNDLE_PATH = if Bootsnap.bundler?
         (Bundler.bundle_path.cleanpath.to_s << LoadPathCache::SLASH).freeze

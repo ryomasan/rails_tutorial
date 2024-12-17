@@ -561,7 +561,7 @@ class HighLine
         template = if ERB.instance_method(:initialize).parameters.assoc(:key) # Ruby 2.6+
           ERB.new(confirm, trim_mode: "%")
         else
-          ERB.new(confirm, nil, "%")
+          ERB.new(confirm, trim_mode: "%")
         end
         template_renderer = TemplateRenderer.new(template, self, highline)
         template_renderer.render
@@ -606,35 +606,34 @@ class HighLine
     end
 
     private
+      #
+      # Adds the default choice to the end of question between <tt>|...|</tt>.
+      # Trailing whitespace is preserved so the function of HighLine.say() is
+      # not affected.
+      #
+      def append_default_to_template
+        return unless default.respond_to? :to_s
 
-    #
-    # Adds the default choice to the end of question between <tt>|...|</tt>.
-    # Trailing whitespace is preserved so the function of HighLine.say() is
-    # not affected.
-    #
-    def append_default_to_template
-      return unless default.respond_to? :to_s
+        default_str = default.to_s
+        return if default_str.empty?
 
-      default_str = default.to_s
-      return if default_str.empty?
-
-      if template =~ /([\t ]+)\Z/
-        template << "|#{default_str}|#{Regexp.last_match(1)}"
-      elsif template == ""
-        template << "|#{default_str}|  "
-      elsif template[-1, 1] == "\n"
-        template[-2, 0] = "  |#{default_str}|"
-      else
-        template << "  |#{default_str}|"
+        if template =~ /([\t ]+)\Z/
+          template << "|#{default_str}|#{Regexp.last_match(1)}"
+        elsif template == ""
+          template << "|#{default_str}|  "
+        elsif template[-1, 1] == "\n"
+          template[-2, 0] = "  |#{default_str}|"
+        else
+          template << "  |#{default_str}|"
+        end
       end
-    end
 
-    def choice_error_str(message_source)
-      if message_source.is_a? Array
-        "[" + message_source.join(", ") + "]"
-      else
-        message_source.inspect
+      def choice_error_str(message_source)
+        if message_source.is_a? Array
+          "[" + message_source.join(", ") + "]"
+        else
+          message_source.inspect
+        end
       end
-    end
   end
 end

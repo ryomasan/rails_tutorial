@@ -4,13 +4,13 @@ require "rspec/core/rake_task"
 
 namespace :spec do
   RSpec::Core::RakeTask.new(:simplecov) do |t|
-    t.pattern = FileList['spec/**/*_spec.rb']
+    t.pattern = FileList["spec/**/*_spec.rb"]
     t.rspec_opts = %w[--color --format documentation] unless ENV["CI"]
   end
 
   namespace :simplecov do
     desc "Browse the code coverage report."
-    task :browse => "spec:simplecov" do
+    task browse: "spec:simplecov" do
       require "launchy"
       Launchy.open("coverage/index.html")
     end

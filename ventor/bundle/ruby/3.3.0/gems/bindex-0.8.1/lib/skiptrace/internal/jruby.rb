@@ -1,4 +1,4 @@
-require 'skiptrace/internal/jruby_internals'
+require "skiptrace/internal/jruby_internals"
 
 module Skiptrace
   java_import com.gsamokovarov.skiptrace.JRubyIntegration

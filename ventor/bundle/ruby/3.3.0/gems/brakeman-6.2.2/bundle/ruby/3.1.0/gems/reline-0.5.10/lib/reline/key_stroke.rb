@@ -65,45 +65,44 @@ class Reline::KeyStroke
   end
 
   private
+    # returns match status of CSI/SS3 sequence and matched length
+    def match_unknown_escape_sequence(input, vi_mode: false)
+      idx = 0
+      return UNMATCHED unless input[idx] == ESC_BYTE
+      idx += 1
+      idx += 1 if input[idx] == ESC_BYTE
 
-  # returns match status of CSI/SS3 sequence and matched length
-  def match_unknown_escape_sequence(input, vi_mode: false)
-    idx = 0
-    return UNMATCHED unless input[idx] == ESC_BYTE
-    idx += 1
-    idx += 1 if input[idx] == ESC_BYTE
-
-    case input[idx]
-    when nil
-      if idx == 1 # `ESC`
-        return MATCHING_MATCHED
-      else # `ESC ESC`
-        return MATCHING
+      case input[idx]
+      when nil
+        if idx == 1 # `ESC`
+          return MATCHING_MATCHED
+        else # `ESC ESC`
+          return MATCHING
+        end
+      when 91 # == '['.ord
+        # CSI sequence `ESC [ ... char`
+        idx += 1
+        idx += 1 while idx < input.size && CSI_PARAMETER_BYTES_RANGE.cover?(input[idx])
+        idx += 1 while idx < input.size && CSI_INTERMEDIATE_BYTES_RANGE.cover?(input[idx])
+      when 79 # == 'O'.ord
+        # SS3 sequence `ESC O char`
+        idx += 1
+      else
+        # `ESC char` or `ESC ESC char`
+        return UNMATCHED if vi_mode
       end
-    when 91 # == '['.ord
-      # CSI sequence `ESC [ ... char`
-      idx += 1
-      idx += 1 while idx < input.size && CSI_PARAMETER_BYTES_RANGE.cover?(input[idx])
-      idx += 1 while idx < input.size && CSI_INTERMEDIATE_BYTES_RANGE.cover?(input[idx])
-    when 79 # == 'O'.ord
-      # SS3 sequence `ESC O char`
-      idx += 1
-    else
-      # `ESC char` or `ESC ESC char`
-      return UNMATCHED if vi_mode
+
+      case input.size
+      when idx
+        MATCHING
+      when idx + 1
+        MATCHED
+      else
+        UNMATCHED
+      end
     end
 
-    case input.size
-    when idx
-      MATCHING
-    when idx + 1
-      MATCHED
-    else
-      UNMATCHED
+    def key_mapping
+      @config.key_bindings
     end
-  end
-
-  def key_mapping
-    @config.key_bindings
-  end
 end

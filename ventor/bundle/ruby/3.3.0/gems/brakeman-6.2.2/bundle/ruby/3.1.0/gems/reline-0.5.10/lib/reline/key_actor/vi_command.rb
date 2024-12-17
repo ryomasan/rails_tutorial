@@ -515,4 +515,3 @@ module Reline::KeyActor
     # EOF
   ]
 end
-

@@ -34,7 +34,7 @@ module Addressable
 
 
     UNICODE_TABLE = File.expand_path(
-      File.join(File.dirname(__FILE__), '../../..', 'data/unicode.data')
+      File.join(File.dirname(__FILE__), "../../..", "data/unicode.data")
     )
 
     ACE_PREFIX = "xn--"
@@ -71,7 +71,7 @@ module Addressable
         input.force_encoding(Encoding::ASCII_8BIT)
       end
       if input =~ UTF8_REGEX && input =~ UTF8_REGEX_MULTIBYTE
-        parts = unicode_downcase(input).split('.')
+        parts = unicode_downcase(input).split(".")
         parts.map! do |part|
           if part.respond_to?(:force_encoding)
             part.force_encoding(Encoding::ASCII_8BIT)
@@ -82,7 +82,7 @@ module Addressable
             part
           end
         end
-        parts.join('.')
+        parts.join(".")
       else
         input
       end
@@ -92,9 +92,9 @@ module Addressable
     # domain name as described in RFC 3490.
     def self.to_unicode(input)
       input = input.to_s unless input.is_a?(String)
-      parts = input.split('.')
+      parts = input.split(".")
       parts.map! do |part|
-        if part =~ /^#{ACE_PREFIX}(.+)/
+        if /^#{ACE_PREFIX}(.+)/.match?(part)
           begin
             punycode_decode(part[/^#{ACE_PREFIX}(.+)/, 1])
           rescue Addressable::IDNA::PunycodeBadInput
@@ -105,7 +105,7 @@ module Addressable
           part
         end
       end
-      output = parts.join('.')
+      output = parts.join(".")
       if output.respond_to?(:force_encoding)
         output.force_encoding(Encoding::UTF_8)
       end
@@ -133,7 +133,7 @@ module Addressable
       input = input.to_s unless input.is_a?(String)
       unpacked = input.unpack("U*")
       unpacked.map! { |codepoint| lookup_unicode_lowercase(codepoint) }
-      return unpacked.pack("U*")
+      unpacked.pack("U*")
     end
     private_class_method :unicode_downcase
 
@@ -439,7 +439,7 @@ module Addressable
           raise PunycodeBigOutput, "Output would exceed the space provided."
         end
 
-        #memmove(output + i + 1, output + i, (out - i) * sizeof *output)
+        # memmove(output + i + 1, output + i, (out - i) * sizeof *output)
         output[i + 1, out - i] = output[i, out - i]
         output[i] = n
         i += 1

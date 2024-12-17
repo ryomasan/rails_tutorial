@@ -21,7 +21,7 @@ module Skiptrace
 
       def filter
         @locations.reject do |location|
-          location.file.start_with?('kernel/delta/kernel.rb') ||
+          location.file.start_with?("kernel/delta/kernel.rb") ||
             location.file == __FILE__ ||
             location.variables.nil?
         end

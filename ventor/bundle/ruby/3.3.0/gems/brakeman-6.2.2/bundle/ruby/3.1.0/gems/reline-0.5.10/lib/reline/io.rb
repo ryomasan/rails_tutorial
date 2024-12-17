@@ -4,14 +4,14 @@ module Reline
     RESET_COLOR = "\e[0m"
 
     def self.decide_io_gate
-      if ENV['TERM'] == 'dumb'
+      if ENV["TERM"] == "dumb"
         Reline::Dumb.new
       else
-        require 'reline/io/ansi'
+        require "reline/io/ansi"
 
-        case RbConfig::CONFIG['host_os']
+        case RbConfig::CONFIG["host_os"]
         when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
-          require 'reline/io/windows'
+          require "reline/io/windows"
           io = Reline::Windows.new
           if io.msys_tty?
             Reline::ANSI.new
@@ -38,4 +38,4 @@ module Reline
   end
 end
 
-require 'reline/io/dumb'
+require "reline/io/dumb"

@@ -1,9 +1,10 @@
 # frozen_string_literal: true
-require_relative '../parseexception'
-require_relative '../undefinednamespaceexception'
-require_relative '../security'
-require_relative '../source'
-require 'set'
+
+require_relative "../parseexception"
+require_relative "../undefinednamespaceexception"
+require_relative "../security"
+require_relative "../source"
+require "set"
 require "strscan"
 
 module REXML
@@ -55,11 +56,11 @@ module REXML
     #
     # Nat Price gave me some good ideas for the API.
     class BaseParser
-      LETTER = '[:alpha:]'
-      DIGIT = '[:digit:]'
+      LETTER = "[:alpha:]"
+      DIGIT = "[:digit:]"
 
-      COMBININGCHAR = '' # TODO
-      EXTENDER = ''      # TODO
+      COMBININGCHAR = "" # TODO
+      EXTENDER = ""      # TODO
 
       NCNAME_STR= "[#{LETTER}_][-[:alnum:]._#{COMBININGCHAR}#{EXTENDER}]*"
       QNAME_STR= "(?:(#{NCNAME_STR}):)?(#{NCNAME_STR})"
@@ -84,7 +85,7 @@ module REXML
       CDATA_START = /\A<!\[CDATA\[/u
       CDATA_END = /\A\s*\]\s*>/um
       CDATA_PATTERN = /<!\[CDATA\[(.*?)\]\]>/um
-      XMLDECL_START = /\A<\?xml\s/u;
+      XMLDECL_START = /\A<\?xml\s/u
       XMLDECL_PATTERN = /<\?xml\s+(.*?)\?>/um
       INSTRUCTION_START = /\A<\?/u
       INSTRUCTION_PATTERN = /<\?#{NAME}(\s+.*?)?\?>/um
@@ -134,9 +135,9 @@ module REXML
       EREFERENCE = /&(?!#{NAME};)/
 
       DEFAULT_ENTITIES = {
-        'gt' => [/&gt;/, '&gt;', '>', />/],
-        'lt' => [/&lt;/, '&lt;', '<', /</],
-        'quot' => [/&quot;/, '&quot;', '"', /"/],
+        "gt" => [/&gt;/, "&gt;", ">", />/],
+        "lt" => [/&lt;/, "&lt;", "<", /</],
+        "quot" => [/&quot;/, "&quot;", '"', /"/],
         "apos" => [/&apos;/, "&apos;", "'", /'/]
       }
 
@@ -152,7 +153,7 @@ module REXML
         CARRIAGE_RETURN_NEWLINE_PATTERN = /\r\n?/
         CHARACTER_REFERENCES = /&#0*((?:\d+)|(?:x[a-fA-F0-9]+));/
         DEFAULT_ENTITIES_PATTERNS = {}
-        default_entities = ['gt', 'lt', 'quot', 'apos', 'amp']
+        default_entities = ["gt", "lt", "quot", "apos", "amp"]
         default_entities.each do |term|
           DEFAULT_ENTITIES_PATTERNS[term] = /&#{term};/
         end
@@ -160,7 +161,7 @@ module REXML
       end
       private_constant :Private
 
-      def initialize( source )
+      def initialize(source)
         self.stream = source
         @listeners = []
         @prefixes = Set.new
@@ -169,7 +170,7 @@ module REXML
         @entity_expansion_text_limit = Security.entity_expansion_text_limit
       end
 
-      def add_listener( listener )
+      def add_listener(listener)
         @listeners << listener
       end
 
@@ -178,15 +179,15 @@ module REXML
       attr_writer :entity_expansion_limit
       attr_writer :entity_expansion_text_limit
 
-      def stream=( source )
-        @source = SourceFactory.create_from( source )
+      def stream=(source)
+        @source = SourceFactory.create_from(source)
         @closed = nil
         @have_root = false
         @document_status = nil
         @tags = []
         @stack = []
         @entities = []
-        @namespaces = {"xml" => Private::XML_PREFIXED_NAMESPACE}
+        @namespaces = { "xml" => Private::XML_PREFIXED_NAMESPACE }
         @namespaces_restore_stack = []
       end
 
@@ -201,17 +202,17 @@ module REXML
 
       # Returns true if there are no more events
       def empty?
-        return (@source.empty? and @stack.empty?)
+        (@source.empty? and @stack.empty?)
       end
 
       # Returns true if there are more events.  Synonymous with !empty?
       def has_next?
-        return !(@source.empty? and @stack.empty?)
+        !(@source.empty? and @stack.empty?)
       end
 
       # Push an event back on the head of the stream.  This method
       # has (theoretically) infinite depth.
-      def unshift token
+      def unshift(token)
         @stack.unshift(token)
       end
 
@@ -221,7 +222,7 @@ module REXML
       # Be aware that this causes the stream to be parsed up to the +depth+
       # event, so you can effectively pre-parse the entire document (pull the
       # entire thing into memory) using this method.
-      def peek depth=0
+      def peek(depth = 0)
         raise %Q[Illegal argument "#{depth}"] if depth < -1
         temp = []
         if depth == -1
@@ -262,8 +263,8 @@ module REXML
           return [ :end_document ]
         end
         return @stack.shift if @stack.size > 0
-        #STDERR.puts @source.encoding
-        #STDERR.puts "BUFFER = #{@source.buffer.inspect}"
+        # STDERR.puts @source.encoding
+        # STDERR.puts "BUFFER = #{@source.buffer.inspect}"
 
         @source.ensure_buffer
         if @document_status == nil
@@ -283,7 +284,7 @@ module REXML
             elsif @source.match("DOCTYPE", true)
               base_error_message = "Malformed DOCTYPE"
               unless @source.match(/\s+/um, true)
-                if @source.match(">")
+                if @source.match?(">")
                   message = "#{base_error_message}: name is missing"
                 else
                   message = "#{base_error_message}: invalid name"
@@ -335,7 +336,7 @@ module REXML
           if @source.match("<!", true)
             if @source.match("ELEMENT", true)
               md = @source.match(/(.*?)>/um, true)
-              raise REXML::ParseException.new( "Bad ELEMENT declaration!", @source ) if md.nil?
+              raise REXML::ParseException.new("Bad ELEMENT declaration!", @source) if md.nil?
               return [ :elementdecl, "<!ELEMENT" + md[1] ]
             elsif @source.match("ENTITY", true)
               match_data = @source.match(Private::ENTITYDECL_PATTERN, true)
@@ -344,17 +345,17 @@ module REXML
               end
               match = [:entitydecl, *match_data.captures.compact]
               ref = false
-              if match[1] == '%'
+              if match[1] == "%"
                 ref = true
                 match.delete_at 1
               end
               # Now we have to sort out what kind of entity reference this is
-              if match[2] == 'SYSTEM'
+              if match[2] == "SYSTEM"
                 # External reference
                 match[3] = match[3][1..-2] # PUBID
                 match.delete_at(4) if match.size > 4 # Chop out NDATA decl
                 # match is [ :entity, name, SYSTEM, pubid(, ndata)? ]
-              elsif match[2] == 'PUBLIC'
+              elsif match[2] == "PUBLIC"
                 # External reference
                 match[3] = match[3][1..-2] # PUBID
                 match[4] = match[4][1..-2] # HREF
@@ -367,16 +368,16 @@ module REXML
                 match.pop if match.size == 4
                 # match is [ :entity, name, value ]
               end
-              match << '%' if ref
+              match << "%" if ref
               return match
             elsif @source.match("ATTLIST", true)
               md = @source.match(Private::ATTLISTDECL_END, true)
-              raise REXML::ParseException.new( "Bad ATTLIST declaration!", @source ) if md.nil?
+              raise REXML::ParseException.new("Bad ATTLIST declaration!", @source) if md.nil?
               element = md[1]
               contents = md[0]
 
               pairs = {}
-              values = md[0].strip.scan( ATTDEF_RE )
+              values = md[0].strip.scan(ATTDEF_RE)
               values.each do |attdef|
                 unless attdef[3] == "#IMPLIED"
                   attdef.compact!
@@ -392,7 +393,7 @@ module REXML
             elsif @source.match("NOTATION", true)
               base_error_message = "Malformed notation declaration"
               unless @source.match(/\s+/um, true)
-                if @source.match(">")
+                if @source.match?(">")
                   message = "#{base_error_message}: name is missing"
                 else
                   message = "#{base_error_message}: invalid name"
@@ -453,7 +454,7 @@ module REXML
               return [ :end_element, last_tag ]
             elsif @source.match("!", true)
               md = @source.match(/([^>]*>)/um)
-              #STDERR.puts "SOURCE BUFFER = #{source.buffer}, #{source.buffer.size}"
+              # STDERR.puts "SOURCE BUFFER = #{source.buffer}, #{source.buffer.size}"
               raise REXML::ParseException.new("Malformed node", @source) unless md
               if md[0][0] == ?-
                 md = @source.match(/--(.*?)-->/um, true)
@@ -467,7 +468,7 @@ module REXML
                 md = @source.match(/\[CDATA\[(.*?)\]\]>/um, true)
                 return [ :cdata, md[1] ] if md
               end
-              raise REXML::ParseException.new( "Declarations can only occur "+
+              raise REXML::ParseException.new("Declarations can only occur "+
                 "in the doctype declaration.", @source)
             elsif @source.match("?", true)
               return process_instruction
@@ -487,7 +488,7 @@ module REXML
               # Verify that all of the prefixes have been defined
               for prefix in @prefixes
                 unless @namespaces.key?(prefix)
-                  raise UndefinedNamespaceException.new(prefix,@source,self)
+                  raise UndefinedNamespaceException.new(prefix, @source, self)
                 end
               end
 
@@ -498,7 +499,7 @@ module REXML
                 if @tags.empty? and @have_root
                   raise ParseException.new("Malformed XML: Extra tag at the end of the document (got '<#{tag}')", @source)
                 end
-                @tags.push( tag )
+                @tags.push(tag)
               end
               @have_root = true
               return [ :start_element, tag, attributes ]
@@ -525,54 +526,54 @@ module REXML
         rescue REXML::ParseException
           raise
         rescue => error
-          raise REXML::ParseException.new( "Exception parsing",
-            @source, self, (error ? error : $!) )
+          raise REXML::ParseException.new("Exception parsing",
+            @source, self, (error ? error : $!))
         end
-        return [ :dummy ]
+        [ :dummy ]
       end
       private :pull_event
 
-      def entity( reference, entities )
+      def entity(reference, entities)
         return unless entities
 
         value = entities[ reference ]
         return if value.nil?
 
         record_entity_expansion
-        unnormalize( value, entities )
+        unnormalize(value, entities)
       end
 
       # Escapes all possible entities
-      def normalize( input, entities=nil, entity_filter=nil )
+      def normalize(input, entities = nil, entity_filter = nil)
         copy = input.clone
         # Doing it like this rather than in a loop improves the speed
-        copy.gsub!( EREFERENCE, '&amp;' )
+        copy.gsub!(EREFERENCE, "&amp;")
         entities.each do |key, value|
-          copy.gsub!( value, "&#{key};" ) unless entity_filter and
+          copy.gsub!(value, "&#{key};") unless entity_filter and
                                       entity_filter.include?(entity)
         end if entities
-        copy.gsub!( EREFERENCE, '&amp;' )
+        copy.gsub!(EREFERENCE, "&amp;")
         DEFAULT_ENTITIES.each do |key, value|
-          copy.gsub!( value[3], value[1] )
+          copy.gsub!(value[3], value[1])
         end
         copy
       end
 
       # Unescapes all possible entities
-      def unnormalize( string, entities=nil, filter=nil )
+      def unnormalize(string, entities = nil, filter = nil)
         if string.include?("\r")
-          rv = string.gsub( Private::CARRIAGE_RETURN_NEWLINE_PATTERN, "\n" )
+          rv = string.gsub(Private::CARRIAGE_RETURN_NEWLINE_PATTERN, "\n")
         else
           rv = string.dup
         end
-        matches = rv.scan( REFERENCE_RE )
+        matches = rv.scan(REFERENCE_RE)
         return rv if matches.size == 0
-        rv.gsub!( Private::CHARACTER_REFERENCES ) {
+        rv.gsub!(Private::CHARACTER_REFERENCES) {
           m=$1
           m = "0#{m}" if m[0] == ?x
-          [Integer(m)].pack('U*')
+          [Integer(m)].pack("U*")
         }
-        matches.collect!{|x|x[0]}.compact!
+        matches.collect! { |x|x[0] }.compact!
         if filter
           matches.reject! do |entity_reference|
             filter.include?(entity_reference)
@@ -581,7 +582,7 @@ module REXML
         if matches.size > 0
           matches.tally.each do |entity_reference, n|
             entity_expansion_count_before = @entity_expansion_count
-            entity_value = entity( entity_reference, entities )
+            entity_value = entity(entity_reference, entities)
             if entity_value
               if n > 1
                 entity_expansion_count_delta =
@@ -589,249 +590,249 @@ module REXML
                 record_entity_expansion(entity_expansion_count_delta * (n - 1))
               end
               re = Private::DEFAULT_ENTITIES_PATTERNS[entity_reference] || /&#{entity_reference};/
-              rv.gsub!( re, entity_value )
+              rv.gsub!(re, entity_value)
               if rv.bytesize > @entity_expansion_text_limit
                 raise "entity expansion has grown too large"
               end
             else
               er = DEFAULT_ENTITIES[entity_reference]
-              rv.gsub!( er[0], er[2] ) if er
+              rv.gsub!(er[0], er[2]) if er
             end
           end
-          rv.gsub!( Private::DEFAULT_ENTITIES_PATTERNS['amp'], '&' )
+          rv.gsub!(Private::DEFAULT_ENTITIES_PATTERNS["amp"], "&")
         end
         rv
       end
 
       private
-      def add_namespace(prefix, uri)
-        @namespaces_restore_stack.last[prefix] = @namespaces[prefix]
-        if uri.nil?
-          @namespaces.delete(prefix)
-        else
-          @namespaces[prefix] = uri
-        end
-      end
-
-      def push_namespaces_restore
-        namespaces_restore = {}
-        @namespaces_restore_stack.push(namespaces_restore)
-        namespaces_restore
-      end
-
-      def pop_namespaces_restore
-        namespaces_restore = @namespaces_restore_stack.pop
-        namespaces_restore.each do |prefix, uri|
+        def add_namespace(prefix, uri)
+          @namespaces_restore_stack.last[prefix] = @namespaces[prefix]
           if uri.nil?
             @namespaces.delete(prefix)
           else
             @namespaces[prefix] = uri
           end
         end
-      end
 
-      def record_entity_expansion(delta=1)
-        @entity_expansion_count += delta
-        if @entity_expansion_count > @entity_expansion_limit
-          raise "number of entity expansions exceeded, processing aborted."
+        def push_namespaces_restore
+          namespaces_restore = {}
+          @namespaces_restore_stack.push(namespaces_restore)
+          namespaces_restore
         end
-      end
 
-      def need_source_encoding_update?(xml_declaration_encoding)
-        return false if xml_declaration_encoding.nil?
-        return false if /\AUTF-16\z/i =~ xml_declaration_encoding
-        true
-      end
-
-      def parse_name(base_error_message)
-        md = @source.match(Private::NAME_PATTERN, true)
-        unless md
-          if @source.match(/\S/um)
-            message = "#{base_error_message}: invalid name"
-          else
-            message = "#{base_error_message}: name is missing"
-          end
-          raise REXML::ParseException.new(message, @source)
-        end
-        md[0]
-      end
-
-      def parse_id(base_error_message,
-                   accept_external_id:,
-                   accept_public_id:)
-        if accept_external_id and (md = @source.match(EXTERNAL_ID_PUBLIC, true))
-          pubid = system = nil
-          pubid_literal = md[1]
-          pubid = pubid_literal[1..-2] if pubid_literal # Remove quote
-          system_literal = md[2]
-          system = system_literal[1..-2] if system_literal # Remove quote
-          ["PUBLIC", pubid, system]
-        elsif accept_public_id and (md = @source.match(PUBLIC_ID, true))
-          pubid = system = nil
-          pubid_literal = md[1]
-          pubid = pubid_literal[1..-2] if pubid_literal # Remove quote
-          ["PUBLIC", pubid, nil]
-        elsif accept_external_id and (md = @source.match(EXTERNAL_ID_SYSTEM, true))
-          system = nil
-          system_literal = md[1]
-          system = system_literal[1..-2] if system_literal # Remove quote
-          ["SYSTEM", nil, system]
-        else
-          details = parse_id_invalid_details(accept_external_id: accept_external_id,
-                                             accept_public_id: accept_public_id)
-          message = "#{base_error_message}: #{details}"
-          raise REXML::ParseException.new(message, @source)
-        end
-      end
-
-      def parse_id_invalid_details(accept_external_id:,
-                                   accept_public_id:)
-        public = /\A\s*PUBLIC/um
-        system = /\A\s*SYSTEM/um
-        if (accept_external_id or accept_public_id) and @source.match(/#{public}/um)
-          if @source.match(/#{public}(?:\s+[^'"]|\s*[\[>])/um)
-            return "public ID literal is missing"
-          end
-          unless @source.match(/#{public}\s+#{PUBIDLITERAL}/um)
-            return "invalid public ID literal"
-          end
-          if accept_public_id
-            if @source.match(/#{public}\s+#{PUBIDLITERAL}\s+[^'"]/um)
-              return "system ID literal is missing"
+        def pop_namespaces_restore
+          namespaces_restore = @namespaces_restore_stack.pop
+          namespaces_restore.each do |prefix, uri|
+            if uri.nil?
+              @namespaces.delete(prefix)
+            else
+              @namespaces[prefix] = uri
             end
-            unless @source.match(/#{public}\s+#{PUBIDLITERAL}\s+#{SYSTEMLITERAL}/um)
+          end
+        end
+
+        def record_entity_expansion(delta = 1)
+          @entity_expansion_count += delta
+          if @entity_expansion_count > @entity_expansion_limit
+            raise "number of entity expansions exceeded, processing aborted."
+          end
+        end
+
+        def need_source_encoding_update?(xml_declaration_encoding)
+          return false if xml_declaration_encoding.nil?
+          return false if /\AUTF-16\z/i.match?(xml_declaration_encoding)
+          true
+        end
+
+        def parse_name(base_error_message)
+          md = @source.match(Private::NAME_PATTERN, true)
+          unless md
+            if @source.match?(/\S/um)
+              message = "#{base_error_message}: invalid name"
+            else
+              message = "#{base_error_message}: name is missing"
+            end
+            raise REXML::ParseException.new(message, @source)
+          end
+          md[0]
+        end
+
+        def parse_id(base_error_message,
+                     accept_external_id:,
+                     accept_public_id:)
+          if accept_external_id and (md = @source.match(EXTERNAL_ID_PUBLIC, true))
+            pubid = system = nil
+            pubid_literal = md[1]
+            pubid = pubid_literal[1..-2] if pubid_literal # Remove quote
+            system_literal = md[2]
+            system = system_literal[1..-2] if system_literal # Remove quote
+            ["PUBLIC", pubid, system]
+          elsif accept_public_id and (md = @source.match(PUBLIC_ID, true))
+            pubid = nil
+            pubid_literal = md[1]
+            pubid = pubid_literal[1..-2] if pubid_literal # Remove quote
+            ["PUBLIC", pubid, nil]
+          elsif accept_external_id and (md = @source.match(EXTERNAL_ID_SYSTEM, true))
+            system = nil
+            system_literal = md[1]
+            system = system_literal[1..-2] if system_literal # Remove quote
+            ["SYSTEM", nil, system]
+          else
+            details = parse_id_invalid_details(accept_external_id: accept_external_id,
+                                               accept_public_id: accept_public_id)
+            message = "#{base_error_message}: #{details}"
+            raise REXML::ParseException.new(message, @source)
+          end
+        end
+
+        def parse_id_invalid_details(accept_external_id:,
+                                     accept_public_id:)
+          public = /\A\s*PUBLIC/um
+          system = /\A\s*SYSTEM/um
+          if (accept_external_id or accept_public_id) and @source.match(/#{public}/um)
+            if @source.match?(/#{public}(?:\s+[^'"]|\s*[\[>])/um)
+              return "public ID literal is missing"
+            end
+            unless @source.match?(/#{public}\s+#{PUBIDLITERAL}/um)
+              return "invalid public ID literal"
+            end
+            if accept_public_id
+              if @source.match?(/#{public}\s+#{PUBIDLITERAL}\s+[^'"]/um)
+                return "system ID literal is missing"
+              end
+              unless @source.match?(/#{public}\s+#{PUBIDLITERAL}\s+#{SYSTEMLITERAL}/um)
+                return "invalid system literal"
+              end
+              "garbage after system literal"
+            else
+              "garbage after public ID literal"
+            end
+          elsif accept_external_id and @source.match(/#{system}/um)
+            if @source.match?(/#{system}(?:\s+[^'"]|\s*[\[>])/um)
+              return "system literal is missing"
+            end
+            unless @source.match?(/#{system}\s+#{SYSTEMLITERAL}/um)
               return "invalid system literal"
             end
             "garbage after system literal"
           else
-            "garbage after public ID literal"
-          end
-        elsif accept_external_id and @source.match(/#{system}/um)
-          if @source.match(/#{system}(?:\s+[^'"]|\s*[\[>])/um)
-            return "system literal is missing"
-          end
-          unless @source.match(/#{system}\s+#{SYSTEMLITERAL}/um)
-            return "invalid system literal"
-          end
-          "garbage after system literal"
-        else
-          unless @source.match(/\A\s*(?:PUBLIC|SYSTEM)\s/um)
-            return "invalid ID type"
-          end
-          "ID type is missing"
-        end
-      end
-
-      def process_instruction
-        name = parse_name("Malformed XML: Invalid processing instruction node")
-        if @source.match(/\s+/um, true)
-          match_data = @source.match(/(.*?)\?>/um, true)
-          unless match_data
-            raise ParseException.new("Malformed XML: Unclosed processing instruction", @source)
-          end
-          content = match_data[1]
-        else
-          content = nil
-          unless @source.match("?>", true)
-            raise ParseException.new("Malformed XML: Unclosed processing instruction", @source)
+            unless @source.match?(/\A\s*(?:PUBLIC|SYSTEM)\s/um)
+              return "invalid ID type"
+            end
+            "ID type is missing"
           end
         end
-        if name == "xml"
-          if @document_status
-            raise ParseException.new("Malformed XML: XML declaration is not at the start", @source)
-          end
-          version = VERSION.match(content)
-          version = version[1] unless version.nil?
-          encoding = ENCODING.match(content)
-          encoding = encoding[1] unless encoding.nil?
-          if need_source_encoding_update?(encoding)
-            @source.encoding = encoding
-          end
-          if encoding.nil? and /\AUTF-16(?:BE|LE)\z/i =~ @source.encoding
-            encoding = "UTF-16"
-          end
-          standalone = STANDALONE.match(content)
-          standalone = standalone[1] unless standalone.nil?
-          return [ :xmldecl, version, encoding, standalone ]
-        end
-        [:processing_instruction, name, content]
-      end
 
-      def parse_attributes(prefixes)
-        attributes = {}
-        expanded_names = {}
-        closed = false
-        while true
-          if @source.match(">", true)
-            return attributes, closed
-          elsif @source.match("/>", true)
-            closed = true
-            return attributes, closed
-          elsif match = @source.match(QNAME, true)
-            name = match[1]
-            prefix = match[2]
-            local_part = match[3]
-
-            unless @source.match(/\s*=\s*/um, true)
-              message = "Missing attribute equal: <#{name}>"
-              raise REXML::ParseException.new(message, @source)
+        def process_instruction
+          name = parse_name("Malformed XML: Invalid processing instruction node")
+          if @source.match(/\s+/um, true)
+            match_data = @source.match(/(.*?)\?>/um, true)
+            unless match_data
+              raise ParseException.new("Malformed XML: Unclosed processing instruction", @source)
             end
-            unless match = @source.match(/(['"])/, true)
-              message = "Missing attribute value start quote: <#{name}>"
-              raise REXML::ParseException.new(message, @source)
-            end
-            quote = match[1]
-            start_position = @source.position
-            value = @source.read_until(quote)
-            unless value.chomp!(quote)
-              @source.position = start_position
-              message = "Missing attribute value end quote: <#{name}>: <#{quote}>"
-              raise REXML::ParseException.new(message, @source)
-            end
-            @source.match(/\s*/um, true)
-            if prefix == "xmlns"
-              if local_part == "xml"
-                if value != Private::XML_PREFIXED_NAMESPACE
-                  msg = "The 'xml' prefix must not be bound to any other namespace "+
-                    "(http://www.w3.org/TR/REC-xml-names/#ns-decl)"
-                  raise REXML::ParseException.new( msg, @source, self )
-                end
-              elsif local_part == "xmlns"
-                msg = "The 'xmlns' prefix must not be declared "+
-                  "(http://www.w3.org/TR/REC-xml-names/#ns-decl)"
-                raise REXML::ParseException.new( msg, @source, self)
-              end
-              add_namespace(local_part, value)
-            elsif prefix
-              prefixes << prefix unless prefix == "xml"
-            end
-
-            if attributes[name]
-              msg = "Duplicate attribute #{name.inspect}"
-              raise REXML::ParseException.new(msg, @source, self)
-            end
-
-            unless prefix == "xmlns"
-              uri = @namespaces[prefix]
-              expanded_name = [uri, local_part]
-              existing_prefix = expanded_names[expanded_name]
-              if existing_prefix
-                message = "Namespace conflict in adding attribute " +
-                          "\"#{local_part}\": " +
-                          "Prefix \"#{existing_prefix}\" = \"#{uri}\" and " +
-                          "prefix \"#{prefix}\" = \"#{uri}\""
-                raise REXML::ParseException.new(message, @source, self)
-              end
-              expanded_names[expanded_name] = prefix
-            end
-
-            attributes[name] = value
+            content = match_data[1]
           else
-            message = "Invalid attribute name: <#{@source.buffer.split(%r{[/>\s]}).first}>"
-            raise REXML::ParseException.new(message, @source)
+            content = nil
+            unless @source.match("?>", true)
+              raise ParseException.new("Malformed XML: Unclosed processing instruction", @source)
+            end
+          end
+          if name == "xml"
+            if @document_status
+              raise ParseException.new("Malformed XML: XML declaration is not at the start", @source)
+            end
+            version = VERSION.match(content)
+            version = version[1] unless version.nil?
+            encoding = ENCODING.match(content)
+            encoding = encoding[1] unless encoding.nil?
+            if need_source_encoding_update?(encoding)
+              @source.encoding = encoding
+            end
+            if encoding.nil? and /\AUTF-16(?:BE|LE)\z/i =~ @source.encoding
+              encoding = "UTF-16"
+            end
+            standalone = STANDALONE.match(content)
+            standalone = standalone[1] unless standalone.nil?
+            return [ :xmldecl, version, encoding, standalone ]
+          end
+          [:processing_instruction, name, content]
+        end
+
+        def parse_attributes(prefixes)
+          attributes = {}
+          expanded_names = {}
+          closed = false
+          while true
+            if @source.match(">", true)
+              return attributes, closed
+            elsif @source.match("/>", true)
+              closed = true
+              return attributes, closed
+            elsif match = @source.match(QNAME, true)
+              name = match[1]
+              prefix = match[2]
+              local_part = match[3]
+
+              unless @source.match(/\s*=\s*/um, true)
+                message = "Missing attribute equal: <#{name}>"
+                raise REXML::ParseException.new(message, @source)
+              end
+              unless match = @source.match(/(['"])/, true)
+                message = "Missing attribute value start quote: <#{name}>"
+                raise REXML::ParseException.new(message, @source)
+              end
+              quote = match[1]
+              start_position = @source.position
+              value = @source.read_until(quote)
+              unless value.chomp!(quote)
+                @source.position = start_position
+                message = "Missing attribute value end quote: <#{name}>: <#{quote}>"
+                raise REXML::ParseException.new(message, @source)
+              end
+              @source.match(/\s*/um, true)
+              if prefix == "xmlns"
+                if local_part == "xml"
+                  if value != Private::XML_PREFIXED_NAMESPACE
+                    msg = "The 'xml' prefix must not be bound to any other namespace "+
+                      "(http://www.w3.org/TR/REC-xml-names/#ns-decl)"
+                    raise REXML::ParseException.new(msg, @source, self)
+                  end
+                elsif local_part == "xmlns"
+                  msg = "The 'xmlns' prefix must not be declared "+
+                    "(http://www.w3.org/TR/REC-xml-names/#ns-decl)"
+                  raise REXML::ParseException.new(msg, @source, self)
+                end
+                add_namespace(local_part, value)
+              elsif prefix
+                prefixes << prefix unless prefix == "xml"
+              end
+
+              if attributes[name]
+                msg = "Duplicate attribute #{name.inspect}"
+                raise REXML::ParseException.new(msg, @source, self)
+              end
+
+              unless prefix == "xmlns"
+                uri = @namespaces[prefix]
+                expanded_name = [uri, local_part]
+                existing_prefix = expanded_names[expanded_name]
+                if existing_prefix
+                  message = "Namespace conflict in adding attribute " +
+                            "\"#{local_part}\": " +
+                            "Prefix \"#{existing_prefix}\" = \"#{uri}\" and " +
+                            "prefix \"#{prefix}\" = \"#{uri}\""
+                  raise REXML::ParseException.new(message, @source, self)
+                end
+                expanded_names[expanded_name] = prefix
+              end
+
+              attributes[name] = value
+            else
+              message = "Invalid attribute name: <#{@source.buffer.split(%r{[/>\s]}).first}>"
+              raise REXML::ParseException.new(message, @source)
+            end
           end
         end
-      end
     end
   end
 end

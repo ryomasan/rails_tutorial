@@ -1,2 +1,2 @@
-$:.unshift File.expand_path('../../lib', __FILE__)
-require 'bcrypt_pbkdf'
+$:.unshift File.expand_path("../../lib", __FILE__)
+require "bcrypt_pbkdf"

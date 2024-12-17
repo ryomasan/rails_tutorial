@@ -126,12 +126,12 @@ module ActiveRecord
 
       def tags_formatter=(format) # :nodoc:
         @formatter = case format
-        when :legacy
-          LegacyFormatter
-        when :sqlcommenter
-          SQLCommenter
-        else
-          raise ArgumentError, "Formatter is unsupported: #{format}"
+                     when :legacy
+                       LegacyFormatter
+                     when :sqlcommenter
+                       SQLCommenter
+                     else
+                       raise ArgumentError, "Formatter is unsupported: #{format}"
         end
         @tags_formatter = format
       end

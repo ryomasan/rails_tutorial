@@ -3,30 +3,28 @@
 ## copyright(c) 2006-2011 kuwata-lab.com all rights reserved.
 ##
 
-require 'erubis/engine'
-require 'erubis/enhancer'
+require "erubis/engine"
+require "erubis/enhancer"
 
 
 module Erubis
-
-
   module JavaGenerator
     include Generator
 
-    def self.supported_properties()   # :nodoc:
-      return [
-              [:indent,   '',       "indent spaces (ex. '  ')"],
-              [:bufvar,   '_buf',   "output buffer variable name"],
-              [:bufclass, 'StringBuffer', "output buffer class (ex. 'StringBuilder')"],
+    def self.supported_properties   # :nodoc:
+      [
+              [:indent,   "",       "indent spaces (ex. '  ')"],
+              [:bufvar,   "_buf",   "output buffer variable name"],
+              [:bufclass, "StringBuffer", "output buffer class (ex. 'StringBuilder')"],
             ]
     end
 
-    def init_generator(properties={})
+    def init_generator(properties = {})
       super
-      @escapefunc ||= 'escape'
-      @indent = properties[:indent] || ''
-      @bufvar = properties[:bufvar] || '_buf'
-      @bufclass = properties[:bufclass] || 'StringBuffer'
+      @escapefunc ||= "escape"
+      @indent = properties[:indent] || ""
+      @bufvar = properties[:bufvar] || "_buf"
+      @bufclass = properties[:bufclass] || "StringBuffer"
     end
 
     def add_preamble(src)
@@ -35,16 +33,16 @@ module Erubis
 
     def escape_text(text)
       @@table_ ||= { "\r"=>"\\r", "\n"=>"\\n", "\t"=>"\\t", '"'=>'\\"', "\\"=>"\\\\" }
-      return text.gsub!(/[\r\n\t"\\]/) { |m| @@table_[m] } || text
+      text.gsub!(/[\r\n\t"\\]/) { |m| @@table_[m] } || text
     end
 
     def add_text(src, text)
       return if text.empty?
-      src << (src.empty? || src[-1] == ?\n ? @indent : ' ')
+      src << (src.empty? || src[-1] == ?\n ? @indent : " ")
       src << @bufvar << ".append("
       i = 0
       text.each_line do |line|
-        src << "\n" << @indent << '          + ' if i > 0
+        src << "\n" << @indent << "          + " if i > 0
         i += 1
         src << '"' << escape_text(line) << '"'
       end
@@ -74,9 +72,8 @@ module Erubis
     def add_postamble(src)
       src << "\n" if src[-1] == ?;
       src << @indent << "return " << @bufvar << ".toString();\n"
-      #src << @indent << "System.out.print(" << @bufvar << ".toString());\n"
+      # src << @indent << "System.out.print(" << @bufvar << ".toString());\n"
     end
-
   end
 
 
@@ -93,18 +90,16 @@ module Erubis
   end
 
 
-  #class XmlEjava < Ejava
+  # class XmlEjava < Ejava
   #  include EscapeEnhancer
-  #end
+  # end
 
   class PI::Ejava < PI::Engine
     include JavaGenerator
 
-    def init_converter(properties={})
-      @pi = 'java'
+    def init_converter(properties = {})
+      @pi = "java"
       super(properties)
     end
-
   end
-
 end

@@ -1,7 +1,7 @@
 # frozen_string_literal: false
 
-require_relative 'encoding'
-require_relative 'source'
+require_relative "encoding"
+require_relative "source"
 
 module REXML
   # NEEDS DOCUMENTATION
@@ -17,7 +17,7 @@ module REXML
     attr_accessor :version, :standalone
     attr_reader :writeencoding, :writethis
 
-    def initialize(version=DEFAULT_VERSION, encoding=nil, standalone=nil)
+    def initialize(version = DEFAULT_VERSION, encoding = nil, standalone = nil)
       @writethis = true
       @writeencoding = !encoding.nil?
       if version.kind_of? XMLDecl
@@ -46,21 +46,21 @@ module REXML
     #   Ignored
     # ie_hack::
     #   Ignored
-    def write(writer, indent=-1, transitive=false, ie_hack=false)
+    def write(writer, indent = -1, transitive = false, ie_hack = false)
       return nil unless @writethis or writer.kind_of? Output
       writer << START
       writer << " #{content encoding}"
       writer << STOP
     end
 
-    def ==( other )
+    def ==(other)
       other.kind_of?(XMLDecl) and
       other.version == @version and
       other.encoding == self.encoding and
       other.standalone == @standalone
     end
 
-    def xmldecl version, encoding, standalone
+    def xmldecl(version, encoding, standalone)
       @version = version
       self.encoding = encoding
       @standalone = standalone
@@ -73,7 +73,7 @@ module REXML
     alias :stand_alone? :standalone
     alias :old_enc= :encoding=
 
-    def encoding=( enc )
+    def encoding=(enc)
       if enc.nil?
         self.old_enc = "UTF-8"
         @writeencoding = false
@@ -90,7 +90,7 @@ module REXML
     #
     # Note that XML 1.1 documents *must* include an XML declaration
     def XMLDecl.default
-      rv = XMLDecl.new( "1.0" )
+      rv = XMLDecl.new("1.0")
       rv.nowrite
       rv
     end
@@ -108,23 +108,23 @@ module REXML
     end
 
     private
-    def content(enc)
-      context = nil
-      context = parent.context if parent
-      if context and context[:prologue_quote] == :quote
-        quote = "\""
-      else
-        quote = "'"
-      end
+      def content(enc)
+        context = nil
+        context = parent.context if parent
+        if context and context[:prologue_quote] == :quote
+          quote = "\""
+        else
+          quote = "'"
+        end
 
-      rv = "version=#{quote}#{@version}#{quote}"
-      if @writeencoding or enc !~ /\Autf-8\z/i
-        rv << " encoding=#{quote}#{enc}#{quote}"
+        rv = "version=#{quote}#{@version}#{quote}"
+        if @writeencoding or enc !~ /\Autf-8\z/i
+          rv << " encoding=#{quote}#{enc}#{quote}"
+        end
+        if @standalone
+          rv << " standalone=#{quote}#{@standalone}#{quote}"
+        end
+        rv
       end
-      if @standalone
-        rv << " standalone=#{quote}#{@standalone}#{quote}"
-      end
-      rv
-    end
   end
 end

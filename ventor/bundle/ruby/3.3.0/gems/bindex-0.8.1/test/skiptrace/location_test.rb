@@ -1,8 +1,8 @@
-require 'test_helper'
+require "test_helper"
 
 module Skiptrace
   class LocationTest < Test
-    test 'behaves like Thread::Backtrace::Location' do
+    test "behaves like Thread::Backtrace::Location" do
       native_location = caller_locations.first
       location = Skiptrace::Location.new(native_location, binding)
 

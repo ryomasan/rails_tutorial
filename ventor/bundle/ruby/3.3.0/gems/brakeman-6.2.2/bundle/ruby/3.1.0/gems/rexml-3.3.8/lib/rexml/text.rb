@@ -1,10 +1,11 @@
 # frozen_string_literal: true
-require_relative 'security'
-require_relative 'entity'
-require_relative 'doctype'
-require_relative 'child'
-require_relative 'doctype'
-require_relative 'parseexception'
+
+require_relative "security"
+require_relative "entity"
+require_relative "doctype"
+require_relative "child"
+require_relative "doctype"
+require_relative "parseexception"
 
 module REXML
   # Represents text nodes in an XML document
@@ -12,9 +13,9 @@ module REXML
     include Comparable
     # The order in which the substitutions occur
     SPECIALS = [ /&(?!#?[\w-]+;)/u, /</u, />/u, /"/u, /'/u, /\r/u ]
-    SUBSTITUTES = ['&amp;', '&lt;', '&gt;', '&quot;', '&apos;', '&#13;']
+    SUBSTITUTES = ["&amp;", "&lt;", "&gt;", "&quot;", "&apos;", "&#13;"]
     # Characters which are substituted in written strings
-    SLAICEPS = [ '<', '>', '"', "'", '&' ]
+    SLAICEPS = [ "<", ">", '"', "'", "&" ]
     SETUTITSBUS = [ /&lt;/u, /&gt;/u, /&quot;/u, /&apos;/u, /&amp;/u ]
 
     # If +raw+ is true, then REXML leaves the value alone
@@ -30,16 +31,16 @@ module REXML
     ]
 
     if String.method_defined? :encode
-      VALID_XML_CHARS = Regexp.new('^['+
+      VALID_XML_CHARS = Regexp.new("^["+
         VALID_CHAR.map { |item|
           case item
           when Integer
-            [item].pack('U').force_encoding('utf-8')
+            [item].pack("U").force_encoding("utf-8")
           when Range
-            [item.first, '-'.ord, item.last].pack('UUU').force_encoding('utf-8')
+            [item.first, "-".ord, item.last].pack("UUU").force_encoding("utf-8")
           end
         }.join +
-      ']*$')
+      "]*$")
     else
       VALID_XML_CHARS = /^(
            [\x09\x0A\x0D\x20-\x7E]            # ASCII
@@ -52,7 +53,7 @@ module REXML
          |  \xF0[\x90-\xBF][\x80-\xBF]{2}     # planes 1-3
          | [\xF1-\xF3][\x80-\xBF]{3}          # planes 4-15
          |  \xF4[\x80-\x8F][\x80-\xBF]{2}     # plane 16
-       )*$/nx;
+       )*$/nx
     end
 
     # Constructor
@@ -91,15 +92,14 @@ module REXML
     # In the last example, the +entity_filter+ argument is ignored.
     #
     # +illegal+ INTERNAL USE ONLY
-    def initialize(arg, respect_whitespace=false, parent=nil, raw=nil,
-      entity_filter=nil, illegal=NEEDS_A_SECOND_CHECK )
-
+    def initialize(arg, respect_whitespace = false, parent = nil, raw = nil,
+      entity_filter = nil, illegal = NEEDS_A_SECOND_CHECK)
       @raw = false
       @parent = nil
       @entity_filter = nil
 
       if parent
-        super( parent )
+        super(parent)
         @raw = parent.raw
       end
 
@@ -122,14 +122,13 @@ module REXML
       Text.check(@string, illegal, doctype) if @raw
     end
 
-    def parent= parent
+    def parent=(parent)
       super(parent)
       Text.check(@string, NEEDS_A_SECOND_CHECK, doctype) if @raw and @parent
     end
 
     # check for illegal characters
-    def Text.check string, pattern, doctype
-
+    def Text.check(string, pattern, doctype)
       # illegal anywhere
       if !string.match?(VALID_XML_CHARS)
         if String.method_defined? :encode
@@ -142,7 +141,7 @@ module REXML
           end
         else
           string.scan(/[\x00-\x7F]|[\x80-\xBF][\xC0-\xF0]*|[\xC0-\xF0]/n) do |c|
-            case c.unpack('U')
+            case c.unpack("U")
             when *VALID_CHAR
             else
               raise "Illegal character #{c.inspect} in raw string #{string.inspect}"
@@ -169,7 +168,7 @@ module REXML
         if value[0] == "#"
           character_reference = value[1..-1]
 
-          unless (/\A(\d+|x[0-9a-fA-F]+)\z/.match?(character_reference))
+          unless /\A(\d+|x[0-9a-fA-F]+)\z/.match?(character_reference)
             if character_reference[0] == "x" || character_reference[-1] == "x"
               raise "Illegal character \"#{string[index]}\" in raw string #{string.inspect}"
             else
@@ -202,7 +201,7 @@ module REXML
 
 
     def clone
-      return Text.new(self, true)
+      Text.new(self, true)
     end
 
 
@@ -211,8 +210,8 @@ module REXML
     #
     # +returns+ the text itself to enable method chain like
     # 'text << "XXX" << "YYY"'.
-    def <<( to_append )
-      @string << to_append.gsub( /\r\n?/, "\n" )
+    def <<(to_append)
+      @string << to_append.gsub(/\r\n?/, "\n")
       clear_cache
       self
     end
@@ -220,7 +219,7 @@ module REXML
 
     # +other+ a String or a Text
     # +returns+ the result of (to_s <=> arg.to_s)
-    def <=>( other )
+    def <=>(other)
       to_s() <=> other.to_s
     end
 
@@ -247,7 +246,7 @@ module REXML
     #   u.to_s   #-> "sean russell"
     def to_s
       return @string if @raw
-      @normalized ||= Text::normalize( @string, doctype, @entity_filter )
+      @normalized ||= Text.normalize(@string, doctype, @entity_filter)
     end
 
     def inspect
@@ -268,7 +267,7 @@ module REXML
     #   u = Text.new( "sean russell", false, nil, true )
     #   u.value   #-> "sean russell"
     def value
-      @unnormalized ||= Text::unnormalize(@string, doctype,
+      @unnormalized ||= Text.unnormalize(@string, doctype,
                                           entity_expansion_text_limit: document&.entity_expansion_text_limit)
     end
 
@@ -279,46 +278,46 @@ module REXML
     #   e.add_text( "foo" )   # <a>foo</a>
     #   e[0].value = "bar"    # <a>bar</a>
     #   e[0].value = "<a>"    # <a>&lt;a&gt;</a>
-    def value=( val )
-      @string = val.gsub( /\r\n?/, "\n" )
+    def value=(val)
+      @string = val.gsub(/\r\n?/, "\n")
       clear_cache
       @raw = false
     end
 
-    def wrap(string, width, addnewline=false)
+    def wrap(string, width, addnewline = false)
       # Recursively wrap string at width.
       return string if string.length <= width
-      place = string.rindex(' ', width) # Position in string with last ' ' before cutoff
+      place = string.rindex(" ", width) # Position in string with last ' ' before cutoff
       if addnewline then
-        return "\n" + string[0,place] + "\n" + wrap(string[place+1..-1], width)
+        "\n" + string[0, place] + "\n" + wrap(string[place+1..-1], width)
       else
-        return string[0,place] + "\n" + wrap(string[place+1..-1], width)
+        string[0, place] + "\n" + wrap(string[place+1..-1], width)
       end
     end
 
-    def indent_text(string, level=1, style="\t", indentfirstline=true)
+    def indent_text(string, level = 1, style = "\t", indentfirstline = true)
       return string if level < 0
-      new_string = ''
+      new_string = ""
       string.each_line { |line|
         indent_string = style * level
-        new_line = (indent_string + line).sub(/[\s]+$/,'')
+        new_line = (indent_string + line).sub(/[\s]+$/, "")
         new_string << new_line
       }
       new_string.strip! unless indentfirstline
-      return new_string
+      new_string
     end
 
     # == DEPRECATED
     # See REXML::Formatters
     #
-    def write( writer, indent=-1, transitive=false, ie_hack=false )
+    def write(writer, indent = -1, transitive = false, ie_hack = false)
       Kernel.warn("#{self.class.name}.write is deprecated.  See REXML::Formatters", uplevel: 1)
       formatter = if indent > -1
-          REXML::Formatters::Pretty.new( indent )
-        else
-          REXML::Formatters::Default.new
-        end
-      formatter.write( self, writer )
+        REXML::Formatters::Pretty.new(indent)
+      else
+        REXML::Formatters::Default.new
+      end
+      formatter.write(self, writer)
     end
 
     # FIXME
@@ -326,7 +325,7 @@ module REXML
     def xpath
       path = @parent.xpath
       path += "/text()"
-      return path
+      path
     end
 
     # Writes out text, substituting special characters beforehand.
@@ -343,106 +342,106 @@ module REXML
     #     end
     #   }
     #   puts ascOut
-    def write_with_substitution out, input
+    def write_with_substitution(out, input)
       copy = input.clone
       # Doing it like this rather than in a loop improves the speed
-      copy.gsub!( SPECIALS[0], SUBSTITUTES[0] )
-      copy.gsub!( SPECIALS[1], SUBSTITUTES[1] )
-      copy.gsub!( SPECIALS[2], SUBSTITUTES[2] )
-      copy.gsub!( SPECIALS[3], SUBSTITUTES[3] )
-      copy.gsub!( SPECIALS[4], SUBSTITUTES[4] )
-      copy.gsub!( SPECIALS[5], SUBSTITUTES[5] )
+      copy.gsub!(SPECIALS[0], SUBSTITUTES[0])
+      copy.gsub!(SPECIALS[1], SUBSTITUTES[1])
+      copy.gsub!(SPECIALS[2], SUBSTITUTES[2])
+      copy.gsub!(SPECIALS[3], SUBSTITUTES[3])
+      copy.gsub!(SPECIALS[4], SUBSTITUTES[4])
+      copy.gsub!(SPECIALS[5], SUBSTITUTES[5])
       out << copy
     end
 
     private
-    def clear_cache
-      @normalized = nil
-      @unnormalized = nil
-    end
-
-    # Reads text, substituting entities
-    def Text::read_with_substitution( input, illegal=nil )
-      copy = input.clone
-
-      if copy =~ illegal
-        raise ParseException.new( "malformed text: Illegal character #$& in \"#{copy}\"" )
-      end if illegal
-
-      copy.gsub!( /\r\n?/, "\n" )
-      if copy.include? ?&
-        copy.gsub!( SETUTITSBUS[0], SLAICEPS[0] )
-        copy.gsub!( SETUTITSBUS[1], SLAICEPS[1] )
-        copy.gsub!( SETUTITSBUS[2], SLAICEPS[2] )
-        copy.gsub!( SETUTITSBUS[3], SLAICEPS[3] )
-        copy.gsub!( SETUTITSBUS[4], SLAICEPS[4] )
-        copy.gsub!( /&#0*((?:\d+)|(?:x[a-f0-9]+));/ ) {
-          m=$1
-          #m='0' if m==''
-          m = "0#{m}" if m[0] == ?x
-          [Integer(m)].pack('U*')
-        }
+      def clear_cache
+        @normalized = nil
+        @unnormalized = nil
       end
-      copy
-    end
 
-    EREFERENCE = /&(?!#{Entity::NAME};)/
-    # Escapes all possible entities
-    def Text::normalize( input, doctype=nil, entity_filter=nil )
-      copy = input.to_s
-      # Doing it like this rather than in a loop improves the speed
-      #copy = copy.gsub( EREFERENCE, '&amp;' )
-      copy = copy.gsub( "&", "&amp;" ) if copy.include?("&")
-      if doctype
-        # Replace all ampersands that aren't part of an entity
-        doctype.entities.each_value do |entity|
-          copy = copy.gsub( entity.value,
-            "&#{entity.name};" ) if entity.value and
-              not( entity_filter and entity_filter.include?(entity.name) )
+      # Reads text, substituting entities
+      def Text::read_with_substitution(input, illegal = nil)
+        copy = input.clone
+
+        if copy =~ illegal
+          raise ParseException.new("malformed text: Illegal character #$& in \"#{copy}\"")
+        end if illegal
+
+        copy.gsub!(/\r\n?/, "\n")
+        if copy.include? ?&
+          copy.gsub!(SETUTITSBUS[0], SLAICEPS[0])
+          copy.gsub!(SETUTITSBUS[1], SLAICEPS[1])
+          copy.gsub!(SETUTITSBUS[2], SLAICEPS[2])
+          copy.gsub!(SETUTITSBUS[3], SLAICEPS[3])
+          copy.gsub!(SETUTITSBUS[4], SLAICEPS[4])
+          copy.gsub!(/&#0*((?:\d+)|(?:x[a-f0-9]+));/) {
+            m=$1
+            # m='0' if m==''
+            m = "0#{m}" if m[0] == ?x
+            [Integer(m)].pack("U*")
+          }
         end
-      else
-        # Replace all ampersands that aren't part of an entity
-        DocType::DEFAULT_ENTITIES.each_value do |entity|
-          if copy.include?(entity.value)
-            copy = copy.gsub(entity.value, "&#{entity.name};" )
+        copy
+      end
+
+      EREFERENCE = /&(?!#{Entity::NAME};)/
+      # Escapes all possible entities
+      def Text::normalize(input, doctype = nil, entity_filter = nil)
+        copy = input.to_s
+        # Doing it like this rather than in a loop improves the speed
+        # copy = copy.gsub( EREFERENCE, '&amp;' )
+        copy = copy.gsub("&", "&amp;") if copy.include?("&")
+        if doctype
+          # Replace all ampersands that aren't part of an entity
+          doctype.entities.each_value do |entity|
+            copy = copy.gsub(entity.value,
+              "&#{entity.name};") if entity.value and
+                not(entity_filter and entity_filter.include?(entity.name))
+          end
+        else
+          # Replace all ampersands that aren't part of an entity
+          DocType::DEFAULT_ENTITIES.each_value do |entity|
+            if copy.include?(entity.value)
+              copy = copy.gsub(entity.value, "&#{entity.name};")
+            end
           end
         end
+        copy
       end
-      copy
-    end
 
-    # Unescapes all possible entities
-    def Text::unnormalize( string, doctype=nil, filter=nil, illegal=nil, entity_expansion_text_limit: nil )
-      entity_expansion_text_limit ||= Security.entity_expansion_text_limit
-      sum = 0
-      string.gsub( /\r\n?/, "\n" ).gsub( REFERENCE ) {
-        s = Text.expand($&, doctype, filter)
-        if sum + s.bytesize > entity_expansion_text_limit
-          raise "entity expansion has grown too large"
-        else
-          sum += s.bytesize
-        end
-        s
-      }
-    end
-
-    def Text.expand(ref, doctype, filter)
-      if ref[1] == ?#
-        if ref[2] == ?x
-          [ref[3...-1].to_i(16)].pack('U*')
-        else
-          [ref[2...-1].to_i].pack('U*')
-        end
-      elsif ref == '&amp;'
-        '&'
-      elsif filter and filter.include?( ref[1...-1] )
-        ref
-      elsif doctype
-        doctype.entity( ref[1...-1] ) or ref
-      else
-        entity_value = DocType::DEFAULT_ENTITIES[ ref[1...-1] ]
-        entity_value ? entity_value.value : ref
+      # Unescapes all possible entities
+      def Text::unnormalize(string, doctype = nil, filter = nil, illegal = nil, entity_expansion_text_limit: nil)
+        entity_expansion_text_limit ||= Security.entity_expansion_text_limit
+        sum = 0
+        string.gsub(/\r\n?/, "\n").gsub(REFERENCE) {
+          s = Text.expand($&, doctype, filter)
+          if sum + s.bytesize > entity_expansion_text_limit
+            raise "entity expansion has grown too large"
+          else
+            sum += s.bytesize
+          end
+          s
+        }
       end
-    end
+
+      def Text.expand(ref, doctype, filter)
+        if ref[1] == ?#
+          if ref[2] == ?x
+            [ref[3...-1].to_i(16)].pack("U*")
+          else
+            [ref[2...-1].to_i].pack("U*")
+          end
+        elsif ref == "&amp;"
+          "&"
+        elsif filter and filter.include?(ref[1...-1])
+          ref
+        elsif doctype
+          doctype.entity(ref[1...-1]) or ref
+        else
+          entity_value = DocType::DEFAULT_ENTITIES[ ref[1...-1] ]
+          entity_value ? entity_value.value : ref
+        end
+      end
   end
 end

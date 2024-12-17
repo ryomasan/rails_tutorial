@@ -8,7 +8,6 @@ module Haml
   #
   # @see Haml::Filters::Base
   module Filters
-
     extend self
 
     # @return [{String => Haml::Filters::Base}] a hash mapping filter names to
@@ -55,7 +54,7 @@ module Haml
 
       # All ":coffeescript" as alias for ":coffee", etc.
       if options.has_key?(:alias)
-        [options[:alias]].flatten.each {|x| Filters.defined[x.to_s] = filter}
+        [options[:alias]].flatten.each { |x| Filters.defined[x.to_s] = filter }
       end
       filter
     end
@@ -181,13 +180,13 @@ module Haml
             # newline so that the whole filter block doesn't take up
             # too many.
             text = %[\n#{text.sub(/\n"\Z/, "\\n\"")}]
-            push_script <<RUBY.rstrip, :escape_html => false
+            push_script <<RUBY.rstrip, escape_html: false
 find_and_preserve(#{filter.inspect}.render_with_options(#{text}, _hamlout.options))
 RUBY
             return
           end
 
-          rendered = Haml::Helpers::find_and_preserve(filter.render_with_options(text.to_s, compiler.options), compiler.options[:preserve])
+          rendered = Haml::Helpers.find_and_preserve(filter.render_with_options(text.to_s, compiler.options), compiler.options[:preserve])
           push_text("#{rendered.rstrip}\n")
         end
       end
@@ -210,9 +209,9 @@ RUBY
 
       # @see Base#render_with_options
       def render_with_options(text, options)
-        indent = options[:cdata] ? '    ' : '  ' # 4 or 2 spaces
+        indent = options[:cdata] ? "    " : "  " # 4 or 2 spaces
         if options[:format] == :html5
-          type = ''
+          type = ""
         else
           type = " type=#{options[:attr_wrapper]}text/javascript#{options[:attr_wrapper]}"
         end
@@ -231,9 +230,9 @@ RUBY
 
       # @see Base#render_with_options
       def render_with_options(text, options)
-        indent = options[:cdata] ? '    ' : '  ' # 4 or 2 spaces
+        indent = options[:cdata] ? "    " : "  " # 4 or 2 spaces
         if options[:format] == :html5
-          type = ''
+          type = ""
         else
           type = " type=#{options[:attr_wrapper]}text/css#{options[:attr_wrapper]}"
         end
@@ -277,7 +276,7 @@ RUBY
     # the Haml template.
     module Ruby
       include Base
-      require 'stringio'
+      require "stringio"
 
       # @see Base#compile
       def compile(compiler, text)
@@ -321,7 +320,7 @@ RUBY
           @template_class = Tilt["t.#{tilt_extension}"] or
             raise Error.new(Error.message(:cant_run_filter, tilt_extension))
         rescue LoadError => e
-          dep = e.message.split('--').last.strip
+          dep = e.message.split("--").last.strip
           raise Error.new(Error.message(:gem_install_filter_deps, tilt_extension, dep))
         end
       end
@@ -332,14 +331,14 @@ RUBY
         # across several singleton classes -- this bug is fixed in 1.9.3.
         # We work around this by using a string eval instead of a block eval
         # so that a new parse tree is created for each singleton class.
-        base.instance_eval %Q{
+        base.instance_eval "
           include Base
 
           def render_with_options(text, compiler_options)
             text = template_class.new(nil, 1, options) {text}.render
             super(text, compiler_options)
           end
-        }
+        "
       end
     end
 
@@ -356,22 +355,22 @@ RUBY
     end
 
     # @!parse module Sass; end
-    register_tilt_filter "Sass", :extend => "Css"
+    register_tilt_filter "Sass", extend: "Css"
 
     # @!parse module Scss; end
-    register_tilt_filter "Scss", :extend => "Css"
+    register_tilt_filter "Scss", extend: "Css"
 
     # @!parse module Less; end
-    register_tilt_filter "Less", :extend => "Css"
+    register_tilt_filter "Less", extend: "Css"
 
     # @!parse module Markdown; end
     register_tilt_filter "Markdown"
 
     # @!parse module Erb; end
-    register_tilt_filter "Erb", :precompiled => true
+    register_tilt_filter "Erb", precompiled: true
 
     # @!parse module Coffee; end
-    register_tilt_filter "Coffee", :alias => "coffeescript", :extend => "Javascript"
+    register_tilt_filter "Coffee", alias: "coffeescript", extend: "Javascript"
 
     # Parses the filtered text with ERB.
     # Not available if the {file:REFERENCE.md#suppress_eval-option
@@ -380,9 +379,9 @@ RUBY
     module Erb
       class << self
         def precompiled(text)
-          #workaround for https://github.com/rtomayko/tilt/pull/183
-          require 'erubis' if (defined?(::Erubis) && !defined?(::Erubis::Eruby))
-          super.sub(/^#coding:.*?\n/, '')
+          # workaround for https://github.com/rtomayko/tilt/pull/183
+          require "erubis" if defined?(::Erubis) && !defined?(::Erubis::Eruby)
+          super.sub(/^#coding:.*?\n/, "")
         end
       end
     end

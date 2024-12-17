@@ -54,9 +54,9 @@ class Reline::Config
       vi_insert: Reline::KeyActor::Base.new(Reline::KeyActor::VI_INSERT_MAPPING),
       vi_command: Reline::KeyActor::Base.new(Reline::KeyActor::VI_COMMAND_MAPPING)
     }
-    @vi_cmd_mode_string = '(cmd)'
-    @vi_ins_mode_string = '(ins)'
-    @emacs_mode_string = '@'
+    @vi_cmd_mode_string = "(cmd)"
+    @vi_ins_mode_string = "(ins)"
+    @emacs_mode_string = "@"
     # https://tiswww.case.edu/php/chet/readline/readline.html#IDX25
     @history_size = -1 # unlimited
     @keyseq_timeout = 500
@@ -90,29 +90,29 @@ class Reline::Config
   end
 
   def inputrc_path
-    case ENV['INPUTRC']
-    when nil, ''
+    case ENV["INPUTRC"]
+    when nil, ""
     else
-      return File.expand_path(ENV['INPUTRC'])
+      return File.expand_path(ENV["INPUTRC"])
     end
 
     # In the XDG Specification, if ~/.config/readline/inputrc exists, then
     # ~/.inputrc should not be read, but for compatibility with GNU Readline,
     # if ~/.inputrc exists, then it is given priority.
-    home_rc_path = File.expand_path('~/.inputrc')
+    home_rc_path = File.expand_path("~/.inputrc")
     return home_rc_path if File.exist?(home_rc_path)
 
-    case path = ENV['XDG_CONFIG_HOME']
-    when nil, ''
+    case path = ENV["XDG_CONFIG_HOME"]
+    when nil, ""
     else
-      path = File.join(path, 'readline/inputrc')
+      path = File.join(path, "readline/inputrc")
       return path if File.exist?(path) and path == File.expand_path(path)
     end
 
-    path = File.expand_path('~/.config/readline/inputrc')
+    path = File.expand_path("~/.config/readline/inputrc")
     return path if File.exist?(path)
 
-    return home_rc_path
+    home_rc_path
   end
 
   private def default_inputrc_path
@@ -165,14 +165,14 @@ class Reline::Config
 
   def read_lines(lines, file = nil)
     if not lines.empty? and lines.first.encoding != Reline.encoding_system_needs
-      begin
-        lines = lines.map do |l|
-          l.encode(Reline.encoding_system_needs)
-        rescue Encoding::UndefinedConversionError
-          mes = "The inputrc encoded in #{lines.first.encoding.name} can't be converted to the locale #{Reline.encoding_system_needs.name}."
-          raise Reline::ConfigEncodingConversionError.new(mes)
-        end
+
+      lines = lines.map do |l|
+        l.encode(Reline.encoding_system_needs)
+      rescue Encoding::UndefinedConversionError
+        mes = "The inputrc encoded in #{lines.first.encoding.name} can't be converted to the locale #{Reline.encoding_system_needs.name}."
+        raise Reline::ConfigEncodingConversionError.new(mes)
       end
+
     end
     if_stack = []
 
@@ -182,7 +182,7 @@ class Reline::Config
       no += 1
 
       line = line.chomp.lstrip
-      if line.start_with?('$')
+      if line.start_with?("$")
         handle_directive(line[1..-1], file, no, if_stack)
         next
       end
@@ -192,7 +192,7 @@ class Reline::Config
       case line
       when /^set +([^ ]+) +(.+)/i
         # value ignores everything after a space, raw_value does not.
-        var, value, raw_value = $1.downcase, $2.partition(' ').first, $2
+        var, value, raw_value = $1.downcase, $2.partition(" ").first, $2
         bind_variable(var, value, raw_value)
         next
       when /\s*("#{KEYSEQ_PATTERN}+")\s*:\s*(.*)\s*$/o
@@ -209,99 +209,99 @@ class Reline::Config
   end
 
   def handle_directive(directive, file, no, if_stack)
-    directive, args = directive.split(' ')
+    directive, args = directive.split(" ")
     case directive
-    when 'if'
+    when "if"
       condition = false
       case args
       when /^mode=(vi|emacs)$/i
         mode = $1.downcase
         # NOTE: mode=vi means vi-insert mode
-        mode = 'vi_insert' if mode == 'vi'
+        mode = "vi_insert" if mode == "vi"
         if @editing_mode_label == mode.to_sym
           condition = true
         end
-      when 'term'
-      when 'version'
+      when "term"
+      when "version"
       else # application name
-        condition = true if args == 'Ruby'
-        condition = true if args == 'Reline'
+        condition = true if args == "Ruby"
+        condition = true if args == "Reline"
       end
       if_stack << [no, !condition]
-    when 'else'
+    when "else"
       if if_stack.empty?
         raise InvalidInputrc, "#{file}:#{no}: unmatched else"
       end
       if_stack.last[1] = !if_stack.last[1]
-    when 'endif'
+    when "endif"
       if if_stack.empty?
         raise InvalidInputrc, "#{file}:#{no}: unmatched endif"
       end
       if_stack.pop
-    when 'include'
+    when "include"
       read(File.expand_path(args))
     end
   end
 
   def bind_variable(name, value, raw_value)
     case name
-    when 'history-size'
+    when "history-size"
       begin
         @history_size = Integer(value)
       rescue ArgumentError
         @history_size = 500
       end
-    when 'isearch-terminators'
+    when "isearch-terminators"
       @isearch_terminators = retrieve_string(raw_value)
-    when 'editing-mode'
+    when "editing-mode"
       case value
-      when 'emacs'
+      when "emacs"
         @editing_mode_label = :emacs
         @keymap_label = :emacs
         @keymap_prefix = []
-      when 'vi'
+      when "vi"
         @editing_mode_label = :vi_insert
         @keymap_label = :vi_insert
         @keymap_prefix = []
       end
-    when 'keymap'
+    when "keymap"
       case value
-      when 'emacs', 'emacs-standard'
+      when "emacs", "emacs-standard"
         @keymap_label = :emacs
         @keymap_prefix = []
-      when 'emacs-ctlx'
+      when "emacs-ctlx"
         @keymap_label = :emacs
         @keymap_prefix = [?\C-x.ord]
-      when 'emacs-meta'
+      when "emacs-meta"
         @keymap_label = :emacs
         @keymap_prefix = [?\e.ord]
-      when 'vi', 'vi-move', 'vi-command'
+      when "vi", "vi-move", "vi-command"
         @keymap_label = :vi_command
         @keymap_prefix = []
-      when 'vi-insert'
+      when "vi-insert"
         @keymap_label = :vi_insert
         @keymap_prefix = []
       end
-    when 'keyseq-timeout'
+    when "keyseq-timeout"
       @keyseq_timeout = value.to_i
-    when 'show-mode-in-prompt'
+    when "show-mode-in-prompt"
       case value
-      when 'off'
+      when "off"
         @show_mode_in_prompt = false
-      when 'on'
+      when "on"
         @show_mode_in_prompt = true
       else
         @show_mode_in_prompt = false
       end
-    when 'vi-cmd-mode-string'
+    when "vi-cmd-mode-string"
       @vi_cmd_mode_string = retrieve_string(raw_value)
-    when 'vi-ins-mode-string'
+    when "vi-ins-mode-string"
       @vi_ins_mode_string = retrieve_string(raw_value)
-    when 'emacs-mode-string'
+    when "emacs-mode-string"
       @emacs_mode_string = retrieve_string(raw_value)
     when *VARIABLE_NAMES then
       variable_name = :"@#{name.tr(?-, ?_)}"
-      instance_variable_set(variable_name, value.nil? || value == '1' || value == 'on')
+      instance_variable_set(variable_name, value.nil? || value == "1" || value == "on")
     end
   end
 

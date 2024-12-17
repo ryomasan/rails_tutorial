@@ -150,28 +150,27 @@ class HighLine
     end
 
     private
+      def build
+        slice_by_cols
+        transpose if transpose_mode
+        col_down  if col_down_mode
+        self
+      end
 
-    def build
-      slice_by_cols
-      transpose if transpose_mode
-      col_down  if col_down_mode
-      self
-    end
+      def items_sliced_by_cols
+        items.each_slice(cols).to_a
+      end
 
-    def items_sliced_by_cols
-      items.each_slice(cols).to_a
-    end
+      def items_sliced_by_rows
+        items.each_slice(row_count).to_a
+      end
 
-    def items_sliced_by_rows
-      items.each_slice(row_count).to_a
-    end
+      def row_count
+        (items.count / cols.to_f).ceil
+      end
 
-    def row_count
-      (items.count / cols.to_f).ceil
-    end
-
-    def stringfy(row)
-      row.compact.join(row_join_string) + "\n"
-    end
+      def stringfy(row)
+        row.compact.join(row_join_string) + "\n"
+      end
   end
 end

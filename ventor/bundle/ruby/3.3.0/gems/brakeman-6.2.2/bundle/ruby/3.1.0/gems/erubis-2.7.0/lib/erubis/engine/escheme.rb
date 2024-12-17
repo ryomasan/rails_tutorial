@@ -3,52 +3,50 @@
 ## copyright(c) 2006-2011 kuwata-lab.com all rights reserved.
 ##
 
-require 'erubis/engine'
-require 'erubis/enhancer'
+require "erubis/engine"
+require "erubis/enhancer"
 
 
 module Erubis
-
-
   module SchemeGenerator
     include Generator
 
-    def self.supported_properties()  # :nodoc:
-      return [
-              [:func,  '_add',   "function name (ex. 'display')"],
+    def self.supported_properties  # :nodoc:
+      [
+              [:func,  "_add",   "function name (ex. 'display')"],
               ]
     end
 
-    def init_generator(properties={})
+    def init_generator(properties = {})
       super
-      @escapefunc ||= 'escape'
-      @func = properties[:func] || '_add'   # or 'display'
+      @escapefunc ||= "escape"
+      @func = properties[:func] || "_add"   # or 'display'
     end
 
     def add_preamble(src)
-      return unless @func == '_add'
+      return unless @func == "_add"
       src << "(let ((_buf '())) " + \
                "(define (_add x) (set! _buf (cons x _buf))) "
-      #src << "(let* ((_buf '())" + \
+      # src << "(let* ((_buf '())" + \
       #             " (_add (lambda (x) (set! _buf (cons x _buf))))) "
     end
 
     def escape_text(text)
-      @table_ ||= { '"'=>'\\"', '\\'=>'\\\\' }
+      @table_ ||= { '"'=>'\\"', "\\"=>"\\\\" }
       text.gsub!(/["\\]/) { |m| @table_[m] }
-      return text
+      text
     end
 
     def escaped_expr(code)
       code.strip!
-      return "(#{@escapefunc} #{code})"
+      "(#{@escapefunc} #{code})"
     end
 
     def add_text(src, text)
       return if text.empty?
       t = escape_text(text)
       if t[-1] == ?\n
-        t[-1, 1] = ''
+        t[-1, 1] = ""
         src << "(#{@func} \"" << t << "\\n\")\n"
       else
         src << "(#{@func} \"" << t << '")'
@@ -74,11 +72,10 @@ module Erubis
     end
 
     def add_postamble(src)
-      return unless @func == '_add'
+      return unless @func == "_add"
       src << "\n" unless src[-1] == ?\n
       src << "  (reverse _buf))\n"
     end
-
   end
 
 
@@ -95,20 +92,17 @@ module Erubis
   end
 
 
-  #class XmlEscheme < Escheme
+  # class XmlEscheme < Escheme
   #  include EscapeEnhancer
-  #end
+  # end
 
 
   class PI::Escheme < PI::Engine
     include SchemeGenerator
 
-    def init_converter(properties={})
-      @pi = 'scheme'
+    def init_converter(properties = {})
+      @pi = "scheme"
       super(properties)
     end
-
   end
-
-
 end

@@ -8,7 +8,7 @@
 #
 # This is Free Software.  See LICENSE and COPYING for details
 
-class HighLine #:nodoc:
+class HighLine # :nodoc:
   # Creates a style using {.find_or_create_style} or
   # {.find_or_create_style_list}
   # @param args [Array<Style, Hash, String>] style properties
@@ -303,23 +303,22 @@ class HighLine #:nodoc:
     end
 
     private
+      def create_bright_variant(variant_name)
+        raise "Cannot create a #{name} variant of a style list (#{inspect})" if
+          @list
+        new_name = ("#{variant_name}_" + @name.to_s).to_sym
+        new_rgb =
+          if @rgb == [0, 0, 0]
+            [128, 128, 128]
+          else
+            @rgb.map { |color| color.zero? ? 0 : [color + 128, 255].min }
+          end
 
-    def create_bright_variant(variant_name)
-      raise "Cannot create a #{name} variant of a style list (#{inspect})" if
-        @list
-      new_name = ("#{variant_name}_" + @name.to_s).to_sym
-      new_rgb =
-        if @rgb == [0, 0, 0]
-          [128, 128, 128]
-        else
-          @rgb.map { |color| color.zero? ? 0 : [color + 128, 255].min }
-        end
+        find_style(new_name) || variant(new_name, increment: 60, rgb: new_rgb)
+      end
 
-      find_style(new_name) || variant(new_name, increment: 60, rgb: new_rgb)
-    end
-
-    def find_style(name)
-      self.class.list[name]
-    end
+      def find_style(name)
+        self.class.list[name]
+      end
   end
 end

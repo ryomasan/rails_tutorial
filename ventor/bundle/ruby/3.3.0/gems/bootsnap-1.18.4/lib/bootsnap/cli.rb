@@ -122,165 +122,164 @@ module Bootsnap
     end
 
     private
+      def precompile_yaml_files(load_paths, exclude: self.exclude)
+        return unless yaml
 
-    def precompile_yaml_files(load_paths, exclude: self.exclude)
-      return unless yaml
-
-      load_paths.each do |path|
-        if !exclude || !exclude.match?(path)
-          list_files(path, "**/*.{yml,yaml}").each do |yaml_file|
-            # We ignore hidden files to not match the various .ci.yml files
-            if !File.basename(yaml_file).start_with?(".") && (!exclude || !exclude.match?(yaml_file))
-              @work_pool.push(:yaml, yaml_file)
+        load_paths.each do |path|
+          if !exclude || !exclude.match?(path)
+            list_files(path, "**/*.{yml,yaml}").each do |yaml_file|
+              # We ignore hidden files to not match the various .ci.yml files
+              if !File.basename(yaml_file).start_with?(".") && (!exclude || !exclude.match?(yaml_file))
+                @work_pool.push(:yaml, yaml_file)
+              end
             end
           end
         end
       end
-    end
 
-    def precompile_yaml(*yaml_files)
-      Array(yaml_files).each do |yaml_file|
-        if CompileCache::YAML.precompile(yaml_file) && verbose
-          $stderr.puts(yaml_file)
+      def precompile_yaml(*yaml_files)
+        Array(yaml_files).each do |yaml_file|
+          if CompileCache::YAML.precompile(yaml_file) && verbose
+            $stderr.puts(yaml_file)
+          end
         end
       end
-    end
 
-    def precompile_json_files(load_paths, exclude: self.exclude)
-      return unless json
+      def precompile_json_files(load_paths, exclude: self.exclude)
+        return unless json
 
-      load_paths.each do |path|
-        if !exclude || !exclude.match?(path)
-          list_files(path, "**/*.json").each do |json_file|
-            # We ignore hidden files to not match the various .config.json files
-            if !File.basename(json_file).start_with?(".") && (!exclude || !exclude.match?(json_file))
-              @work_pool.push(:json, json_file)
+        load_paths.each do |path|
+          if !exclude || !exclude.match?(path)
+            list_files(path, "**/*.json").each do |json_file|
+              # We ignore hidden files to not match the various .config.json files
+              if !File.basename(json_file).start_with?(".") && (!exclude || !exclude.match?(json_file))
+                @work_pool.push(:json, json_file)
+              end
             end
           end
         end
       end
-    end
 
-    def precompile_json(*json_files)
-      Array(json_files).each do |json_file|
-        if CompileCache::JSON.precompile(json_file) && verbose
-          $stderr.puts(json_file)
+      def precompile_json(*json_files)
+        Array(json_files).each do |json_file|
+          if CompileCache::JSON.precompile(json_file) && verbose
+            $stderr.puts(json_file)
+          end
         end
       end
-    end
 
-    def precompile_ruby_files(load_paths, exclude: self.exclude)
-      return unless iseq
+      def precompile_ruby_files(load_paths, exclude: self.exclude)
+        return unless iseq
 
-      load_paths.each do |path|
-        if !exclude || !exclude.match?(path)
-          list_files(path, "**/{*.rb,*.rake,Rakefile}").each do |ruby_file|
-            if !exclude || !exclude.match?(ruby_file)
-              @work_pool.push(:ruby, ruby_file)
+        load_paths.each do |path|
+          if !exclude || !exclude.match?(path)
+            list_files(path, "**/{*.rb,*.rake,Rakefile}").each do |ruby_file|
+              if !exclude || !exclude.match?(ruby_file)
+                @work_pool.push(:ruby, ruby_file)
+              end
             end
           end
         end
       end
-    end
 
-    def precompile_ruby(*ruby_files)
-      Array(ruby_files).each do |ruby_file|
-        if CompileCache::ISeq.precompile(ruby_file) && verbose
-          $stderr.puts(ruby_file)
+      def precompile_ruby(*ruby_files)
+        Array(ruby_files).each do |ruby_file|
+          if CompileCache::ISeq.precompile(ruby_file) && verbose
+            $stderr.puts(ruby_file)
+          end
         end
       end
-    end
 
-    def fix_default_encoding
-      if Encoding.default_external == Encoding::US_ASCII
-        Encoding.default_external = Encoding::UTF_8
-        begin
+      def fix_default_encoding
+        if Encoding.default_external == Encoding::US_ASCII
+          Encoding.default_external = Encoding::UTF_8
+          begin
+            yield
+          ensure
+            Encoding.default_external = Encoding::US_ASCII
+          end
+        else
           yield
-        ensure
-          Encoding.default_external = Encoding::US_ASCII
         end
-      else
-        yield
       end
-    end
 
-    def invalid_usage!(message)
-      $stderr.puts message
-      $stderr.puts
-      $stderr.puts parser
-      1
-    end
+      def invalid_usage!(message)
+        $stderr.puts message
+        $stderr.puts
+        $stderr.puts parser
+        1
+      end
 
-    def cache_dir=(dir)
-      @cache_dir = File.expand_path(File.join(dir, "bootsnap/compile-cache"))
-    end
+      def cache_dir=(dir)
+        @cache_dir = File.expand_path(File.join(dir, "bootsnap/compile-cache"))
+      end
 
-    def exclude_pattern(pattern)
-      (@exclude_patterns ||= []) << Regexp.new(pattern)
-      self.exclude = Regexp.union(@exclude_patterns)
-    end
+      def exclude_pattern(pattern)
+        (@exclude_patterns ||= []) << Regexp.new(pattern)
+        self.exclude = Regexp.union(@exclude_patterns)
+      end
 
-    def parser
-      @parser ||= OptionParser.new do |opts|
-        opts.version = Bootsnap::VERSION
-        opts.program_name = "bootsnap"
+      def parser
+        @parser ||= OptionParser.new do |opts|
+          opts.version = Bootsnap::VERSION
+          opts.program_name = "bootsnap"
 
-        opts.banner = "Usage: bootsnap COMMAND [ARGS]"
-        opts.separator ""
-        opts.separator "GLOBAL OPTIONS"
-        opts.separator ""
+          opts.banner = "Usage: bootsnap COMMAND [ARGS]"
+          opts.separator ""
+          opts.separator "GLOBAL OPTIONS"
+          opts.separator ""
 
-        help = <<~HELP
+          help = <<~HELP
           Path to the bootsnap cache directory. Defaults to tmp/cache
-        HELP
-        opts.on("--cache-dir DIR", help.strip) do |dir|
-          self.cache_dir = dir
-        end
+          HELP
+          opts.on("--cache-dir DIR", help.strip) do |dir|
+            self.cache_dir = dir
+          end
 
-        help = <<~HELP
+          help = <<~HELP
           Print precompiled paths.
-        HELP
-        opts.on("--verbose", "-v", help.strip) do
-          self.verbose = true
-        end
+          HELP
+          opts.on("--verbose", "-v", help.strip) do
+            self.verbose = true
+          end
 
-        help = <<~HELP
+          help = <<~HELP
           Number of workers to use. Default to number of processors, set to 0 to disable multi-processing.
-        HELP
-        opts.on("--jobs JOBS", "-j", help.strip) do |jobs|
-          self.jobs = Integer(jobs)
-        end
+          HELP
+          opts.on("--jobs JOBS", "-j", help.strip) do |jobs|
+            self.jobs = Integer(jobs)
+          end
 
-        opts.separator ""
-        opts.separator "COMMANDS"
-        opts.separator ""
-        opts.separator "    precompile [DIRECTORIES...]: Precompile all .rb files in the passed directories"
+          opts.separator ""
+          opts.separator "COMMANDS"
+          opts.separator ""
+          opts.separator "    precompile [DIRECTORIES...]: Precompile all .rb files in the passed directories"
 
-        help = <<~HELP
+          help = <<~HELP
           Precompile the gems in Gemfile
-        HELP
-        opts.on("--gemfile", help) { self.compile_gemfile = true }
+          HELP
+          opts.on("--gemfile", help) { self.compile_gemfile = true }
 
-        help = <<~HELP
+          help = <<~HELP
           Path pattern to not precompile. e.g. --exclude 'aws-sdk|google-api'
-        HELP
-        opts.on("--exclude PATTERN", help) { |pattern| exclude_pattern(pattern) }
+          HELP
+          opts.on("--exclude PATTERN", help) { |pattern| exclude_pattern(pattern) }
 
-        help = <<~HELP
+          help = <<~HELP
           Disable ISeq (.rb) precompilation.
-        HELP
-        opts.on("--no-iseq", help) { self.iseq = false }
+          HELP
+          opts.on("--no-iseq", help) { self.iseq = false }
 
-        help = <<~HELP
+          help = <<~HELP
           Disable YAML precompilation.
-        HELP
-        opts.on("--no-yaml", help) { self.yaml = false }
+          HELP
+          opts.on("--no-yaml", help) { self.yaml = false }
 
-        help = <<~HELP
+          help = <<~HELP
           Disable JSON precompilation.
-        HELP
-        opts.on("--no-json", help) { self.json = false }
+          HELP
+          opts.on("--no-json", help) { self.json = false }
+        end
       end
-    end
   end
 end

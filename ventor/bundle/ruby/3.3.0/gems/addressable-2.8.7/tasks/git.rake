@@ -6,7 +6,7 @@ namespace :git do
     task :list do
       tags = `git tag -l`
       tags.gsub!("\r", "")
-      tags = tags.split("\n").sort {|a, b| b <=> a }
+      tags = tags.split("\n").sort { |a, b| b <=> a }
       puts tags.join("\n")
     end
 
@@ -22,7 +22,7 @@ namespace :git do
       abort "Versions don't match #{v} vs #{PKG_VERSION}" if v != PKG_VERSION
 
       git_status = `git status`
-      if git_status !~ /^nothing to commit/
+      if !/^nothing to commit/.match?(git_status)
         abort "Working directory isn't clean."
       end
 

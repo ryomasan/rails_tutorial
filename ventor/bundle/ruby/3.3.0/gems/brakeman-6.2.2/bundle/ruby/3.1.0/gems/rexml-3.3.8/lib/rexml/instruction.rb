@@ -22,7 +22,7 @@ module REXML
     # @param content Must be either a String, or a Parent.  Can only
     # be a Parent if the target argument is a Source.  Otherwise, this
     # String is set as the content of this instruction.
-    def initialize(target, content=nil)
+    def initialize(target, content = nil)
       case target
       when String
         super()
@@ -48,13 +48,13 @@ module REXML
     # == DEPRECATED
     # See the rexml/formatters package
     #
-    def write writer, indent=-1, transitive=false, ie_hack=false
-      Kernel.warn( "#{self.class.name}.write is deprecated", uplevel: 1)
+    def write(writer, indent = -1, transitive = false, ie_hack = false)
+      Kernel.warn("#{self.class.name}.write is deprecated", uplevel: 1)
       indent(writer, indent)
       writer << START
       writer << @target
       if @content
-        writer << ' '
+        writer << " "
         writer << @content
       end
       writer << STOP
@@ -62,7 +62,7 @@ module REXML
 
     # @return true if other is an Instruction, and the content and target
     # of the other matches the target and content of this object.
-    def ==( other )
+    def ==(other)
       other.kind_of? Instruction and
       other.target == @target and
       other.content == @content

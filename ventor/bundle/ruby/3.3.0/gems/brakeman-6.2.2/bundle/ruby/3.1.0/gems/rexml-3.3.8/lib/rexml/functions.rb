@@ -1,4 +1,5 @@
 # frozen_string_literal: false
+
 module REXML
   # If you add a method, keep in mind two things:
   # (1) the first argument will always be a list of nodes from which to
@@ -37,54 +38,54 @@ module REXML
 
     def Functions::context=(value); @@context = value; end
 
-    def Functions::text( )
+    def Functions::text
       if @@context[:node].node_type == :element
-        return @@context[:node].find_all{|n| n.node_type == :text}.collect{|n| n.value}
+        @@context[:node].find_all { |n| n.node_type == :text }.collect { |n| n.value }
       elsif @@context[:node].node_type == :text
-        return @@context[:node].value
+        @@context[:node].value
       else
-        return false
+        false
       end
     end
 
     # Returns the last node of the given list of nodes.
-    def Functions::last( )
+    def Functions::last
       @@context[:size]
     end
 
-    def Functions::position( )
+    def Functions::position
       @@context[:index]
     end
 
     # Returns the size of the given list of nodes.
-    def Functions::count( node_set )
+    def Functions::count(node_set)
       node_set.size
     end
 
     # Since REXML is non-validating, this method is not implemented as it
     # requires a DTD
-    def Functions::id( object )
+    def Functions::id(object)
     end
 
-    def Functions::local_name(node_set=nil)
+    def Functions::local_name(node_set = nil)
       get_namespace(node_set) do |node|
         return node.local_name
       end
       ""
     end
 
-    def Functions::namespace_uri( node_set=nil )
-      get_namespace( node_set ) {|node| node.namespace}
+    def Functions::namespace_uri(node_set = nil)
+      get_namespace(node_set) { |node| node.namespace }
     end
 
-    def Functions::name( node_set=nil )
-      get_namespace( node_set ) do |node|
+    def Functions::name(node_set = nil)
+      get_namespace(node_set) do |node|
         node.expanded_name
       end
     end
 
     # Helper method.
-    def Functions::get_namespace( node_set = nil )
+    def Functions::get_namespace(node_set = nil)
       if node_set == nil
         yield @@context[:node] if @@context[:node].respond_to?(:namespace)
       else
@@ -135,7 +136,7 @@ module REXML
     #
     # An object of a type other than the four basic types is converted to a
     # string in a way that is dependent on that type.
-    def Functions::string( object=@@context[:node] )
+    def Functions::string(object = @@context[:node])
       if object.respond_to?(:node_type)
         case object.node_type
         when :attribute
@@ -175,19 +176,19 @@ module REXML
     # of each of the children of the node in the
     # node-set that is first in document order.
     # If the node-set is empty, an empty string is returned.
-    def Functions::string_value( o )
+    def Functions::string_value(o)
       rv = ""
       o.children.each { |e|
         if e.node_type == :text
           rv << e.to_s
         elsif e.node_type == :element
-          rv << string_value( e )
+          rv << string_value(e)
         end
       }
       rv
     end
 
-    def Functions::concat( *objects )
+    def Functions::concat(*objects)
       concatenated = ""
       objects.each do |object|
         concatenated << string(object)
@@ -196,17 +197,17 @@ module REXML
     end
 
     # Fixed by Mike Stok
-    def Functions::starts_with( string, test )
+    def Functions::starts_with(string, test)
       string(string).index(string(test)) == 0
     end
 
     # Fixed by Mike Stok
-    def Functions::contains( string, test )
+    def Functions::contains(string, test)
       string(string).include?(string(test))
     end
 
     # Kouhei fixed this
-    def Functions::substring_before( string, test )
+    def Functions::substring_before(string, test)
       ruby_string = string(string)
       ruby_index = ruby_string.index(string(test))
       if ruby_index.nil?
@@ -217,7 +218,7 @@ module REXML
     end
 
     # Kouhei fixed this too
-    def Functions::substring_after( string, test )
+    def Functions::substring_after(string, test)
       ruby_string = string(string)
       return $1 if ruby_string =~ /#{test}(.*)/
       ""
@@ -225,21 +226,21 @@ module REXML
 
     # Take equal portions of Mike Stok and Sean Russell; mix
     # vigorously, and pour into a tall, chilled glass.  Serves 10,000.
-    def Functions::substring( string, start, length=nil )
+    def Functions::substring(string, start, length = nil)
       ruby_string = string(string)
       ruby_length = if length.nil?
-                      ruby_string.length.to_f
-                    else
-                      number(length)
-                    end
+        ruby_string.length.to_f
+      else
+        number(length)
+      end
       ruby_start = number(start)
 
       # Handle the special cases
-      return '' if (
+      return "" if
         ruby_length.nan? or
         ruby_start.nan? or
         ruby_start.infinite?
-      )
+
 
       infinite_length = ruby_length.infinite? == 1
       ruby_length = ruby_string.length if infinite_length
@@ -250,29 +251,29 @@ module REXML
       ruby_length = round(ruby_length)
 
       if ruby_start < 0
-       ruby_length += ruby_start unless infinite_length
-       ruby_start = 0
+        ruby_length += ruby_start unless infinite_length
+        ruby_start = 0
       end
-      return '' if ruby_length <= 0
-      ruby_string[ruby_start,ruby_length]
+      return "" if ruby_length <= 0
+      ruby_string[ruby_start, ruby_length]
     end
 
     # UNTESTED
-    def Functions::string_length( string )
+    def Functions::string_length(string)
       string(string).length
     end
 
-    def Functions::normalize_space( string=nil )
+    def Functions::normalize_space(string = nil)
       string = string(@@context[:node]) if string.nil?
       if string.kind_of? Array
-        string.collect{|x| x.to_s.strip.gsub(/\s+/um, ' ') if x}
+        string.collect { |x| x.to_s.strip.gsub(/\s+/um, " ") if x }
       else
-        string.to_s.strip.gsub(/\s+/um, ' ')
+        string.to_s.strip.gsub(/\s+/um, " ")
       end
     end
 
     # This is entirely Mike Stok's beast
-    def Functions::translate( string, tr1, tr2 )
+    def Functions::translate(string, tr1, tr2)
       from = string(tr1)
       to = string(tr2)
 
@@ -303,18 +304,18 @@ module REXML
         end
       }
 
-      if ''.respond_to? :chars
+      if "".respond_to? :chars
         string(string).chars.collect { |c|
           if map.has_key? c then map[c] else c end
         }.compact.join
       else
-        string(string).unpack('U*').collect { |c|
+        string(string).unpack("U*").collect { |c|
           if map.has_key? c then map[c] else c end
-        }.compact.pack('U*')
+        }.compact.pack("U*")
       end
     end
 
-    def Functions::boolean(object=@@context[:node])
+    def Functions::boolean(object = @@context[:node])
       case object
       when true, false
         object
@@ -334,22 +335,22 @@ module REXML
     end
 
     # UNTESTED
-    def Functions::not( object )
-      not boolean( object )
+    def Functions::not(object)
+      not boolean(object)
     end
 
     # UNTESTED
-    def Functions::true( )
+    def Functions::true
       true
     end
 
     # UNTESTED
-    def Functions::false(  )
+    def Functions::false
       false
     end
 
     # UNTESTED
-    def Functions::lang( language )
+    def Functions::lang(language)
       lang = false
       node = @@context[:node]
       attr = nil
@@ -367,7 +368,7 @@ module REXML
       lang
     end
 
-    def Functions::compare_language lang1, lang2
+    def Functions::compare_language(lang1, lang2)
       lang2.downcase.index(lang1.downcase) == 0
     end
 
@@ -384,7 +385,7 @@ module REXML
     #
     # an object of a type other than the four basic types is converted to a
     # number in a way that is dependent on that type
-    def Functions::number(object=@@context[:node])
+    def Functions::number(object = @@context[:node])
       case object
       when true
         Float(1)
@@ -405,20 +406,20 @@ module REXML
       end
     end
 
-    def Functions::sum( nodes )
+    def Functions::sum(nodes)
       nodes = [nodes] unless nodes.kind_of? Array
-      nodes.inject(0) { |r,n| r + number(string(n)) }
+      nodes.inject(0) { |r, n| r + number(string(n)) }
     end
 
-    def Functions::floor( number )
+    def Functions::floor(number)
       number(number).floor
     end
 
-    def Functions::ceiling( number )
+    def Functions::ceiling(number)
       number(number).ceil
     end
 
-    def Functions::round( number )
+    def Functions::round(number)
       number = number(number)
       begin
         neg = number.negative?
@@ -429,7 +430,7 @@ module REXML
       end
     end
 
-    def Functions::processing_instruction( node )
+    def Functions::processing_instruction(node)
       node.node_type == :processing_instruction
     end
 

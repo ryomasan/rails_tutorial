@@ -1,6 +1,7 @@
 # frozen_string_literal: true
+
 require_relative "namespace"
-require_relative 'text'
+require_relative "text"
 
 module REXML
   # Defines an Element Attribute; IE, a attribute=value pair, as in:
@@ -39,7 +40,7 @@ module REXML
     #  Attribute.new( attribute_to_clone, parent_element )
     #  Attribute.new( "attr", "attr_value" )
     #  Attribute.new( "attr", "attr_value", parent_element )
-    def initialize( first, second=nil, parent=nil )
+    def initialize(first, second = nil, parent = nil)
       @normalized = @unnormalized = @element = nil
       if first.kind_of? Attribute
         self.name = first.expanded_name
@@ -92,7 +93,7 @@ module REXML
     #  e.namespace # => "http://example.com/"
     #  e.add_attribute("a", "b")
     #  e.attribute("a").namespace # => ""
-    def namespace arg=nil
+    def namespace(arg = nil)
       arg = prefix if arg.nil?
       if arg == ""
         ""
@@ -103,7 +104,7 @@ module REXML
 
     # Returns true if other is an Attribute and has the same name and value,
     # false otherwise.
-    def ==( other )
+    def ==(other)
       other.kind_of?(Attribute) and other.name==name and other.value==value
     end
 
@@ -121,10 +122,10 @@ module REXML
     def to_string
       value = to_s
       if @element and @element.context and @element.context[:attribute_quote] == :quote
-        value = value.gsub('"', '&quot;') if value.include?('"')
+        value = value.gsub('"', "&quot;") if value.include?('"')
         %Q^#@expanded_name="#{value}"^
       else
-        value = value.gsub("'", '&apos;') if value.include?("'")
+        value = value.gsub("'", "&apos;") if value.include?("'")
         "#@expanded_name='#{value}'"
       end
     end
@@ -140,7 +141,7 @@ module REXML
     def to_s
       return @normalized if @normalized
 
-      @normalized = Text::normalize( @unnormalized, doctype )
+      @normalized = Text.normalize(@unnormalized, doctype)
       @normalized
     end
 
@@ -149,7 +150,7 @@ module REXML
     def value
       return @unnormalized if @unnormalized
 
-      @unnormalized = Text::unnormalize(@normalized, doctype,
+      @unnormalized = Text.unnormalize(@normalized, doctype,
                                         entity_expansion_text_limit: @element&.document&.entity_expansion_text_limit)
     end
 
@@ -169,11 +170,11 @@ module REXML
     # is not directly called.
     #
     # Returns this attribute
-    def element=( element )
+    def element=(element)
       @element = element
 
       if @normalized
-        Text.check( @normalized, NEEDS_A_SECOND_CHECK, doctype )
+        Text.check(@normalized, NEEDS_A_SECOND_CHECK, doctype)
       end
 
       self
@@ -187,7 +188,7 @@ module REXML
     end
 
     # Writes this attribute (EG, puts 'key="value"' to the output)
-    def write( output, indent=-1 )
+    def write(output, indent = -1)
       output << to_string
     end
 
@@ -197,15 +198,15 @@ module REXML
 
     def inspect
       rv = +""
-      write( rv )
+      write(rv)
       rv
     end
 
     def xpath
       path = @element.xpath
       path += "/@#{self.expanded_name}"
-      return path
+      path
     end
   end
 end
-#vim:ts=2 sw=2 noexpandtab:
+# vim:ts=2 sw=2 noexpandtab:

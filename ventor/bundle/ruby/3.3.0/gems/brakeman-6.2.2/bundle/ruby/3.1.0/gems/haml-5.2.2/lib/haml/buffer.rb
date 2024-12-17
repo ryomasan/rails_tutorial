@@ -115,7 +115,7 @@ module Haml
         # Don't push lines with just whitespace, though,
         # because that screws up precompiled indentation.
         text.gsub!(/^(?!\s+$)/m, tabs)
-        text.sub!(tabs, '') if dont_tab_up
+        text.sub!(tabs, "") if dont_tab_up
       end
 
       @real_tabs += tab_change
@@ -150,16 +150,16 @@ module Haml
     # @since Haml 4.0.1
     # @private
     def fix_textareas!(input)
-      return input unless input.include?('<textarea'.freeze)
+      return input unless input.include?("<textarea")
 
       pattern = /<(textarea)([^>]*)>(\n|&#x000A;)(.*?)<\/textarea>/im
       input.gsub!(pattern) do |s|
         match = pattern.match(s)
         content = match[4]
-        if match[3] == '&#x000A;'
-          content.sub!(/\A /, '&#x0020;')
+        if match[3] == "&#x000A;"
+          content.sub!(/\A /, "&#x0020;")
         else
-          content.sub!(/\A[ ]*/, '')
+          content.sub!(/\A[ ]*/, "")
         end
         "<#{match[1]}#{match[2]}>\n#{content}</#{match[1]}>"
       end
@@ -167,16 +167,15 @@ module Haml
     end
 
     private
+      def new_encoded_string
+        "".encode(options[:encoding])
+      end
 
-    def new_encoded_string
-      "".encode(options[:encoding])
-    end
-
-    @@tab_cache = {}
-    # Gets `count` tabs. Mostly for internal use.
-    def tabs(count = 0)
-      tabs = [count + @tabulation, 0].max
-      @@tab_cache[tabs] ||= '  ' * tabs
-    end
+      @@tab_cache = {}
+      # Gets `count` tabs. Mostly for internal use.
+      def tabs(count = 0)
+        tabs = [count + @tabulation, 0].max
+        @@tab_cache[tabs] ||= "  " * tabs
+      end
   end
 end

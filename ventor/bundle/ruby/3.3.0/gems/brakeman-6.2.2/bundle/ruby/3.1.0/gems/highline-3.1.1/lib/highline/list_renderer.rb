@@ -88,174 +88,173 @@ class HighLine
     end
 
     private
+      def render_list_items(items)
+        items.to_ary.map do |item|
+          item = String(item)
+          template = if ERB.instance_method(:initialize).parameters.assoc(:key) # Ruby 2.6+
+            ERB.new(item, trim_mode: "%")
+          else
+            ERB.new(item, trim_mode: "%")
+          end
+          template_renderer =
+            HighLine::TemplateRenderer.new(template, self, highline)
+          template_renderer.render
+        end
+      end
 
-    def render_list_items(items)
-      items.to_ary.map do |item|
-        item = String(item)
-        template = if ERB.instance_method(:initialize).parameters.assoc(:key) # Ruby 2.6+
-          ERB.new(item, trim_mode: "%")
+      def list_default_mode
+        items.map { |i| "#{i}\n" }.join
+      end
+
+      def list_inline_mode
+        end_separator = option || " or "
+
+        if items.size == 1
+          items.first
         else
-          ERB.new(item, nil, "%")
-        end
-        template_renderer =
-          HighLine::TemplateRenderer.new(template, self, highline)
-        template_renderer.render
-      end
-    end
-
-    def list_default_mode
-      items.map { |i| "#{i}\n" }.join
-    end
-
-    def list_inline_mode
-      end_separator = option || " or "
-
-      if items.size == 1
-        items.first
-      else
-        items[0..-2].join(", ") + "#{end_separator}#{items.last}"
-      end
-    end
-
-    def list_columns_across_mode
-      HighLine::List.new(right_padded_items, cols: col_count).to_s
-    end
-
-    def list_columns_down_mode
-      HighLine::List.new(
-        right_padded_items,
-        cols: col_count,
-        col_down: true
-      ).to_s
-    end
-
-    def list_uneven_columns_mode(list = nil)
-      list ||= HighLine::List.new(items)
-
-      col_max = option || items.size
-      col_max.downto(1) do |column_count|
-        list.cols = column_count
-        widths = get_col_widths(list)
-
-        if column_count == 1 || # last guess
-           inside_line_size_limit?(widths) || # good guess
-           option # defined by user
-          return pad_uneven_rows(list, widths)
+          items[0..-2].join(", ") + "#{end_separator}#{items.last}"
         end
       end
-    end
 
-    def list_uneven_columns_down_mode
-      list = HighLine::List.new(items, col_down: true)
-      list_uneven_columns_mode(list)
-    end
-
-    def pad_uneven_rows(list, widths)
-      right_padded_list = Array(list).map do |row|
-        right_pad_row(row.compact, widths)
+      def list_columns_across_mode
+        HighLine::List.new(right_padded_items, cols: col_count).to_s
       end
-      stringfy_list(right_padded_list)
-    end
 
-    def stringfy_list(list)
-      list.map { |row| row_to_s(row) }.join
-    end
-
-    def row_to_s(row)
-      row.compact.join(row_join_string) + "\n"
-    end
-
-    def right_pad_row(row, widths)
-      row.zip(widths).map do |field, width|
-        right_pad_field(field, width)
+      def list_columns_down_mode
+        HighLine::List.new(
+          right_padded_items,
+          cols: col_count,
+          col_down: true
+        ).to_s
       end
-    end
 
-    def right_pad_field(field, width)
-      field = String(field) # nil protection
-      pad_size = width - actual_length(field)
-      field + (pad_char * pad_size)
-    end
+      def list_uneven_columns_mode(list = nil)
+        list ||= HighLine::List.new(items)
 
-    def get_col_widths(lines)
-      lines = transpose(lines)
-      get_segment_widths(lines)
-    end
+        col_max = option || items.size
+        col_max.downto(1) do |column_count|
+          list.cols = column_count
+          widths = get_col_widths(list)
 
-    def get_row_widths(lines)
-      get_segment_widths(lines)
-    end
-
-    def get_segment_widths(lines)
-      lines.map do |col|
-        actual_lengths_for(col).max
+          if column_count == 1 || # last guess
+             inside_line_size_limit?(widths) || # good guess
+             option # defined by user
+            return pad_uneven_rows(list, widths)
+          end
+        end
       end
-    end
 
-    def actual_lengths_for(line)
-      line.map do |item|
-        actual_length(item)
+      def list_uneven_columns_down_mode
+        list = HighLine::List.new(items, col_down: true)
+        list_uneven_columns_mode(list)
       end
-    end
 
-    def transpose(lines)
-      lines = Array(lines)
-      first_line = lines.shift
-      first_line.zip(*lines)
-    end
-
-    def inside_line_size_limit?(widths)
-      line_size = widths.reduce(0) { |sum, n| sum + n + row_join_str_size }
-      line_size <= line_size_limit + row_join_str_size
-    end
-
-    def actual_length(text)
-      HighLine::Wrapper.actual_length text
-    end
-
-    def items_max_length
-      @items_max_length ||= max_length(items)
-    end
-
-    def max_length(items)
-      items.map { |item| actual_length(item) }.max
-    end
-
-    def line_size_limit
-      @line_size_limit ||= (highline.wrap_at || 80)
-    end
-
-    def row_join_string
-      @row_join_string ||= "  "
-    end
-
-    attr_writer :row_join_string
-
-    def row_join_str_size
-      row_join_string.size
-    end
-
-    def col_count_calculate
-      (line_size_limit + row_join_str_size) /
-        (items_max_length + row_join_str_size)
-    end
-
-    def col_count
-      option || col_count_calculate
-    end
-
-    def right_padded_items
-      items.map do |item|
-        right_pad_field(item, items_max_length)
+      def pad_uneven_rows(list, widths)
+        right_padded_list = Array(list).map do |row|
+          right_pad_row(row.compact, widths)
+        end
+        stringfy_list(right_padded_list)
       end
-    end
 
-    def pad_char
-      " "
-    end
+      def stringfy_list(list)
+        list.map { |row| row_to_s(row) }.join
+      end
 
-    def row_count
-      (items.count / col_count.to_f).ceil
-    end
+      def row_to_s(row)
+        row.compact.join(row_join_string) + "\n"
+      end
+
+      def right_pad_row(row, widths)
+        row.zip(widths).map do |field, width|
+          right_pad_field(field, width)
+        end
+      end
+
+      def right_pad_field(field, width)
+        field = String(field) # nil protection
+        pad_size = width - actual_length(field)
+        field + (pad_char * pad_size)
+      end
+
+      def get_col_widths(lines)
+        lines = transpose(lines)
+        get_segment_widths(lines)
+      end
+
+      def get_row_widths(lines)
+        get_segment_widths(lines)
+      end
+
+      def get_segment_widths(lines)
+        lines.map do |col|
+          actual_lengths_for(col).max
+        end
+      end
+
+      def actual_lengths_for(line)
+        line.map do |item|
+          actual_length(item)
+        end
+      end
+
+      def transpose(lines)
+        lines = Array(lines)
+        first_line = lines.shift
+        first_line.zip(*lines)
+      end
+
+      def inside_line_size_limit?(widths)
+        line_size = widths.reduce(0) { |sum, n| sum + n + row_join_str_size }
+        line_size <= line_size_limit + row_join_str_size
+      end
+
+      def actual_length(text)
+        HighLine::Wrapper.actual_length text
+      end
+
+      def items_max_length
+        @items_max_length ||= max_length(items)
+      end
+
+      def max_length(items)
+        items.map { |item| actual_length(item) }.max
+      end
+
+      def line_size_limit
+        @line_size_limit ||= (highline.wrap_at || 80)
+      end
+
+      def row_join_string
+        @row_join_string ||= "  "
+      end
+
+      attr_writer :row_join_string
+
+      def row_join_str_size
+        row_join_string.size
+      end
+
+      def col_count_calculate
+        (line_size_limit + row_join_str_size) /
+          (items_max_length + row_join_str_size)
+      end
+
+      def col_count
+        option || col_count_calculate
+      end
+
+      def right_padded_items
+        items.map do |item|
+          right_pad_field(item, items_max_length)
+        end
+      end
+
+      def pad_char
+        " "
+      end
+
+      def row_count
+        (items.count / col_count.to_f).ceil
+      end
   end
 end

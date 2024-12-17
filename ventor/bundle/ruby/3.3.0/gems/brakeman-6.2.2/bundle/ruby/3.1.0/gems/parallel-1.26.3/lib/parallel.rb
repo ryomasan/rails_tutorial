@@ -1,6 +1,7 @@
 # frozen_string_literal: true
-require 'rbconfig'
-require 'parallel/version'
+
+require "rbconfig"
+require "parallel/version"
 
 module Parallel
   Stop = Object.new.freeze
@@ -87,12 +88,11 @@ module Parallel
     end
 
     private
-
-    def wait
-      Process.wait(pid)
-    rescue Interrupt
-      # process died
-    end
+      def wait
+        Process.wait(pid)
+      rescue Interrupt
+        # process died
+      end
   end
 
   class JobFactory
@@ -143,14 +143,13 @@ module Parallel
     end
 
     private
+      def producer?
+        @lambda
+      end
 
-    def producer?
-      @lambda
-    end
-
-    def queue_wrapper(array)
-      array.respond_to?(:num_waiting) && array.respond_to?(:pop) && -> { array.pop(false) }
-    end
+      def queue_wrapper(array)
+        array.respond_to?(:num_waiting) && array.respond_to?(:pop) && -> { array.pop(false) }
+      end
   end
 
   class UserInterruptHandler
@@ -165,7 +164,7 @@ module Parallel
 
         if @to_be_killed.empty?
           old_interrupt = trap_interrupt(signal) do
-            warn 'Parallel execution interrupted, exiting ...'
+            warn "Parallel execution interrupted, exiting ..."
             @to_be_killed.flatten.each { |pid| kill(pid) }
           end
         end
@@ -186,25 +185,24 @@ module Parallel
       end
 
       private
+        def trap_interrupt(signal)
+          old = Signal.trap signal, "IGNORE"
 
-      def trap_interrupt(signal)
-        old = Signal.trap signal, 'IGNORE'
-
-        Signal.trap signal do
-          yield
-          if !old || old == "DEFAULT"
-            raise Interrupt
-          else
-            old.call
+          Signal.trap signal do
+            yield
+            if !old || old == "DEFAULT"
+              raise Interrupt
+            else
+              old.call
+            end
           end
+
+          old
         end
 
-        old
-      end
-
-      def restore_interrupt(old, signal)
-        Signal.trap signal, old
-      end
+        def restore_interrupt(old, signal)
+          Signal.trap signal, old
+        end
     end
   end
 
@@ -340,7 +338,7 @@ module Parallel
     # Number of processors seen by the OS or value considering CPU quota if the process is inside a cgroup,
     # used for process scheduling
     def processor_count
-      @processor_count ||= Integer(ENV['PARALLEL_PROCESSOR_COUNT'] || available_processor_count)
+      @processor_count ||= Integer(ENV["PARALLEL_PROCESSOR_COUNT"] || available_processor_count)
     end
 
     def worker_number
@@ -353,356 +351,355 @@ module Parallel
     end
 
     private
-
-    def physical_processor_count_windows
-      # Get-CimInstance introduced in PowerShell 3 or earlier: https://learn.microsoft.com/en-us/previous-versions/powershell/module/cimcmdlets/get-ciminstance?view=powershell-3.0
-      result = run(
-        'powershell -command "Get-CimInstance -ClassName Win32_Processor -Property NumberOfCores ' \
-        '| Select-Object -Property NumberOfCores"'
-      )
-      if !result || $?.exitstatus != 0
-        # fallback to deprecated wmic for older systems
-        result = run("wmic cpu get NumberOfCores")
-      end
-      if !result || $?.exitstatus != 0
-        # Bail out if both commands returned something unexpected
-        warn "guessing pyhsical processor count"
-        processor_count
-      else
-        # powershell: "\nNumberOfCores\n-------------\n            4\n\n\n"
-        # wmic:       "NumberOfCores  \n\n4              \n\n\n\n"
-        result.scan(/\d+/).map(&:to_i).reduce(:+)
-      end
-    end
-
-    def run(command)
-      IO.popen(command, &:read)
-    rescue Errno::ENOENT
-      # Ignore
-    end
-
-    def add_progress_bar!(job_factory, options)
-      if (progress_options = options[:progress])
-        raise "Progressbar can only be used with array like items" if job_factory.size == Float::INFINITY
-        require 'ruby-progressbar'
-
-        if progress_options == true
-          progress_options = { title: "Progress" }
-        elsif progress_options.respond_to? :to_str
-          progress_options = { title: progress_options.to_str }
+      def physical_processor_count_windows
+        # Get-CimInstance introduced in PowerShell 3 or earlier: https://learn.microsoft.com/en-us/previous-versions/powershell/module/cimcmdlets/get-ciminstance?view=powershell-3.0
+        result = run(
+          'powershell -command "Get-CimInstance -ClassName Win32_Processor -Property NumberOfCores ' \
+          '| Select-Object -Property NumberOfCores"'
+        )
+        if !result || $?.exitstatus != 0
+          # fallback to deprecated wmic for older systems
+          result = run("wmic cpu get NumberOfCores")
         end
-
-        progress_options = {
-          total: job_factory.size,
-          format: '%t |%E | %B | %a'
-        }.merge(progress_options)
-
-        progress = ProgressBar.create(progress_options)
-        old_finish = options[:finish]
-        options[:finish] = lambda do |item, i, result|
-          old_finish.call(item, i, result) if old_finish
-          progress.increment
+        if !result || $?.exitstatus != 0
+          # Bail out if both commands returned something unexpected
+          warn "guessing pyhsical processor count"
+          processor_count
+        else
+          # powershell: "\nNumberOfCores\n-------------\n            4\n\n\n"
+          # wmic:       "NumberOfCores  \n\n4              \n\n\n\n"
+          result.scan(/\d+/).map(&:to_i).reduce(:+)
         end
       end
-    end
 
-    def work_direct(job_factory, options, &block)
-      self.worker_number = 0
-      results = []
-      exception = nil
-      begin
-        while (set = job_factory.next)
-          item, index = set
-          results << with_instrumentation(item, index, options) do
-            call_with_index(item, index, options, &block)
+      def run(command)
+        IO.popen(command, &:read)
+      rescue Errno::ENOENT
+        # Ignore
+      end
+
+      def add_progress_bar!(job_factory, options)
+        if (progress_options = options[:progress])
+          raise "Progressbar can only be used with array like items" if job_factory.size == Float::INFINITY
+          require "ruby-progressbar"
+
+          if progress_options == true
+            progress_options = { title: "Progress" }
+          elsif progress_options.respond_to? :to_str
+            progress_options = { title: progress_options.to_str }
+          end
+
+          progress_options = {
+            total: job_factory.size,
+            format: "%t |%E | %B | %a"
+          }.merge(progress_options)
+
+          progress = ProgressBar.create(progress_options)
+          old_finish = options[:finish]
+          options[:finish] = lambda do |item, i, result|
+            old_finish.call(item, i, result) if old_finish
+            progress.increment
           end
         end
-      rescue StandardError
-        exception = $!
       end
-      exception || results
-    ensure
-      self.worker_number = nil
-    end
 
-    def work_in_threads(job_factory, options, &block)
-      raise "interrupt_signal is no longer supported for threads" if options[:interrupt_signal]
-      results = []
-      results_mutex = Mutex.new # arrays are not thread-safe on jRuby
-      exception = nil
-
-      in_threads(options) do |worker_num|
-        self.worker_number = worker_num
-        # as long as there are more jobs, work on one of them
-        while !exception && (set = job_factory.next)
-          begin
+      def work_direct(job_factory, options, &block)
+        self.worker_number = 0
+        results = []
+        exception = nil
+        begin
+          while (set = job_factory.next)
             item, index = set
-            result = with_instrumentation item, index, options do
+            results << with_instrumentation(item, index, options) do
               call_with_index(item, index, options, &block)
             end
-            results_mutex.synchronize { results[index] = result }
-          rescue StandardError
-            exception = $!
           end
+        rescue StandardError
+          exception = $!
         end
+        exception || results
+      ensure
+        self.worker_number = nil
       end
 
-      exception || results
-    end
+      def work_in_threads(job_factory, options, &block)
+        raise "interrupt_signal is no longer supported for threads" if options[:interrupt_signal]
+        results = []
+        results_mutex = Mutex.new # arrays are not thread-safe on jRuby
+        exception = nil
 
-    def work_in_ractors(job_factory, options)
-      exception = nil
-      results = []
-      results_mutex = Mutex.new # arrays are not thread-safe on jRuby
-
-      callback = options[:ractor]
-      if block_given? || !callback
-        raise ArgumentError, "pass the code you want to execute as `ractor: [ClassName, :method_name]`"
-      end
-
-      # build
-      ractors = Array.new(options.fetch(:count)) do
-        Ractor.new do
-          loop do
-            got = receive
-            (klass, method_name), item, index = got
-            break if index == :break
+        in_threads(options) do |worker_num|
+          self.worker_number = worker_num
+          # as long as there are more jobs, work on one of them
+          while !exception && (set = job_factory.next)
             begin
-              Ractor.yield [nil, klass.send(method_name, item), item, index]
-            rescue StandardError => e
-              Ractor.yield [e, nil, item, index]
+              item, index = set
+              result = with_instrumentation item, index, options do
+                call_with_index(item, index, options, &block)
+              end
+              results_mutex.synchronize { results[index] = result }
+            rescue StandardError
+              exception = $!
             end
           end
         end
+
+        exception || results
       end
 
-      # start
-      ractors.dup.each do |ractor|
-        if (set = job_factory.next)
-          item, index = set
-          instrument_start item, index, options
-          ractor.send [callback, item, index]
-        else
-          ractor.send([[nil, nil], nil, :break]) # stop the ractor
-          ractors.delete ractor
+      def work_in_ractors(job_factory, options)
+        exception = nil
+        results = []
+        results_mutex = Mutex.new # arrays are not thread-safe on jRuby
+
+        callback = options[:ractor]
+        if block_given? || !callback
+          raise ArgumentError, "pass the code you want to execute as `ractor: [ClassName, :method_name]`"
         end
-      end
 
-      # replace with new items
-      while (set = job_factory.next)
-        item_next, index_next = set
-        done, (exception, result, item, index) = Ractor.select(*ractors)
-        if exception
-          ractors.delete done
-          break
-        end
-        instrument_finish item, index, result, options
-        results_mutex.synchronize { results[index] = (options[:preserve_results] == false ? nil : result) }
-
-        instrument_start item_next, index_next, options
-        done.send([callback, item_next, index_next])
-      end
-
-      # finish
-      ractors.each do |ractor|
-        (new_exception, result, item, index) = ractor.take
-        exception ||= new_exception
-        next if new_exception
-        instrument_finish item, index, result, options
-        results_mutex.synchronize { results[index] = (options[:preserve_results] == false ? nil : result) }
-        ractor.send([[nil, nil], nil, :break]) # stop the ractor
-      end
-
-      exception || results
-    end
-
-    def work_in_processes(job_factory, options, &blk)
-      workers = create_workers(job_factory, options, &blk)
-      results = []
-      results_mutex = Mutex.new # arrays are not thread-safe
-      exception = nil
-
-      UserInterruptHandler.kill_on_ctrl_c(workers.map(&:pid), options) do
-        in_threads(options) do |i|
-          worker = workers[i]
-          worker.thread = Thread.current
-          worked = false
-
-          begin
+        # build
+        ractors = Array.new(options.fetch(:count)) do
+          Ractor.new do
             loop do
-              break if exception
-              item, index = job_factory.next
-              break unless index
-
-              if options[:isolation]
-                worker = replace_worker(job_factory, workers, i, options, blk) if worked
-                worked = true
-                worker.thread = Thread.current
-              end
-
+              got = receive
+              (klass, method_name), item, index = got
+              break if index == :break
               begin
-                result = with_instrumentation item, index, options do
-                  worker.work(job_factory.pack(item, index))
-                end
-                results_mutex.synchronize { results[index] = result } # arrays are not threads safe on jRuby
+                Ractor.yield [nil, klass.send(method_name, item), item, index]
               rescue StandardError => e
-                exception = e
-                if exception.is_a?(Kill)
-                  (workers - [worker]).each do |w|
-                    w.thread&.kill
-                    UserInterruptHandler.kill(w.pid)
+                Ractor.yield [e, nil, item, index]
+              end
+            end
+          end
+        end
+
+        # start
+        ractors.dup.each do |ractor|
+          if (set = job_factory.next)
+            item, index = set
+            instrument_start item, index, options
+            ractor.send [callback, item, index]
+          else
+            ractor.send([[nil, nil], nil, :break]) # stop the ractor
+            ractors.delete ractor
+          end
+        end
+
+        # replace with new items
+        while (set = job_factory.next)
+          item_next, index_next = set
+          done, (exception, result, item, index) = Ractor.select(*ractors)
+          if exception
+            ractors.delete done
+            break
+          end
+          instrument_finish item, index, result, options
+          results_mutex.synchronize { results[index] = (options[:preserve_results] == false ? nil : result) }
+
+          instrument_start item_next, index_next, options
+          done.send([callback, item_next, index_next])
+        end
+
+        # finish
+        ractors.each do |ractor|
+          (new_exception, result, item, index) = ractor.take
+          exception ||= new_exception
+          next if new_exception
+          instrument_finish item, index, result, options
+          results_mutex.synchronize { results[index] = (options[:preserve_results] == false ? nil : result) }
+          ractor.send([[nil, nil], nil, :break]) # stop the ractor
+        end
+
+        exception || results
+      end
+
+      def work_in_processes(job_factory, options, &blk)
+        workers = create_workers(job_factory, options, &blk)
+        results = []
+        results_mutex = Mutex.new # arrays are not thread-safe
+        exception = nil
+
+        UserInterruptHandler.kill_on_ctrl_c(workers.map(&:pid), options) do
+          in_threads(options) do |i|
+            worker = workers[i]
+            worker.thread = Thread.current
+            worked = false
+
+            begin
+              loop do
+                break if exception
+                item, index = job_factory.next
+                break unless index
+
+                if options[:isolation]
+                  worker = replace_worker(job_factory, workers, i, options, blk) if worked
+                  worked = true
+                  worker.thread = Thread.current
+                end
+
+                begin
+                  result = with_instrumentation item, index, options do
+                    worker.work(job_factory.pack(item, index))
+                  end
+                  results_mutex.synchronize { results[index] = result } # arrays are not threads safe on jRuby
+                rescue StandardError => e
+                  exception = e
+                  if exception.is_a?(Kill)
+                    (workers - [worker]).each do |w|
+                      w.thread&.kill
+                      UserInterruptHandler.kill(w.pid)
+                    end
                   end
                 end
               end
+            ensure
+              worker.stop
             end
-          ensure
-            worker.stop
           end
         end
+
+        exception || results
       end
 
-      exception || results
-    end
+      def replace_worker(job_factory, workers, index, options, blk)
+        options[:mutex].synchronize do
+          # old worker is no longer used ... stop it
+          worker = workers[index]
+          worker.stop
 
-    def replace_worker(job_factory, workers, index, options, blk)
-      options[:mutex].synchronize do
-        # old worker is no longer used ... stop it
-        worker = workers[index]
-        worker.stop
-
-        # create a new replacement worker
-        running = workers - [worker]
-        workers[index] = worker(job_factory, options.merge(started_workers: running, worker_number: index), &blk)
-      end
-    end
-
-    def create_workers(job_factory, options, &block)
-      workers = []
-      Array.new(options[:count]).each_with_index do |_, i|
-        workers << worker(job_factory, options.merge(started_workers: workers, worker_number: i), &block)
-      end
-      workers
-    end
-
-    def worker(job_factory, options, &block)
-      child_read, parent_write = IO.pipe
-      parent_read, child_write = IO.pipe
-
-      pid = Process.fork do
-        self.worker_number = options[:worker_number]
-
-        begin
-          options.delete(:started_workers).each(&:close_pipes)
-
-          parent_write.close
-          parent_read.close
-
-          process_incoming_jobs(child_read, child_write, job_factory, options, &block)
-        ensure
-          child_read.close
-          child_write.close
+          # create a new replacement worker
+          running = workers - [worker]
+          workers[index] = worker(job_factory, options.merge(started_workers: running, worker_number: index), &blk)
         end
       end
 
-      child_read.close
-      child_write.close
+      def create_workers(job_factory, options, &block)
+        workers = []
+        Array.new(options[:count]).each_with_index do |_, i|
+          workers << worker(job_factory, options.merge(started_workers: workers, worker_number: i), &block)
+        end
+        workers
+      end
 
-      Worker.new(parent_read, parent_write, pid)
-    end
+      def worker(job_factory, options, &block)
+        child_read, parent_write = IO.pipe
+        parent_read, child_write = IO.pipe
 
-    def process_incoming_jobs(read, write, job_factory, options, &block)
-      until read.eof?
-        data = Marshal.load(read)
-        item, index = job_factory.unpack(data)
+        pid = Process.fork do
+          self.worker_number = options[:worker_number]
 
-        result =
           begin
-            call_with_index(item, index, options, &block)
-          # https://github.com/rspec/rspec-support/blob/673133cdd13b17077b3d88ece8d7380821f8d7dc/lib/rspec/support.rb#L132-L140
-          rescue NoMemoryError, SignalException, Interrupt, SystemExit # rubocop:disable Lint/ShadowedException
-            raise $!
-          rescue Exception # # rubocop:disable Lint/RescueException
-            ExceptionWrapper.new($!)
+            options.delete(:started_workers).each(&:close_pipes)
+
+            parent_write.close
+            parent_read.close
+
+            process_incoming_jobs(child_read, child_write, job_factory, options, &block)
+          ensure
+            child_read.close
+            child_write.close
           end
+        end
 
-        begin
-          Marshal.dump(result, write)
-        rescue Errno::EPIPE
-          return # parent thread already dead
+        child_read.close
+        child_write.close
+
+        Worker.new(parent_read, parent_write, pid)
+      end
+
+      def process_incoming_jobs(read, write, job_factory, options, &block)
+        until read.eof?
+          data = Marshal.load(read)
+          item, index = job_factory.unpack(data)
+
+          result =
+            begin
+              call_with_index(item, index, options, &block)
+            # https://github.com/rspec/rspec-support/blob/673133cdd13b17077b3d88ece8d7380821f8d7dc/lib/rspec/support.rb#L132-L140
+            rescue NoMemoryError, SignalException, Interrupt, SystemExit # rubocop:disable Lint/ShadowedException
+              raise $!
+            rescue Exception # # rubocop:disable Lint/RescueException
+              ExceptionWrapper.new($!)
+            end
+
+          begin
+            Marshal.dump(result, write)
+          rescue Errno::EPIPE
+            return # parent thread already dead
+          end
         end
       end
-    end
 
-    # options is either a Integer or a Hash with :count
-    def extract_count_from_options(options)
-      if options.is_a?(Hash)
-        count = options[:count]
-      else
-        count = options
-        options = {}
+      # options is either a Integer or a Hash with :count
+      def extract_count_from_options(options)
+        if options.is_a?(Hash)
+          count = options[:count]
+        else
+          count = options
+          options = {}
+        end
+        [count, options]
       end
-      [count, options]
-    end
 
-    def call_with_index(item, index, options, &block)
-      args = [item]
-      args << index if options[:with_index]
-      results = block.call(*args)
-      if options[:return_results]
-        results
-      else
-        nil # avoid GC overhead of passing large results around
-      end
-    end
-
-    def with_instrumentation(item, index, options)
-      instrument_start(item, index, options)
-      result = yield
-      instrument_finish(item, index, result, options)
-      result unless options[:preserve_results] == false
-    end
-
-    def instrument_finish(item, index, result, options)
-      return unless (on_finish = options[:finish])
-      return instrument_finish_in_order(item, index, result, options) if options[:finish_in_order]
-      options[:mutex].synchronize { on_finish.call(item, index, result) }
-    end
-
-    # yield results in the order of the input items
-    # needs to use `options` to store state between executions
-    # needs to use `done` index since a nil result would also be valid
-    def instrument_finish_in_order(item, index, result, options)
-      options[:mutex].synchronize do
-        # initialize our state
-        options[:finish_done] ||= []
-        options[:finish_expecting] ||= 0 # we wait for item at index 0
-
-        # store current result
-        options[:finish_done][index] = [item, result]
-
-        # yield all results that are now in order
-        break unless index == options[:finish_expecting]
-        index.upto(options[:finish_done].size).each do |i|
-          break unless (done = options[:finish_done][i])
-          options[:finish_done][i] = nil # allow GC to free this item and result
-          options[:finish].call(done[0], i, done[1])
-          options[:finish_expecting] += 1
+      def call_with_index(item, index, options, &block)
+        args = [item]
+        args << index if options[:with_index]
+        results = block.call(*args)
+        if options[:return_results]
+          results
+        else
+          nil # avoid GC overhead of passing large results around
         end
       end
-    end
 
-    def instrument_start(item, index, options)
-      return unless (on_start = options[:start])
-      options[:mutex].synchronize { on_start.call(item, index) }
-    end
+      def with_instrumentation(item, index, options)
+        instrument_start(item, index, options)
+        result = yield
+        instrument_finish(item, index, result, options)
+        result unless options[:preserve_results] == false
+      end
 
-    def available_processor_count
-      gem 'concurrent-ruby', '>= 1.3.4'
-      require 'concurrent-ruby'
-      Concurrent.available_processor_count.floor
-    rescue LoadError
-      require 'etc'
-      Etc.nprocessors
-    end
+      def instrument_finish(item, index, result, options)
+        return unless (on_finish = options[:finish])
+        return instrument_finish_in_order(item, index, result, options) if options[:finish_in_order]
+        options[:mutex].synchronize { on_finish.call(item, index, result) }
+      end
+
+      # yield results in the order of the input items
+      # needs to use `options` to store state between executions
+      # needs to use `done` index since a nil result would also be valid
+      def instrument_finish_in_order(item, index, result, options)
+        options[:mutex].synchronize do
+          # initialize our state
+          options[:finish_done] ||= []
+          options[:finish_expecting] ||= 0 # we wait for item at index 0
+
+          # store current result
+          options[:finish_done][index] = [item, result]
+
+          # yield all results that are now in order
+          break unless index == options[:finish_expecting]
+          index.upto(options[:finish_done].size).each do |i|
+            break unless (done = options[:finish_done][i])
+            options[:finish_done][i] = nil # allow GC to free this item and result
+            options[:finish].call(done[0], i, done[1])
+            options[:finish_expecting] += 1
+          end
+        end
+      end
+
+      def instrument_start(item, index, options)
+        return unless (on_start = options[:start])
+        options[:mutex].synchronize { on_start.call(item, index) }
+      end
+
+      def available_processor_count
+        gem "concurrent-ruby", ">= 1.3.4"
+        require "concurrent-ruby"
+        Concurrent.available_processor_count.floor
+      rescue LoadError
+        require "etc"
+        Etc.nprocessors
+      end
   end
 end

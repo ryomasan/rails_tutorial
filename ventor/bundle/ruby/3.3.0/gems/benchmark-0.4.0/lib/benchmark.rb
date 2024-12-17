@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #--
 # benchmark.rb - a performance benchmarking library
 #
@@ -120,7 +121,6 @@
 #        >avg:     0.960000   0.000000   0.960000 (  0.961255)
 
 module Benchmark
-
   VERSION = "0.4.0"
 
   BENCHMARK_VERSION = "2002-04-25" # :nodoc:
@@ -182,7 +182,7 @@ module Benchmark
       print i.format(report.format, *format)
     }
 
-    Array === results and results.grep(Tms).each {|t|
+    Array === results and results.grep(Tms).each { |t|
       print((labels.shift || t.label || "").ljust(label_width), t.format(format))
     }
     report.list
@@ -262,18 +262,18 @@ module Benchmark
     $stdout.sync = true
 
     # rehearsal
-    puts 'Rehearsal '.ljust(width+CAPTION.length,'-')
-    ets = job.list.inject(Tms.new) { |sum,(label,item)|
+    puts "Rehearsal ".ljust(width+CAPTION.length, "-")
+    ets = job.list.inject(Tms.new) { |sum, (label, item)|
       print label.ljust(width)
       res = Benchmark.measure(&item)
       print res.format
       sum + res
     }.format("total: %tsec")
-    print " #{ets}\n\n".rjust(width+CAPTION.length+2,'-')
+    print " #{ets}\n\n".rjust(width+CAPTION.length+2, "-")
 
     # take
-    print ' '*width + CAPTION
-    job.list.map { |label,item|
+    print " "*width + CAPTION
+    job.list.map { |label, item|
       GC.start
       print label.ljust(width)
       Benchmark.measure(label, &item).tap { |res| print res }
@@ -405,7 +405,6 @@ module Benchmark
   # measurement.
   #
   class Tms
-
     # Default caption, see also Benchmark::CAPTION
     CAPTION = "      user     system      total        real\n"
 
@@ -557,33 +556,32 @@ module Benchmark
     end
 
     protected
-
-    #
-    # Returns a new Tms object obtained by memberwise operation +op+
-    # of the individual times for this Tms object with those of the other
-    # Tms object (+x+).
-    #
-    # +op+ can be a mathematical operation such as <tt>+</tt>, <tt>-</tt>,
-    # <tt>*</tt>, <tt>/</tt>
-    #
-    def memberwise(op, x)
-      case x
-      when Benchmark::Tms
-        Benchmark::Tms.new(utime.__send__(op, x.utime),
-                           stime.__send__(op, x.stime),
-                           cutime.__send__(op, x.cutime),
-                           cstime.__send__(op, x.cstime),
-                           real.__send__(op, x.real)
-                           )
-      else
-        Benchmark::Tms.new(utime.__send__(op, x),
-                           stime.__send__(op, x),
-                           cutime.__send__(op, x),
-                           cstime.__send__(op, x),
-                           real.__send__(op, x)
-                           )
+      #
+      # Returns a new Tms object obtained by memberwise operation +op+
+      # of the individual times for this Tms object with those of the other
+      # Tms object (+x+).
+      #
+      # +op+ can be a mathematical operation such as <tt>+</tt>, <tt>-</tt>,
+      # <tt>*</tt>, <tt>/</tt>
+      #
+      def memberwise(op, x)
+        case x
+        when Benchmark::Tms
+          Benchmark::Tms.new(utime.__send__(op, x.utime),
+                             stime.__send__(op, x.stime),
+                             cutime.__send__(op, x.cutime),
+                             cstime.__send__(op, x.cstime),
+                             real.__send__(op, x.real)
+                             )
+        else
+          Benchmark::Tms.new(utime.__send__(op, x),
+                             stime.__send__(op, x),
+                             cutime.__send__(op, x),
+                             cstime.__send__(op, x),
+                             real.__send__(op, x)
+                             )
+        end
       end
-    end
   end
 
   # The default caption string (heading above the output times).

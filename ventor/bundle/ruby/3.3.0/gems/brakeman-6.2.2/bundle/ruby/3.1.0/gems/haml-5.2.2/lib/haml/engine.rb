@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-require 'forwardable'
+require "forwardable"
 
-require 'haml/parser'
-require 'haml/compiler'
-require 'haml/options'
-require 'haml/helpers'
-require 'haml/buffer'
-require 'haml/filters'
-require 'haml/error'
-require 'haml/temple_engine'
+require "haml/parser"
+require "haml/compiler"
+require "haml/options"
+require "haml/helpers"
+require "haml/buffer"
+require "haml/filters"
+require "haml/error"
+require "haml/temple_engine"
 
 module Haml
   # This is the frontend for using Haml programmatically.
@@ -116,13 +116,13 @@ module Haml
 
       if scope.is_a?(Binding)
         scope_object = eval("self", scope)
-        scope = scope_object.instance_eval{binding} if block_given?
+        scope = scope_object.instance_eval { binding } if block_given?
       else
         scope_object = scope
-        scope = scope_object.instance_eval{binding}
+        scope = scope_object.instance_eval { binding }
       end
 
-      set_locals(locals.merge(:_hamlout => buffer, :_erbout => buffer.buffer), scope, scope_object)
+      set_locals(locals.merge(_hamlout: buffer, _erbout: buffer.buffer), scope, scope_object)
 
       scope_object.extend(Haml::Helpers)
       scope_object.instance_variable_set(:@haml_buffer, buffer)
@@ -166,7 +166,7 @@ module Haml
         scope_object = eval("self", scope)
       else
         scope_object = scope
-        scope = scope_object.instance_eval{binding}
+        scope = scope_object.instance_eval { binding }
       end
 
       begin
@@ -228,11 +228,10 @@ module Haml
     end
 
     private
-
-    def set_locals(locals, scope, scope_object)
-      scope_object.instance_variable_set :@_haml_locals, locals
-      set_locals = locals.keys.map { |k| "#{k} = @_haml_locals[#{k.inspect}]" }.join("\n")
-      eval(set_locals, scope)
-    end
+      def set_locals(locals, scope, scope_object)
+        scope_object.instance_variable_set :@_haml_locals, locals
+        set_locals = locals.keys.map { |k| "#{k} = @_haml_locals[#{k.inspect}]" }.join("\n")
+        eval(set_locals, scope)
+      end
   end
 end

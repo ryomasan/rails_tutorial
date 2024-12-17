@@ -383,7 +383,7 @@ class HighLine
 
     # Don't add a newline if statement ends with whitespace, OR
     # if statement ends with whitespace before a color escape code.
-    if /[ \t](\e\[\d+(;\d+)*m)?\Z/ =~ statement
+    if /[ \t](\e\[\d+(;\d+)*m)?\Z/.match?(statement)
       output.print(statement)
     else
       output.puts(statement)
@@ -476,7 +476,7 @@ class HighLine
     return 80 unless @output.tty?
     terminal.terminal_size.first
   rescue NoMethodError
-    return 80
+    80
   end
 
   #
@@ -487,7 +487,7 @@ class HighLine
     return 24 unless @output.tty?
     terminal.terminal_size.last
   rescue NoMethodError
-    return 24
+    24
   end
 
   # Call #puts on the HighLine's output stream
@@ -505,165 +505,164 @@ class HighLine
   end
 
   private
-
-  # Adds a layer of scope (new_scope) to ask a question inside a
-  # question, without destroying instance data
-  def confirm(question)
-    new_scope.agree(question.confirm_question(self))
-  end
-
-  #
-  # A helper method used by HighLine::Question.verify_match
-  # for finding whether a list of answers match or differ
-  # from each other.
-  #
-  def unique_answers(list)
-    (list.respond_to?(:values) ? list.values : list).uniq
-  end
-
-  def last_answer(answers)
-    answers.respond_to?(:values) ? answers.values.last : answers.last
-  end
-
-  # Get response one line at time
-  # @param question [Question]
-  # @return [String] response
-  def get_response_line_mode(question)
-    if question.echo == true && !question.limit
-      get_line(question)
-    else
-      get_line_raw_no_echo_mode(question)
+    # Adds a layer of scope (new_scope) to ask a question inside a
+    # question, without destroying instance data
+    def confirm(question)
+      new_scope.agree(question.confirm_question(self))
     end
-  end
 
-  #
-  # Read a line of input from the input stream and process whitespace as
-  # requested by the Question object.
-  #
-  # If Question's _readline_ property is set, that library will be used to
-  # fetch input.  *WARNING*:  This ignores the currently set input stream.
-  #
-  # Raises EOFError if input is exhausted.
-  #
-  def get_line(question)
-    terminal.get_line(question, self)
-  end
+    #
+    # A helper method used by HighLine::Question.verify_match
+    # for finding whether a list of answers match or differ
+    # from each other.
+    #
+    def unique_answers(list)
+      (list.respond_to?(:values) ? list.values : list).uniq
+    end
 
-  def get_line_raw_no_echo_mode(question)
-    line = ""
+    def last_answer(answers)
+      answers.respond_to?(:values) ? answers.values.last : answers.last
+    end
 
-    terminal.raw_no_echo_mode_exec do
-      loop do
-        character = terminal.get_character
-        raise Interrupt if character == "\u0003"
-        break unless character
-        break if ["\n", "\r"].include? character
-
-        # honor backspace and delete
-        if character == "\b" || character == "\u007F"
-          chopped = line.chop!
-          output_erase_char if chopped && question.echo
-        elsif character == "\cU"
-          line.size.times { output_erase_char } if question.echo
-          line = ""
-        elsif character == "\e"
-          ignore_arrow_key
-        else
-          line << character
-          say_last_char_or_echo_char(line, question)
-        end
-
-        @output.flush
-
-        break if line_overflow_for_question?(line, question)
+    # Get response one line at time
+    # @param question [Question]
+    # @return [String] response
+    def get_response_line_mode(question)
+      if question.echo == true && !question.limit
+        get_line(question)
+      else
+        get_line_raw_no_echo_mode(question)
       end
     end
 
-    say_new_line_or_overwrite(question)
+    #
+    # Read a line of input from the input stream and process whitespace as
+    # requested by the Question object.
+    #
+    # If Question's _readline_ property is set, that library will be used to
+    # fetch input.  *WARNING*:  This ignores the currently set input stream.
+    #
+    # Raises EOFError if input is exhausted.
+    #
+    def get_line(question)
+      terminal.get_line(question, self)
+    end
 
-    question.format_answer(line)
-  end
+    def get_line_raw_no_echo_mode(question)
+      line = ""
 
-  def say_new_line_or_overwrite(question)
-    if question.overwrite
+      terminal.raw_no_echo_mode_exec do
+        loop do
+          character = terminal.get_character
+          raise Interrupt if character == "\u0003"
+          break unless character
+          break if ["\n", "\r"].include? character
+
+          # honor backspace and delete
+          if character == "\b" || character == "\u007F"
+            chopped = line.chop!
+            output_erase_char if chopped && question.echo
+          elsif character == "\cU"
+            line.size.times { output_erase_char } if question.echo
+            line = ""
+          elsif character == "\e"
+            ignore_arrow_key
+          else
+            line << character
+            say_last_char_or_echo_char(line, question)
+          end
+
+          @output.flush
+
+          break if line_overflow_for_question?(line, question)
+        end
+      end
+
+      say_new_line_or_overwrite(question)
+
+      question.format_answer(line)
+    end
+
+    def say_new_line_or_overwrite(question)
+      if question.overwrite
+        @output.print("\r#{HighLine.Style(:erase_line).code}")
+        @output.flush
+      else
+        say("\n")
+      end
+    end
+
+    def ignore_arrow_key
+      2.times do
+        terminal.get_character
+      end
+    end
+
+    def say_last_char_or_echo_char(line, question)
+      @output.print(line[-1]) if question.echo == true
+      @output.print(question.echo) if question.echo && question.echo != true
+    end
+
+    def line_overflow_for_question?(line, question)
+      question.limit && line.size == question.limit
+    end
+
+    def output_erase_char
+      @output.print("\b#{HighLine.Style(:erase_char).code}")
+    end
+
+    # Get response using #getc
+    # @param question [Question]
+    # @return [String] response
+    def get_response_getc_mode(question)
+      terminal.raw_no_echo_mode_exec do
+        response = @input.getc
+        question.format_answer(response)
+      end
+    end
+
+    # Get response each character per turn
+    # @param question [Question]
+    # @return [String] response
+    def get_response_character_mode(question)
+      terminal.raw_no_echo_mode_exec do
+        response = terminal.get_character
+        if question.overwrite
+          erase_current_line
+        else
+          echo = question.get_echo_for_response(response)
+          say("#{echo}\n")
+        end
+        question.format_answer(response)
+      end
+    end
+
+    def erase_current_line
       @output.print("\r#{HighLine.Style(:erase_line).code}")
       @output.flush
-    else
-      say("\n")
     end
-  end
 
-  def ignore_arrow_key
-    2.times do
-      terminal.get_character
+    public :get_response_character_mode, :get_response_line_mode
+    public :get_response_getc_mode
+
+    def actual_length(text)
+      Wrapper.actual_length text
     end
-  end
 
-  def say_last_char_or_echo_char(line, question)
-    @output.print(line[-1]) if question.echo == true
-    @output.print(question.echo) if question.echo && question.echo != true
-  end
-
-  def line_overflow_for_question?(line, question)
-    question.limit && line.size == question.limit
-  end
-
-  def output_erase_char
-    @output.print("\b#{HighLine.Style(:erase_char).code}")
-  end
-
-  # Get response using #getc
-  # @param question [Question]
-  # @return [String] response
-  def get_response_getc_mode(question)
-    terminal.raw_no_echo_mode_exec do
-      response = @input.getc
-      question.format_answer(response)
-    end
-  end
-
-  # Get response each character per turn
-  # @param question [Question]
-  # @return [String] response
-  def get_response_character_mode(question)
-    terminal.raw_no_echo_mode_exec do
-      response = terminal.get_character
-      if question.overwrite
-        erase_current_line
+    # Check to see if there's already a HighLine.default_instance or if
+    # this is the first time the method is called (eg: at
+    # HighLine.default_instance initialization).
+    # If there's already one, copy use_color settings.
+    # This is here most to help migrate code from HighLine 1.7.x to 2.0.x
+    #
+    # @return [Boolean]
+    def default_use_color
+      if HighLine.default_instance
+        HighLine.default_instance.use_color
       else
-        echo = question.get_echo_for_response(response)
-        say("#{echo}\n")
+        true
       end
-      question.format_answer(response)
     end
-  end
-
-  def erase_current_line
-    @output.print("\r#{HighLine.Style(:erase_line).code}")
-    @output.flush
-  end
-
-  public :get_response_character_mode, :get_response_line_mode
-  public :get_response_getc_mode
-
-  def actual_length(text)
-    Wrapper.actual_length text
-  end
-
-  # Check to see if there's already a HighLine.default_instance or if
-  # this is the first time the method is called (eg: at
-  # HighLine.default_instance initialization).
-  # If there's already one, copy use_color settings.
-  # This is here most to help migrate code from HighLine 1.7.x to 2.0.x
-  #
-  # @return [Boolean]
-  def default_use_color
-    if HighLine.default_instance
-      HighLine.default_instance.use_color
-    else
-      true
-    end
-  end
 end
 
 HighLine.default_instance = HighLine.new

@@ -110,21 +110,20 @@ class HighLine
     end
 
     private
-
-    # Return a normalized representation of a color name.
-    def to_symbol(t)
-      t.to_s.downcase
-    end
-
-    # Return a normalized representation of a color setting.
-    def to_constant(v)
-      v = v.to_s if v.is_a?(Symbol)
-      if v.is_a?(::String)
-        HighLine.const_get(v.upcase)
-      else
-        v
+      # Return a normalized representation of a color name.
+      def to_symbol(t)
+        t.to_s.downcase
       end
-    end
+
+      # Return a normalized representation of a color setting.
+      def to_constant(v)
+        v = v.to_s if v.is_a?(Symbol)
+        if v.is_a?(::String)
+          HighLine.const_get(v.upcase)
+        else
+          v
+        end
+      end
   end
 
   # A sample ColorScheme.

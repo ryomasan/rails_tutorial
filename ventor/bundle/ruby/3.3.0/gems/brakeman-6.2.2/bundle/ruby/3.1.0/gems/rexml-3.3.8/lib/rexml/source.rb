@@ -3,7 +3,7 @@
 
 require "strscan"
 
-require_relative 'encoding'
+require_relative "encoding"
 
 module REXML
   if StringScanner::Version < "1.0.0"
@@ -35,7 +35,7 @@ module REXML
           arg.respond_to? :eof?
         IOSource.new(arg)
       elsif arg.respond_to? :to_str
-        require 'stringio'
+        require "stringio"
         IOSource.new(StringIO.new(arg))
       elsif arg.kind_of? Source
         arg
@@ -68,7 +68,7 @@ module REXML
     # @param arg must be a String, and should be a valid XML document
     # @param encoding if non-null, sets the encoding of the source to this
     # value, overriding all encoding detection
-    def initialize(arg, encoding=nil)
+    def initialize(arg, encoding = nil)
       @orig = arg
       @scanner = StringScanner.new(@orig)
       if encoding
@@ -117,7 +117,7 @@ module REXML
     def ensure_buffer
     end
 
-    def match(pattern, cons=false)
+    def match(pattern, cons = false)
       if cons
         @scanner.scan(pattern).nil? ? nil : @scanner
       else
@@ -143,47 +143,46 @@ module REXML
       lines = @orig.split
       res = lines.grep @scanner.rest[0..30]
       res = res[-1] if res.kind_of? Array
-      lines.index( res ) if res
+      lines.index(res) if res
     end
 
     private
-
-    def detect_encoding
-      scanner_encoding = @scanner.rest.encoding
-      detected_encoding = "UTF-8"
-      begin
-        @scanner.string.force_encoding("ASCII-8BIT")
-        if @scanner.scan(/\xfe\xff/n)
-          detected_encoding = "UTF-16BE"
-        elsif @scanner.scan(/\xff\xfe/n)
-          detected_encoding = "UTF-16LE"
-        elsif @scanner.scan(/\xef\xbb\xbf/n)
-          detected_encoding = "UTF-8"
+      def detect_encoding
+        scanner_encoding = @scanner.rest.encoding
+        detected_encoding = "UTF-8"
+        begin
+          @scanner.string.force_encoding("ASCII-8BIT")
+          if @scanner.scan(/\xfe\xff/n)
+            detected_encoding = "UTF-16BE"
+          elsif @scanner.scan(/\xff\xfe/n)
+            detected_encoding = "UTF-16LE"
+          elsif @scanner.scan(/\xef\xbb\xbf/n)
+            detected_encoding = "UTF-8"
+          end
+        ensure
+          @scanner.string.force_encoding(scanner_encoding)
         end
-      ensure
-        @scanner.string.force_encoding(scanner_encoding)
+        self.encoding = detected_encoding
       end
-      self.encoding = detected_encoding
-    end
 
-    def encoding_updated
-      if @encoding != 'UTF-8'
-        @scanner.string = decode(@scanner.rest)
-        @to_utf = true
-      else
-        @to_utf = false
-        @scanner.string.force_encoding(::Encoding::UTF_8)
+      def encoding_updated
+        if @encoding != "UTF-8"
+          @scanner.string = decode(@scanner.rest)
+          @to_utf = true
+        else
+          @to_utf = false
+          @scanner.string.force_encoding(::Encoding::UTF_8)
+        end
       end
-    end
   end
 
   # A Source that wraps an IO.  See the Source class for method
   # documentation
   class IOSource < Source
-    #attr_reader :block_size
+    # attr_reader :block_size
 
     # block_size has been deprecated
-    def initialize(arg, block_size=500, encoding=nil)
+    def initialize(arg, block_size = 500, encoding = nil)
       @er_source = @source = arg
       @to_utf = false
       @pending_buffer = nil
@@ -247,7 +246,7 @@ module REXML
       read if @scanner.eos? && @source
     end
 
-    def match( pattern, cons=false )
+    def match(pattern, cons = false)
       # To avoid performance issue, we need to increase bytes to read per scan
       min_bytes = 1
       while true
@@ -267,7 +266,7 @@ module REXML
     end
 
     def empty?
-      super and ( @source.nil? || @source.eof? )
+      super and (@source.nil? || @source.eof?)
     end
 
     # @return the current line in the source
@@ -293,36 +292,36 @@ module REXML
     end
 
     private
-    def readline(term = nil)
-      str = @source.readline(term || @line_break)
-      if @pending_buffer
-        if str.nil?
-          str = @pending_buffer
-        else
-          str = @pending_buffer + str
+      def readline(term = nil)
+        str = @source.readline(term || @line_break)
+        if @pending_buffer
+          if str.nil?
+            str = @pending_buffer
+          else
+            str = @pending_buffer + str
+          end
+          @pending_buffer = nil
         end
-        @pending_buffer = nil
-      end
-      return nil if str.nil?
+        return nil if str.nil?
 
-      if @to_utf
-        decode(str)
-      else
-        str.force_encoding(::Encoding::UTF_8) if @force_utf8
-        str
+        if @to_utf
+          decode(str)
+        else
+          str.force_encoding(::Encoding::UTF_8) if @force_utf8
+          str
+        end
       end
-    end
 
-    def encoding_updated
-      case @encoding
-      when "UTF-16BE", "UTF-16LE"
-        @source.binmode
-        @source.set_encoding(@encoding, @encoding)
+      def encoding_updated
+        case @encoding
+        when "UTF-16BE", "UTF-16LE"
+          @source.binmode
+          @source.set_encoding(@encoding, @encoding)
+        end
+        @line_break = encode(">")
+        @pending_buffer, @scanner.string = @scanner.rest, ""
+        @pending_buffer.force_encoding(@encoding)
+        super
       end
-      @line_break = encode(">")
-      @pending_buffer, @scanner.string = @scanner.rest, ""
-      @pending_buffer.force_encoding(@encoding)
-      super
-    end
   end
 end

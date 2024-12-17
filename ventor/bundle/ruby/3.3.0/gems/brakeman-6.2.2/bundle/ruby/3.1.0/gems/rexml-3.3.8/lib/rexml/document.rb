@@ -1,4 +1,5 @@
 # frozen_string_literal: false
+
 require_relative "security"
 require_relative "element"
 require_relative "xmldecl"
@@ -89,7 +90,7 @@ module REXML
     #   d = REXML::Document.new(xml_string, context)
     #   d.context # => {:raw=>:all, :compress_whitespace=>:all}
     #
-    def initialize( source = nil, context = {} )
+    def initialize(source = nil, context = {})
       @entity_expansion_count = 0
       @entity_expansion_limit = Security.entity_expansion_limit
       @entity_expansion_text_limit = Security.entity_expansion_text_limit
@@ -100,7 +101,7 @@ module REXML
         @context = source.context
         super source
       else
-        build(  source )
+        build(source)
       end
     end
 
@@ -129,9 +130,9 @@ module REXML
     # Returns an empty string.
     #
     def expanded_name
-      ''
-      #d = doc_type
-      #d ? d.name : "UNDEFINED"
+      ""
+      # d = doc_type
+      # d ? d.name : "UNDEFINED"
     end
     alias :name :expanded_name
 
@@ -169,7 +170,7 @@ module REXML
     #   d.add(REXML::Element.new('foo'))
     #   d.to_s # => "<foo/>"
     #
-    def add( child )
+    def add(child)
       if child.kind_of? XMLDecl
         if @children[0].kind_of? XMLDecl
           @children[0] = child
@@ -208,7 +209,7 @@ module REXML
     # Adds an element to the document by calling REXML::Element.add_element:
     #
     #   REXML::Element.add_element(name_or_element, attributes)
-    def add_element(arg=nil, arg2=nil)
+    def add_element(arg = nil, arg2 = nil)
       rv = super
       raise "attempted adding second root element to document" if @elements.size > 1
       rv
@@ -226,8 +227,8 @@ module REXML
     #
     def root
       elements[1]
-      #self
-      #@children.find { |item| item.kind_of? Element }
+      # self
+      # @children.find { |item| item.kind_of? Element }
     end
 
     # :call-seq:
@@ -383,31 +384,31 @@ module REXML
       ie_hack    = false if ie_hack.nil?
       encoding ||= xml_decl.encoding
 
-      if encoding != 'UTF-8' && !output.kind_of?(Output)
-        output = Output.new( output, encoding )
+      if encoding != "UTF-8" && !output.kind_of?(Output)
+        output = Output.new(output, encoding)
       end
       formatter = if indent > -1
-          if transitive
-            require_relative "formatters/transitive"
-            REXML::Formatters::Transitive.new( indent, ie_hack )
-          else
-            REXML::Formatters::Pretty.new( indent, ie_hack )
-          end
+        if transitive
+          require_relative "formatters/transitive"
+          REXML::Formatters::Transitive.new(indent, ie_hack)
         else
-          REXML::Formatters::Default.new( ie_hack )
+          REXML::Formatters::Pretty.new(indent, ie_hack)
         end
-      formatter.write( self, output )
+      else
+        REXML::Formatters::Default.new(ie_hack)
+      end
+      formatter.write(self, output)
     end
 
 
-    def Document::parse_stream( source, listener )
-      Parsers::StreamParser.new( source, listener ).parse
+    def Document::parse_stream(source, listener)
+      Parsers::StreamParser.new(source, listener).parse
     end
 
     # Set the entity expansion limit. By default the limit is set to 10000.
     #
     # Deprecated. Use REXML::Security.entity_expansion_limit= instead.
-    def Document::entity_expansion_limit=( val )
+    def Document::entity_expansion_limit=(val)
       Security.entity_expansion_limit = val
     end
 
@@ -415,13 +416,13 @@ module REXML
     #
     # Deprecated. Use REXML::Security.entity_expansion_limit= instead.
     def Document::entity_expansion_limit
-      return Security.entity_expansion_limit
+      Security.entity_expansion_limit
     end
 
     # Set the entity expansion limit. By default the limit is set to 10240.
     #
     # Deprecated. Use REXML::Security.entity_expansion_text_limit= instead.
-    def Document::entity_expansion_text_limit=( val )
+    def Document::entity_expansion_text_limit=(val)
       Security.entity_expansion_text_limit = val
     end
 
@@ -429,7 +430,7 @@ module REXML
     #
     # Deprecated. Use REXML::Security.entity_expansion_text_limit instead.
     def Document::entity_expansion_text_limit
-      return Security.entity_expansion_text_limit
+      Security.entity_expansion_text_limit
     end
 
     attr_reader :entity_expansion_count
@@ -448,8 +449,8 @@ module REXML
     end
 
     private
-    def build( source )
-      Parsers::TreeParser.new( source, self ).parse
-    end
+      def build(source)
+        Parsers::TreeParser.new(source, self).parse
+      end
   end
 end

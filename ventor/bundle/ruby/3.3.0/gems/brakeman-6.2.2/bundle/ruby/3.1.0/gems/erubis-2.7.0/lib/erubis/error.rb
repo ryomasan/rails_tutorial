@@ -4,8 +4,6 @@
 ##
 
 module Erubis
-
-
   ##
   ## base error class
   ##
@@ -18,6 +16,4 @@ module Erubis
   ##
   class NotSupportedError < ErubisError
   end
-
-
 end

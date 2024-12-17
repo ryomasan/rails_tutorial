@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'xmltokens'
+require_relative "xmltokens"
 
 module REXML
   # Adds named attributes to an object.
@@ -14,7 +14,7 @@ module REXML
     NAMESPLIT = /^(?:(#{NCNAME_STR}):)?(#{NCNAME_STR})/u
 
     # Sets the name and the expanded name
-    def name=( name )
+    def name=(name)
       @expanded_name = name
       if name.match?(NAME_WITHOUT_NAMESPACE)
         @prefix = ""
@@ -40,13 +40,13 @@ module REXML
     end
 
     # Compares names optionally WITH namespaces
-    def has_name?( other, ns=nil )
+    def has_name?(other, ns = nil)
       if ns
-        return (namespace() == ns and name() == other)
+        (namespace() == ns and name() == other)
       elsif other.include? ":"
-        return fully_expanded_name == other
+        fully_expanded_name == other
       else
-        return name == other
+        name == other
       end
     end
 
@@ -57,7 +57,7 @@ module REXML
     def fully_expanded_name
       ns = prefix
       return "#{ns}:#@name" if ns.size > 0
-      return @name
+      @name
     end
   end
 end

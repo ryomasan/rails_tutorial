@@ -1,13 +1,11 @@
 # coding: utf-8
 
-name = File.basename(__FILE__, '.*')
+name = File.basename(__FILE__, ".*")
 source_version = ["", "ext/#{name}/"].find do |dir|
-  begin
-    break File.foreach(File.join(__dir__, "#{dir}#{name}.c")) {|line|
-      break $1.sub("-", ".") if /^#define\s+#{name.upcase}_VERSION\s+"(.+)"/o =~ line
-    }
-  rescue Errno::ENOENT
-  end
+  break File.foreach(File.join(__dir__, "#{dir}#{name}.c")) { |line|
+    break $1.sub("-", ".") if /^#define\s+#{name.upcase}_VERSION\s+"(.+)"/o =~ line
+  }
+rescue Errno::ENOENT
 end or raise "can't find #{name.upcase}_VERSION"
 
 Gem::Specification.new do |s|
@@ -35,8 +33,8 @@ Gem::Specification.new do |s|
     sample/nlsolve.rb
     sample/pi.rb
   ]
-  if Gem::Platform === s.platform and s.platform =~ 'java' or RUBY_ENGINE == 'jruby'
-    s.platform      = 'java'
+  if Gem::Platform === s.platform and s.platform =~ "java" or RUBY_ENGINE == "jruby"
+    s.platform      = "java"
   else
     s.extensions    = %w[ext/bigdecimal/extconf.rb]
     s.files += %w[

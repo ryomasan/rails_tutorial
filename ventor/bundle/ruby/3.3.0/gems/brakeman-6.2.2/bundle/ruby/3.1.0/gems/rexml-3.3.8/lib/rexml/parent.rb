@@ -1,4 +1,5 @@
 # frozen_string_literal: false
+
 require_relative "child"
 
 module REXML
@@ -10,12 +11,12 @@ module REXML
 
     # Constructor
     # @param parent if supplied, will be set as the parent of this object
-    def initialize parent=nil
+    def initialize(parent = nil)
       super(parent)
       @children = []
     end
 
-    def add( object )
+    def add(object)
       object.parent = self
       @children << object
       object
@@ -24,14 +25,14 @@ module REXML
     alias :push :add
     alias :<< :push
 
-    def unshift( object )
+    def unshift(object)
       object.parent = self
       @children.unshift object
     end
 
-    def delete( object )
+    def delete(object)
       found = false
-      @children.delete_if {|c| c.equal?(object) and found = true }
+      @children.delete_if { |c| c.equal?(object) and found = true }
       object.parent = nil if found
       found ? object : nil
     end
@@ -40,21 +41,21 @@ module REXML
       @children.each(&block)
     end
 
-    def delete_if( &block )
+    def delete_if(&block)
       @children.delete_if(&block)
     end
 
-    def delete_at( index )
+    def delete_at(index)
       @children.delete_at index
     end
 
-    def each_index( &block )
+    def each_index(&block)
       @children.each_index(&block)
     end
 
     # Fetches a child at a given index
     # @param index the Integer index of the child to fetch
-    def []( index )
+    def [](index)
       @children[index]
     end
 
@@ -67,7 +68,7 @@ module REXML
     # @param opt either the object to set, or an Integer length
     # @param child if opt is an Integer, this is the child to set
     # @return the parent (self)
-    def []=( *args )
+    def []=(*args)
       args[-1].parent = self
       @children[*args[0..-2]] = args[-1]
     end
@@ -79,14 +80,14 @@ module REXML
     # the xpath.
     # @param child2 the child to insert
     # @return the parent (self)
-    def insert_before( child1, child2 )
+    def insert_before(child1, child2)
       if child1.kind_of? String
-        child1 = XPath.first( self, child1 )
+        child1 = XPath.first(self, child1)
         child1.parent.insert_before child1, child2
       else
         ind = index(child1)
         child2.parent.delete(child2) if child2.parent
-        @children[ind,0] = child2
+        @children[ind, 0] = child2
         child2.parent = self
       end
       self
@@ -99,14 +100,14 @@ module REXML
     # the xpath.
     # @param child2 the child to insert
     # @return the parent (self)
-    def insert_after( child1, child2 )
+    def insert_after(child1, child2)
       if child1.kind_of? String
-        child1 = XPath.first( self, child1 )
+        child1 = XPath.first(self, child1)
         child1.parent.insert_after child1, child2
       else
         ind = index(child1)+1
         child2.parent.delete(child2) if child2.parent
-        @children[ind,0] = child2
+        @children[ind, 0] = child2
         child2.parent = self
       end
       self
@@ -120,7 +121,7 @@ module REXML
     # @param child the child to get the index of
     # @return the index of the child, or nil if the object is not a child
     # of this parent.
-    def index( child )
+    def index(child)
       count = -1
       @children.find { |i| count += 1 ; i.hash == child.hash }
       count
@@ -137,8 +138,8 @@ module REXML
     # @param to_replace the child to replace (must be a Child)
     # @param replacement the child to insert into the nodelist (must be a
     # Child)
-    def replace_child( to_replace, replacement )
-      @children.map! {|c| c.equal?( to_replace ) ? replacement : c }
+    def replace_child(to_replace, replacement)
+      @children.map! { |c| c.equal?(to_replace) ? replacement : c }
       to_replace.parent = nil
       replacement.parent = self
     end

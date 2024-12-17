@@ -85,14 +85,14 @@ module ActionDispatch
 
         def parse_terminal
           node = case @next_token
-          when :SYMBOL
-            Symbol.new(@scanner.last_string)
-          when :LITERAL
-            Literal.new(@scanner.last_literal)
-          when :SLASH
-            Slash.new("/")
-          when :DOT
-            Dot.new(".")
+                 when :SYMBOL
+                   Symbol.new(@scanner.last_string)
+                 when :LITERAL
+                   Literal.new(@scanner.last_literal)
+                 when :SLASH
+                   Slash.new("/")
+                 when :DOT
+                   Dot.new(".")
           end
 
           advance_token

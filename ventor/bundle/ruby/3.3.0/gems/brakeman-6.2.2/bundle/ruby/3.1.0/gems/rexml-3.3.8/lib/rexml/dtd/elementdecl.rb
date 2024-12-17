@@ -1,4 +1,5 @@
 # frozen_string_literal: false
+
 require_relative "../child"
 module REXML
   module DTD
@@ -7,9 +8,9 @@ module REXML
       START_RE = /^\s*#{START}/um
       # PATTERN_RE = /^\s*(#{START}.*?)>/um
       PATTERN_RE = /^\s*#{START}\s+((?:[:\w][-\.\w]*:)?[-!\*\.\w]*)(.*?)>/
-      #\s*((((["']).*?\5)|[^\/'">]*)*?)(\/)?>/um, true)
+      # \s*((((["']).*?\5)|[^\/'">]*)*?)(\/)?>/um, true)
 
-      def initialize match
+      def initialize(match)
         @name = match[1]
         @rest = match[2]
       end

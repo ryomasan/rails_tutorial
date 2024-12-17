@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #
 # \Module \Base64 provides methods for:
 #
@@ -182,7 +183,6 @@
 #    Base64.encode64(s) # => "VGhpcyBpcyBsaW5lIDEKVGhpcyBpcyBsaW5lIDIK\n"
 #
 module Base64
-
   VERSION = "0.2.0"
 
   module_function

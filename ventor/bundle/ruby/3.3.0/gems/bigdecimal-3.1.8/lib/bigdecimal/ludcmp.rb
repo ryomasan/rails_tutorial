@@ -1,5 +1,6 @@
 # frozen_string_literal: false
-require 'bigdecimal'
+
+require "bigdecimal"
 
 #
 # Solves a*x = b for x, using LU decomposition.
@@ -8,7 +9,7 @@ module LUSolve
   module_function
 
   # Performs LU decomposition of the n by n matrix a.
-  def ludecomp(a,n,zero=0,one=1)
+  def ludecomp(a, n, zero = 0, one = 1)
     prec = BigDecimal.limit(nil)
     ps     = []
     scales = []
@@ -21,14 +22,14 @@ module LUSolve
         nrmrow = biggst if biggst>nrmrow
       end
       if nrmrow>zero then
-        scales <<= one.div(nrmrow,prec)
+        scales <<= one.div(nrmrow, prec)
       else
         raise "Singular matrix"
       end
     end
     n1          = n - 1
     for k in 0...n1 do # Gaussian elimination with partial pivoting.
-      biggst  = zero;
+      biggst  = zero
       for i in k...n do
         size = a[ps[i]*n+k].abs*scales[ps[i]]
         if size>biggst then
@@ -45,11 +46,11 @@ module LUSolve
       pivot   = a[ps[k]*n+k]
       for i in (k+1)...n do
         psin = ps[i]*n
-        a[psin+k] = mult = a[psin+k].div(pivot,prec)
+        a[psin+k] = mult = a[psin+k].div(pivot, prec)
         if mult!=zero then
           pskn = ps[k]*n
           for j in (k+1)...n do
-            a[psin+j] -= mult.mult(a[pskn+j],prec)
+            a[psin+j] -= mult.mult(a[pskn+j], prec)
           end
         end
       end
@@ -64,7 +65,7 @@ module LUSolve
   #
   # ps is the pivot, a vector which indicates the permutation of rows performed
   # during LU decomposition.
-  def lusolve(a,b,ps,zero=0.0)
+  def lusolve(a, b, ps, zero = 0.0)
     prec = BigDecimal.limit(nil)
     n = ps.size
     x = []
@@ -72,7 +73,7 @@ module LUSolve
       dot = zero
       psin = ps[i]*n
       for j in 0...i do
-        dot = a[psin+j].mult(x[j],prec) + dot
+        dot = a[psin+j].mult(x[j], prec) + dot
       end
       x <<= b[ps[i]] - dot
     end
@@ -80,9 +81,9 @@ module LUSolve
       dot = zero
       psin = ps[i]*n
       for j in (i+1)...n do
-        dot = a[psin+j].mult(x[j],prec) + dot
+        dot = a[psin+j].mult(x[j], prec) + dot
       end
-      x[i]  = (x[i]-dot).div(a[psin+i],prec)
+      x[i]  = (x[i]-dot).div(a[psin+i], prec)
     end
     x
   end

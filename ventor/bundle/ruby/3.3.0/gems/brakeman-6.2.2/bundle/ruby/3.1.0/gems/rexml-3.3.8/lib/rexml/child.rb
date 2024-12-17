@@ -1,4 +1,5 @@
 # frozen_string_literal: false
+
 require_relative "node"
 
 module REXML
@@ -15,19 +16,19 @@ module REXML
     # parent::
     #   if supplied, the parent of this child will be set to the
     #   supplied value, and self will be added to the parent
-    def initialize( parent = nil )
+    def initialize(parent = nil)
       @parent = nil
       # Declare @parent, but don't define it.  The next line sets the
       # parent.
-      parent.add( self ) if parent
+      parent.add(self) if parent
     end
 
     # Replaces this object with another object.  Basically, calls
     # Parent.replace_child
     #
     # Returns:: self
-    def replace_with( child )
-      @parent.replace_child( self, child )
+    def replace_with(child)
+      @parent.replace_child(self, child)
       self
     end
 
@@ -49,7 +50,7 @@ module REXML
     #   child is removed from the current parent (if one exists), and is added
     #   to the new parent.
     # Returns:: The parent added
-    def parent=( other )
+    def parent=(other)
       return @parent if @parent == other
       @parent.delete self if defined? @parent and @parent
       @parent = other
@@ -65,7 +66,7 @@ module REXML
     #  c = Element.new("c")
     #  b.next_sibling = c
     #  # => <a><b/><c/></a>
-    def next_sibling=( other )
+    def next_sibling=(other)
       parent.insert_after self, other
     end
 

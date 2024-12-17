@@ -57,7 +57,7 @@ class Reline::Face
 
   class Config
     ESSENTIAL_DEFINE_NAMES = %i(default enhanced scrollbar).freeze
-    RESET_SGR = "\e[0m".freeze
+    RESET_SGR = "\e[0m"
 
     def initialize(name, &block)
       @definition = {}
@@ -86,79 +86,78 @@ class Reline::Face
     end
 
     private
-
-    def sgr_rgb(key, value)
-      return nil unless rgb_expression?(value)
-      if Reline::Face.truecolor?
-        sgr_rgb_truecolor(key, value)
-      else
-        sgr_rgb_256color(key, value)
-      end
-    end
-
-    def sgr_rgb_truecolor(key, value)
-      case key
-      when :foreground
-        "38;2;"
-      when :background
-        "48;2;"
-      end + value[1, 6].scan(/../).map(&:hex).join(";")
-    end
-
-    def sgr_rgb_256color(key, value)
-      # 256 colors are
-      # 0..15: standard colors, high intensity colors
-      # 16..232: 216 colors (R, G, B each 6 steps)
-      # 233..255: grayscale colors (24 steps)
-      # This methods converts rgb_expression to 216 colors
-      rgb = value[1, 6].scan(/../).map(&:hex)
-      # Color steps are [0, 95, 135, 175, 215, 255]
-      r, g, b = rgb.map { |v| v <= 95 ? v / 48 : (v - 35) / 40 }
-      color = (16 + 36 * r + 6 * g + b)
-      case key
-      when :foreground
-        "38;5;#{color}"
-      when :background
-        "48;5;#{color}"
-      end
-    end
-
-    def format_to_sgr(ordered_values)
-      sgr = "\e[" + ordered_values.map do |key_value|
-        key, value = key_value
-        case key
-        when :foreground, :background
-          case value
-          when Symbol
-            SGR_PARAMETERS[key][value]
-          when String
-            sgr_rgb(key, value)
-          end
-        when :style
-          [ value ].flatten.map do |style_name|
-            SGR_PARAMETERS[:style][style_name]
-          end.then do |sgr_parameters|
-            sgr_parameters.include?(nil) ? nil : sgr_parameters
-          end
-        end.then do |rendition_expression|
-          unless rendition_expression
-            raise ArgumentError, "invalid SGR parameter: #{value.inspect}"
-          end
-          rendition_expression
+      def sgr_rgb(key, value)
+        return nil unless rgb_expression?(value)
+        if Reline::Face.truecolor?
+          sgr_rgb_truecolor(key, value)
+        else
+          sgr_rgb_256color(key, value)
         end
-      end.join(';') + "m"
-      sgr == RESET_SGR ? RESET_SGR : RESET_SGR + sgr
-    end
+      end
 
-    def rgb_expression?(color)
-      color.respond_to?(:match?) and color.match?(/\A#[0-9a-fA-F]{6}\z/)
-    end
+      def sgr_rgb_truecolor(key, value)
+        case key
+        when :foreground
+          "38;2;"
+        when :background
+          "48;2;"
+        end + value[1, 6].scan(/../).map(&:hex).join(";")
+      end
+
+      def sgr_rgb_256color(key, value)
+        # 256 colors are
+        # 0..15: standard colors, high intensity colors
+        # 16..232: 216 colors (R, G, B each 6 steps)
+        # 233..255: grayscale colors (24 steps)
+        # This methods converts rgb_expression to 216 colors
+        rgb = value[1, 6].scan(/../).map(&:hex)
+        # Color steps are [0, 95, 135, 175, 215, 255]
+        r, g, b = rgb.map { |v| v <= 95 ? v / 48 : (v - 35) / 40 }
+        color = (16 + 36 * r + 6 * g + b)
+        case key
+        when :foreground
+          "38;5;#{color}"
+        when :background
+          "48;5;#{color}"
+        end
+      end
+
+      def format_to_sgr(ordered_values)
+        sgr = "\e[" + ordered_values.map do |key_value|
+          key, value = key_value
+          case key
+          when :foreground, :background
+            case value
+            when Symbol
+              SGR_PARAMETERS[key][value]
+            when String
+              sgr_rgb(key, value)
+            end
+          when :style
+            [ value ].flatten.map do |style_name|
+              SGR_PARAMETERS[:style][style_name]
+            end.then do |sgr_parameters|
+              sgr_parameters.include?(nil) ? nil : sgr_parameters
+            end
+          end.then do |rendition_expression|
+            unless rendition_expression
+              raise ArgumentError, "invalid SGR parameter: #{value.inspect}"
+            end
+            rendition_expression
+          end
+        end.join(";") + "m"
+        sgr == RESET_SGR ? RESET_SGR : RESET_SGR + sgr
+      end
+
+      def rgb_expression?(color)
+        color.respond_to?(:match?) and color.match?(/\A#[0-9a-fA-F]{6}\z/)
+      end
   end
 
   private_constant :SGR_PARAMETERS, :Config
 
   def self.truecolor?
-    @force_truecolor || %w[truecolor 24bit].include?(ENV['COLORTERM'])
+    @force_truecolor || %w[truecolor 24bit].include?(ENV["COLORTERM"])
   end
 
   def self.force_truecolor

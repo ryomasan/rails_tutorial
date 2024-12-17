@@ -1,4 +1,4 @@
-path = File.expand_path('../..', __FILE__)
+path = File.expand_path("../..", __FILE__)
 $:.unshift "#{path}/bundle/ruby/3.1.0/gems/erubis-2.7.0/lib"
 $:.unshift "#{path}/bundle/ruby/3.1.0/gems/haml-5.2.2/lib"
 $:.unshift "#{path}/bundle/ruby/3.1.0/gems/highline-3.1.1/lib"

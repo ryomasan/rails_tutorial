@@ -1,9 +1,9 @@
-require 'minitest/autorun'
-require 'minitest/unit'
-require 'test_helper'
+require "minitest/autorun"
+require "minitest/unit"
+require "test_helper"
 
 # bcrypt_pbkdf in ruby
-require 'openssl'
+require "openssl"
 
 BCRYPT_BLOCKS = 8
 BCRYPT_HASHSIZE = BCRYPT_BLOCKS * 4
@@ -13,7 +13,7 @@ def bcrypt_pbkdf(password, salt, keylen, rounds)
   amt = (keylen + stride - 1) / stride
 
   sha2pass = OpenSSL::Digest::SHA512.new(password).digest
-  #puts "[RB] sha2pass:#{sha2pass.inspect} #{sha2pass.size}"
+  # puts "[RB] sha2pass:#{sha2pass.inspect} #{sha2pass.size}"
 
   remlen = keylen
 
@@ -29,23 +29,23 @@ def bcrypt_pbkdf(password, salt, keylen, rounds)
     countsalt[saltlen + 1] = ((count >> 16) & 0xff).chr
     countsalt[saltlen + 2] = ((count >> 8) & 0xff).chr
     countsalt[saltlen + 3] = (count & 0xff).chr
-    #puts "[RC] countsalt: #{countsalt.inspect} len:#{countsalt.size}"
+    # puts "[RC] countsalt: #{countsalt.inspect} len:#{countsalt.size}"
 
     sha2salt = OpenSSL::Digest::SHA512.new(countsalt).digest
-    tmpout = BCryptPbkdf::Engine::__bc_crypt_hash(sha2pass, sha2salt)
+    tmpout = BCryptPbkdf::Engine.__bc_crypt_hash(sha2pass, sha2salt)
     out = tmpout.clone
 
-    #puts "[RB] out: #{out.inspect} keylen:#{remlen} count:#{count}"
+    # puts "[RB] out: #{out.inspect} keylen:#{remlen} count:#{count}"
     (1...rounds).each do |i|
       sha2salt = OpenSSL::Digest::SHA512.new(tmpout).digest
-      tmpout = BCryptPbkdf::Engine::__bc_crypt_hash(sha2pass, sha2salt)
-      out.bytes.each_with_index {|o,j| out.setbyte(j,o ^ tmpout[j].ord) }
+      tmpout = BCryptPbkdf::Engine.__bc_crypt_hash(sha2pass, sha2salt)
+      out.bytes.each_with_index { |o, j| out.setbyte(j, o ^ tmpout[j].ord) }
     end
 
     amt = [amt, remlen].min
     (0...amt).each do |i|
       dest = i * stride + (count - 1)
-      key[dest] = out[i] if (dest < keylen)
+      key[dest] = out[i] if dest < keylen
     end
 
     remlen -= amt
@@ -57,12 +57,12 @@ end
 
 class TestExt < Minitest::Unit::TestCase
   def test_table
-    assert_equal table, table.map{ |p,s,l,r| [p,s,l,r,BCryptPbkdf::Engine::__bc_crypt_pbkdf(p,s,l,r).bytes] }
+    assert_equal table, table.map { |p, s, l, r| [p, s, l, r, BCryptPbkdf::Engine.__bc_crypt_pbkdf(p, s, l, r).bytes] }
   end
   def test_ruby_and_native_returns_the_same
-    table.each do |p,s,l,r|
-      assert_equal bcrypt_pbkdf(p,s,l,r), BCryptPbkdf::Engine::__bc_crypt_pbkdf(p,s,l,r)
-      assert_equal bcrypt_pbkdf(p,s,l,r), BCryptPbkdf::key(p,s,l,r)
+    table.each do |p, s, l, r|
+      assert_equal bcrypt_pbkdf(p, s, l, r), BCryptPbkdf::Engine.__bc_crypt_pbkdf(p, s, l, r)
+      assert_equal bcrypt_pbkdf(p, s, l, r), BCryptPbkdf.key(p, s, l, r)
     end
   end
 

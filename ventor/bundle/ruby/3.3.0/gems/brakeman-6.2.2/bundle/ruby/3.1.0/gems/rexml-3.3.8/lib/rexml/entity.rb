@@ -1,7 +1,8 @@
 # frozen_string_literal: false
-require_relative 'child'
-require_relative 'source'
-require_relative 'xmltokens'
+
+require_relative "child"
+require_relative "source"
+require_relative "xmltokens"
 
 module REXML
   class Entity < Child
@@ -31,20 +32,20 @@ module REXML
     # you can easily create a non-conformant Entity.
     #
     #  e = Entity.new( 'amp', '&' )
-    def initialize stream, value=nil, parent=nil, reference=false
+    def initialize(stream, value = nil, parent = nil, reference = false)
       super(parent)
       @ndata = @pubid = @value = @external = nil
       if stream.kind_of? Array
         @name = stream[1]
-        if stream[-1] == '%'
+        if stream[-1] == "%"
           @reference = true
           stream.pop
         else
           @reference = false
         end
-        if stream[2] =~ /SYSTEM|PUBLIC/
+        if /SYSTEM|PUBLIC/.match?(stream[2])
           @external = stream[2]
-          if @external == 'SYSTEM'
+          if @external == "SYSTEM"
             @ref = stream[3]
             @ndata = stream[4] if stream.size == 5
           else
@@ -64,7 +65,7 @@ module REXML
 
     # Evaluates whether the given string matches an entity definition,
     # returning true if so, and false otherwise.
-    def Entity::matches? string
+    def Entity::matches?(string)
       (ENTITYDECL =~ string) == 0
     end
 
@@ -75,11 +76,11 @@ module REXML
 
       return nil if @value.nil?
 
-      @unnormalized = Text::unnormalize(@value, parent,
+      @unnormalized = Text.unnormalize(@value, parent,
                                         entity_expansion_text_limit: document&.entity_expansion_text_limit)
     end
 
-    #once :unnormalized
+    # once :unnormalized
 
     # Returns the value of this entity unprocessed -- raw.  This is the
     # normalized value; that is, with all %ent; and &ent; entities intact
@@ -95,30 +96,30 @@ module REXML
     #   output
     # indent::
     #   *DEPRECATED* and ignored
-    def write out, indent=-1
-      out << '<!ENTITY '
-      out << '% ' if @reference
+    def write(out, indent = -1)
+      out << "<!ENTITY "
+      out << "% " if @reference
       out << @name
-      out << ' '
+      out << " "
       if @external
-        out << @external << ' '
+        out << @external << " "
         if @pubid
           q = @pubid.include?('"')?"'":'"'
-          out << q << @pubid << q << ' '
+          out << q << @pubid << q << " "
         end
         q = @ref.include?('"')?"'":'"'
         out << q << @ref << q
-        out << ' NDATA ' << @ndata if @ndata
+        out << " NDATA " << @ndata if @ndata
       else
         q = @value.include?('"')?"'":'"'
         out << q << @value << q
       end
-      out << '>'
+      out << ">"
     end
 
     # Returns this entity as a string.  See write().
     def to_s
-      rv = ''
+      rv = ""
       write rv
       rv
     end
@@ -129,14 +130,14 @@ module REXML
   # CAUTION: these entities does not have parent and document
   module EntityConst
     # +>+
-    GT = Entity.new( 'gt', '>' )
+    GT = Entity.new("gt", ">")
     # +<+
-    LT = Entity.new( 'lt', '<' )
+    LT = Entity.new("lt", "<")
     # +&+
-    AMP = Entity.new( 'amp', '&' )
+    AMP = Entity.new("amp", "&")
     # +"+
-    QUOT = Entity.new( 'quot', '"' )
+    QUOT = Entity.new("quot", '"')
     # +'+
-    APOS = Entity.new( 'apos', "'" )
+    APOS = Entity.new("apos", "'")
   end
 end

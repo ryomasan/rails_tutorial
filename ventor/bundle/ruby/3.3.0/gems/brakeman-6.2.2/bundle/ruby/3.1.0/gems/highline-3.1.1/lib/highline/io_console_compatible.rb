@@ -13,7 +13,7 @@ require "tempfile"
 #
 
 module IOConsoleCompatible
-  def getch(min:nil, time:nil, intr: nil)
+  def getch(min: nil, time: nil, intr: nil)
     getc
   end
 

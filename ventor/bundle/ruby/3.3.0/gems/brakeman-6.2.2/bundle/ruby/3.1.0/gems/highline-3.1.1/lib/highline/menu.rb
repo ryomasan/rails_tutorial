@@ -376,7 +376,7 @@ class HighLine
     def map_items_by_index
       if [:letter, :capital_letter].include?(@index)
         # @ and ` are the previous ASCII characters to A and a respectively
-        prev_char = (@index == :capital_letter ? '@' : '`')
+        prev_char = (@index == :capital_letter ? "@" : "`")
         all_items.map { prev_char.succ!.dup }
       else
         (1..all_items.size).map(&:to_s)
@@ -416,7 +416,7 @@ class HighLine
     end
 
     def find_item_from_selection(items, selection)
-      if selection =~ /^\d+$/ # is a number?
+      if /^\d+$/.match?(selection) # is a number?
         get_item_by_number(items, selection)
       else
         get_item_by_letter(items, selection)
@@ -444,10 +444,10 @@ class HighLine
     def value_for_selected_item(item, details)
       if item.action
         result = if @shell
-                   item.action.call(item.name, details)
-                 else
-                   item.action.call(item.name)
-                 end
+          item.action.call(item.name, details)
+        else
+          item.action.call(item.name)
+        end
         @nil_on_handled ? nil : result
       else
         item.name
@@ -519,7 +519,7 @@ class HighLine
       when :number
         ["#{ix + 1}#{@index_suffix}", text]
       when :letter, :capital_letter
-        first_letter = (@index == :capital_letter ? 'A' : 'a')
+        first_letter = (@index == :capital_letter ? "A" : "a")
         ["#{(first_letter.ord + ix).chr}#{@index_suffix}", text]
       when :none
         [text, ""]

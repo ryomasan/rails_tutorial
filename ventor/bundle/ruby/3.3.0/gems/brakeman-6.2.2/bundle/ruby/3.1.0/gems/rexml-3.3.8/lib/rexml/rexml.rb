@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # frozen_string_literal: false
+
 #
 # \Module \REXML provides classes and methods for parsing,
 # editing, and generating XML.

@@ -114,39 +114,38 @@ class HighLine
     end
 
     private
-
-    ## Delegate to Highline
-    def explain_error(explanation_key) # eg: :not_valid, :not_in_range
-      @highline.say(question.final_response(explanation_key))
-      @highline.say(question.ask_on_error_msg)
-    end
-
-    def gather_with_array
-      [].tap do |answers|
-        answers << ask_once
-        question.template = ""
-
-        yield answers
+      ## Delegate to Highline
+      def explain_error(explanation_key) # eg: :not_valid, :not_in_range
+        @highline.say(question.final_response(explanation_key))
+        @highline.say(question.ask_on_error_msg)
       end
-    end
 
-    def answer_matches_regex(answer)
-      if question.gather.is_a?(::String) || question.gather.is_a?(Symbol)
-        answer.to_s == question.gather.to_s
-      elsif question.gather.is_a?(Regexp)
-        answer.to_s =~ question.gather
-      end
-    end
+      def gather_with_array
+        [].tap do |answers|
+          answers << ask_once
+          question.template = ""
 
-    def gather_answers_based_on_type
-      case question.gather
-      when Integer
-        gather_integer
-      when ::String, Symbol, Regexp
-        gather_regexp
-      when Hash
-        gather_hash
+          yield answers
+        end
       end
-    end
+
+      def answer_matches_regex(answer)
+        if question.gather.is_a?(::String) || question.gather.is_a?(Symbol)
+          answer.to_s == question.gather.to_s
+        elsif question.gather.is_a?(Regexp)
+          answer.to_s =~ question.gather
+        end
+      end
+
+      def gather_answers_based_on_type
+        case question.gather
+        when Integer
+          gather_integer
+        when ::String, Symbol, Regexp
+          gather_regexp
+        when Hash
+          gather_hash
+        end
+      end
   end
 end

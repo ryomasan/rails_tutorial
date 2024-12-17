@@ -3,34 +3,32 @@
 ## copyright(c) 2006-2011 kuwata-lab.com all rights reserved.
 ##
 
-require 'erubis/engine'
-require 'erubis/enhancer'
+require "erubis/engine"
+require "erubis/enhancer"
 
 
 module Erubis
-
-
   module PerlGenerator
     include Generator
 
-    def self.supported_properties()  # :nodoc:
-      return [
-              [:func, 'print', "function name"],
+    def self.supported_properties  # :nodoc:
+      [
+              [:func, "print", "function name"],
               ]
     end
 
-    def init_generator(properties={})
+    def init_generator(properties = {})
       super
-      @escapefunc ||= 'encode_entities'
-      @func = properties[:func] || 'print'
+      @escapefunc ||= "encode_entities"
+      @func = properties[:func] || "print"
     end
 
     def add_preamble(src)
-      src << "use HTML::Entities; ";
+      src << "use HTML::Entities; "
     end
 
     def escape_text(text)
-      return text.gsub!(/['\\]/, '\\\\\&') || text
+      text.gsub!(/['\\]/, '\\\\\&') || text
     end
 
     def add_text(src, text)
@@ -48,7 +46,7 @@ module Erubis
 
     def add_expr_debug(src, code)
       code.strip!
-      s = code.gsub(/\'/, "\\'")
+      code.gsub(/\'/, "\\'")
       src << @func << "('*** debug: #{code}=', #{code}, \"\\n\");"
     end
 
@@ -59,7 +57,6 @@ module Erubis
     def add_postamble(src)
       src << "\n" unless src[-1] == ?\n
     end
-
   end
 
 
@@ -76,20 +73,17 @@ module Erubis
   end
 
 
-  #class XmlEperl < Eperl
+  # class XmlEperl < Eperl
   #  include EscapeEnhancer
-  #end
+  # end
 
 
   class PI::Eperl < PI::Engine
     include PerlGenerator
 
-    def init_converter(properties={})
-      @pi = 'perl'
+    def init_converter(properties = {})
+      @pi = "perl"
       super(properties)
     end
-
   end
-
-
 end

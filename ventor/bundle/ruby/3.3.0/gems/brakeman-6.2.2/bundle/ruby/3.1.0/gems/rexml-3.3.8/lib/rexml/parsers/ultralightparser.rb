@@ -1,17 +1,18 @@
 # frozen_string_literal: false
-require_relative 'streamparser'
-require_relative 'baseparser'
+
+require_relative "streamparser"
+require_relative "baseparser"
 
 module REXML
   module Parsers
     class UltraLightParser
-      def initialize stream
+      def initialize(stream)
         @stream = stream
-        @parser = REXML::Parsers::BaseParser.new( stream )
+        @parser = REXML::Parsers::BaseParser.new(stream)
       end
 
-      def add_listener( listener )
-        @parser.add_listener( listener )
+      def add_listener(listener)
+        @parser.add_listener(listener)
       end
 
       def rewind
@@ -30,7 +31,7 @@ module REXML
             context = context[1]
           when :start_element, :start_doctype
             context << event
-            event[1,0] = [context]
+            event[1, 0] = [context]
             context = event
           when :end_element
             context = context[1]

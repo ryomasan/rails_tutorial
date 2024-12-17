@@ -2,11 +2,11 @@
 
 good = false
 
-rules = Hash.new { |h,k| h[k] = [] }
+rules = Hash.new { |h, k| h[k] = [] }
 rule = nil
 order = []
 
-def munge s
+def munge(s)
   renames = [
              # unquote... wtf?
              /`(.+?)'/,          proc { $1 },
@@ -70,7 +70,7 @@ def munge s
              '"{ arg"',          "tLBRACE_ARG",
              '"( arg"',          "tLPAREN_ARG",
              '"("',              "tLPAREN",
-             'rparen',           "tRPAREN",
+             "rparen",           "tRPAREN",
              '"{"',              "tLBRACE",
              '"=>"',             "tASSOC",
              '"->"',             "tLAMBDA",
@@ -80,7 +80,7 @@ def munge s
 
              # other
 
-             'tLBRACK2',        "tLBRACK", # HACK
+             "tLBRACK2",        "tLBRACK", # HACK
 
              "' '",             "tSPACE", # needs to be later to avoid bad hits
 
@@ -209,10 +209,10 @@ ARGF.each_line do |line|
   end
 end
 
-require 'yaml'
+require "yaml"
 
 order.each do |k|
-  next if k =~ /@/
+  next if /@/.match?(k)
   puts
   puts "#{k}:"
   puts rules[k].map { |r| "    #{r}" }.join "\n"

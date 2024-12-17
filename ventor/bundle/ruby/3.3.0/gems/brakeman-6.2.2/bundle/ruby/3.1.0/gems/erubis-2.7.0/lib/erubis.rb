@@ -27,10 +27,10 @@
 ## result:
 ##   --- source ---
 ##   _buf = ''; _buf << '<ul>
-##   ';  for item in @list 
+##   ';  for item in @list
 ##    _buf << '  <li>'; _buf << ( item ).to_s; _buf << '
 ##   '; _buf << '      '; _buf << Erubis::XmlHelper.escape_xml( item ); _buf << '</li>
-##   ';  end 
+##   ';  end
 ##    _buf << '</ul>
 ##   ';
 ##   _buf.to_s
@@ -47,27 +47,27 @@
 
 
 module Erubis
-  VERSION = ('$Release: 2.7.0 $' =~ /([.\d]+)/) && $1
+  VERSION = ("$Release: 2.7.0 $" =~ /([.\d]+)/) && $1
 end
 
-require 'erubis/engine'
-#require 'erubis/generator'
-#require 'erubis/converter'
-#require 'erubis/evaluator'
-#require 'erubis/error'
-#require 'erubis/context'
-#requier 'erubis/util'
-require 'erubis/helper'
-require 'erubis/enhancer'
-#require 'erubis/tiny'
-require 'erubis/engine/eruby'
-#require 'erubis/engine/enhanced'    # enhanced eruby engines
-#require 'erubis/engine/optimized'   # generates optimized ruby code
-#require 'erubis/engine/ephp'
-#require 'erubis/engine/ec'
-#require 'erubis/engine/ejava'
-#require 'erubis/engine/escheme'
-#require 'erubis/engine/eperl'
-#require 'erubis/engine/ejavascript'
+require "erubis/engine"
+# require 'erubis/generator'
+# require 'erubis/converter'
+# require 'erubis/evaluator'
+# require 'erubis/error'
+# require 'erubis/context'
+# requier 'erubis/util'
+require "erubis/helper"
+require "erubis/enhancer"
+# require 'erubis/tiny'
+require "erubis/engine/eruby"
+# require 'erubis/engine/enhanced'    # enhanced eruby engines
+# require 'erubis/engine/optimized'   # generates optimized ruby code
+# require 'erubis/engine/ephp'
+# require 'erubis/engine/ec'
+# require 'erubis/engine/ejava'
+# require 'erubis/engine/escheme'
+# require 'erubis/engine/eperl'
+# require 'erubis/engine/ejavascript'
 
-require 'erubis/local-setting'
+require "erubis/local-setting"

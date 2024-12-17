@@ -3,28 +3,26 @@
 ## copyright(c) 2006-2011 kuwata-lab.com all rights reserved.
 ##
 
-require 'erubis/engine'
-require 'erubis/enhancer'
+require "erubis/engine"
+require "erubis/enhancer"
 
 
 module Erubis
-
-
   module CppGenerator
     include Generator
 
-    def self.supported_properties()  # :nodoc:
-      return [
-              [:indent, '',       "indent spaces (ex. '  ')"],
-              [:bufvar, '_buf',   "buffer variable name"],
+    def self.supported_properties  # :nodoc:
+      [
+              [:indent, "",       "indent spaces (ex. '  ')"],
+              [:bufvar, "_buf",   "buffer variable name"],
             ]
     end
 
-    def init_generator(properties={})
+    def init_generator(properties = {})
       super
       @escapefunc ||= "escape"
-      @indent = properties[:indent] || ''
-      @bufvar = properties[:bufvar] || '_buf'
+      @indent = properties[:indent] || ""
+      @bufvar = properties[:bufvar] || "_buf"
     end
 
     def add_preamble(src)
@@ -34,16 +32,16 @@ module Erubis
     def escape_text(text)
       @@table_ ||= { "\r"=>"\\r", "\n"=>"\\n", "\t"=>"\\t", '"'=>'\\"', "\\"=>"\\\\" }
       text.gsub!(/[\r\n\t"\\]/) { |m| @@table_[m] }
-      return text
+      text
     end
 
     def escaped_expr(code)
-      return "#{@escapefunc}(#{code.strip})"
+      "#{@escapefunc}(#{code.strip})"
     end
 
     def add_text(src, text)
       return if text.empty?
-      src << (src.empty? || src[-1] == ?\n ? @indent : ' ')
+      src << (src.empty? || src[-1] == ?\n ? @indent : " ")
       src << "_buf << "
       i = 0
       text.each_line do |line|
@@ -51,7 +49,7 @@ module Erubis
         i += 1
         src << '"' << escape_text(line) << '"'
       end
-      src << ";"   #<< (text[-1] == ?\n ? "\n" : "")
+      src << ";"   # << (text[-1] == ?\n ? "\n" : "")
       src << "\n" if text[-1] == ?\n
     end
 
@@ -66,7 +64,7 @@ module Erubis
 
     def add_expr_escaped(src, code)
       src << @indent if src.empty? || src[-1] == ?\n
-      src << ' ' << escaped_expr(code) << ';'
+      src << " " << escaped_expr(code) << ";"
     end
 
     def add_expr_debug(src, code)
@@ -78,7 +76,6 @@ module Erubis
     def add_postamble(src)
       # empty
     end
-
   end
 
 
@@ -95,19 +92,16 @@ module Erubis
   end
 
 
-  #class XmlEcpp < Ecpp
+  # class XmlEcpp < Ecpp
   #  include EscapeEnhancer
-  #end
+  # end
 
   class PI::Ecpp < PI::Engine
     include CppGenerator
 
-    def init_converter(properties={})
-      @pi = 'cpp'
+    def init_converter(properties = {})
+      @pi = "cpp"
       super(properties)
     end
-
   end
-
-
 end

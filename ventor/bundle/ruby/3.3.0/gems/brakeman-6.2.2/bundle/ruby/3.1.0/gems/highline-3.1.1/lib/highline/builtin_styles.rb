@@ -108,12 +108,12 @@ class HighLine
         suffix = Regexp.last_match(4)
 
         code_name = if suffix
-                      Regexp.last_match(1).to_s +
-                        Regexp.last_match(2) +
-                        Regexp.last_match(3)
-                    else
-                      name.to_s
-                    end
+          Regexp.last_match(1).to_s +
+            Regexp.last_match(2) +
+            Regexp.last_match(3)
+        else
+          name.to_s
+        end
 
         style_name = code_name + "_STYLE"
         style = Style.rgb(Regexp.last_match(3))

@@ -17,19 +17,19 @@ module Kernel
         ret = require_without_bootsnap(path)
         resolved = Bootsnap::LoadPathCache.loaded_features_index.identify(string_path, cursor)
         Bootsnap::LoadPathCache.loaded_features_index.register(string_path, resolved)
-        return ret
+        ret
       else
-        return require_without_bootsnap(path)
+        require_without_bootsnap(path)
       end
     elsif false == resolved
-      return false
+      false
     elsif resolved.nil?
-      return require_without_bootsnap(path)
+      require_without_bootsnap(path)
     else
       # Note that require registers to $LOADED_FEATURES while load does not.
       ret = require_without_bootsnap(resolved)
       Bootsnap::LoadPathCache.loaded_features_index.register(string_path, resolved)
-      return ret
+      ret
     end
   end
 

@@ -50,83 +50,82 @@ require "eruby"   # Still needed to bring in a couple useful helper methods
 require "erubis"
 
 module Erubis
- @@cgi = nil
+  @@cgi = nil
 
- def self.cgi
-   return @@cgi
- end
+  def self.cgi
+    @@cgi
+  end
 
- def self.cgi=(cgi)
-   @@cgi = cgi
- end
+  def self.cgi=(cgi)
+    @@cgi = cgi
+  end
 end
 
 module Apache
- class ErubisRun
-   include Singleton
+  class ErubisRun
+    include Singleton
 
-   def handler(req)
-     status = check_request(req)
-     return status if(status != OK)
+    def handler(req)
+      status = check_request(req)
+      return status if status != OK
 
-     filename = req.filename.dup
-     filename.untaint
-     erubis = compile(filename)
-     prerun(req)
-     begin
-       run(erubis, filename)
-     ensure
-       postrun(req)
-     end
+      filename = req.filename.dup
+      filename.untaint
+      erubis = compile(filename)
+      prerun(req)
+      begin
+        run(erubis, filename)
+      ensure
+        postrun(req)
+      end
 
-     return OK
-   end
+      OK
+    end
 
-   private
+    private
+      def initialize
+        @compiler = nil
+      end
 
-   def initialize
-     @compiler = nil
-   end
+      def check_request(req)
+        if req.method_number == M_OPTIONS
+          req.allowed |= (1 << M_GET)
+          req.allowed |= (1 << M_POST)
+          return DECLINED
+        end
+        if req.finfo.mode == 0
+          return NOT_FOUND
+        end
+        OK
+      end
 
-   def check_request(req)
-     if(req.method_number == M_OPTIONS)
-       req.allowed |= (1 << M_GET)
-       req.allowed |= (1 << M_POST)
-       return DECLINED
-     end
-     if(req.finfo.mode == 0)
-       return NOT_FOUND
-     end
-     return OK
-   end
+      def compile(filename)
+        @compiler = Erubis::Eruby.load_file(filename) # use caching version as much as possible
+        @compiler
+      end
 
-   def compile(filename)
-     @compiler = Erubis::Eruby.load_file(filename) # use caching version as much as possible
-     return @compiler
-   end
+      def prerun(req)
+        Erubis.cgi = nil
+        req.setup_cgi_env
+        Apache.chdir_file(req.filename)
+      end
 
-   def prerun(req)
-     Erubis.cgi = nil
-     req.setup_cgi_env
-     Apache.chdir_file(req.filename)
-   end
+      def run(erubis, filename)
+        binding = eval_string_wrap("binding")
+        puts erubis.result(binding) # eval the code in the context of the same binding ERuby uses
+      end
 
-   def run(erubis, filename)
-     binding = eval_string_wrap("binding")
-     puts erubis.result(binding) # eval the code in the context of the same binding ERuby uses
-   end
-
-   def postrun(req)
-     if(cgi = Erubis.cgi)
-       # TODO: pull the content type header from the cgi object, if set there?
-     elsif(req.sync_output or req.sync_header)
-       # Do nothing: header has already been sent
-     else
-       unless(req.content_type)
-         req.content_type = format("text/html;")
-       end
-       req.send_http_header
-     end
-   end
- end
+      def postrun(req)
+        if Erubis.cgi
+          # TODO: pull the content type header from the cgi object, if set there?
+        elsif req.sync_output or req.sync_header
+          # Do nothing: header has already been sent
+        else
+          unless req.content_type
+            req.content_type = format("text/html;")
+          end
+          req.send_http_header
+        end
+      end
+  end
 end

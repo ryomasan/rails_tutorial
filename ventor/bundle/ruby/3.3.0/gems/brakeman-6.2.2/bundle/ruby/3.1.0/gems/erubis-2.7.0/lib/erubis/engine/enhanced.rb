@@ -3,26 +3,24 @@
 ## copyright(c) 2006-2011 kuwata-lab.com all rights reserved.
 ##
 
-require 'erubis/enhancer'
-require 'erubis/engine/eruby'
+require "erubis/enhancer"
+require "erubis/engine/eruby"
 
 
 module Erubis
-
-
   #--
   ## moved to engine/ruby.rb
-  #class EscapedEruby < Eruby
+  # class EscapedEruby < Eruby
   #  include EscapeEnhancer
-  #end
+  # end
   #++
 
 
   #--
   ### (obsolete)
-  #class FastEruby < Eruby
+  # class FastEruby < Eruby
   #  include FastEnhancer
-  #end
+  # end
   #++
 
 
@@ -121,6 +119,4 @@ module Erubis
   class InterpolationEruby < Eruby
     include InterpolationEnhancer
   end
-
-
 end

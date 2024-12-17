@@ -1,5 +1,6 @@
 # frozen_string_literal: false
-require_relative 'validationexception'
+
+require_relative "validationexception"
 
 module REXML
   module Validation
@@ -15,12 +16,12 @@ module REXML
       def dump
         puts @root.inspect
       end
-      def validate( event )
+      def validate(event)
         @attr_stack = [] unless defined? @attr_stack
         match = @current.next(event)
-        raise ValidationException.new( "Validation error.  Expected: "+
-          @current.expected.join( " or " )+" from #{@current.inspect} "+
-          " but got #{Event.new( event[0], event[1] ).inspect}" ) unless match
+        raise ValidationException.new("Validation error.  Expected: "+
+          @current.expected.join(" or ")+" from #{@current.inspect} "+
+          " but got #{Event.new(event[0], event[1]).inspect}") unless match
         @current = match
 
         # Check for attributes
@@ -31,21 +32,21 @@ module REXML
             sattr = [:start_attribute, nil]
             eattr = [:end_attribute]
             text = [:text, nil]
-            k, = event[2].find { |key,value|
+            k, = event[2].find { |key, value|
               sattr[1] = key
-              m = @current.next( sattr )
+              m = @current.next(sattr)
               if m
                 # If the state has text children...
-                if m.matches?( eattr )
+                if m.matches?(eattr)
                   @current = m
                 else
                   text[1] = value
-                  m = m.next( text )
+                  m = m.next(text)
                   text[1] = nil
                   return false unless m
                   @current = m if m
                 end
-                m = @current.next( eattr )
+                m = @current.next(eattr)
                 if m
                   @current = m
                   true
@@ -60,14 +61,14 @@ module REXML
           end while k
         when :end_element
           attrs = @attr_stack.pop
-          raise ValidationException.new( "Validation error.  Illegal "+
+          raise ValidationException.new("Validation error.  Illegal "+
             " attributes: #{attrs.inspect}") if attrs.length > 0
         end
       end
     end
 
     class Event
-      def initialize(event_type, event_arg=nil )
+      def initialize(event_type, event_arg = nil)
         @event_type = event_type
         @event_arg = event_arg
       end
@@ -80,26 +81,26 @@ module REXML
       end
 
       def single?
-        return (@event_type != :start_element and @event_type != :start_attribute)
+        (@event_type != :start_element and @event_type != :start_attribute)
       end
 
-      def matches?( event )
+      def matches?(event)
         return false unless event[0] == @event_type
         case event[0]
         when nil
-          return true
+          true
         when :start_element
-          return true if event[1] == @event_arg
+          true if event[1] == @event_arg
         when :end_element
-          return true
+          true
         when :start_attribute
-          return true if event[1] == @event_arg
+          true if event[1] == @event_arg
         when :end_attribute
-          return true
+          true
         when :end_document
-          return true
+          true
         when :text
-          return (@event_arg.nil? or @event_arg == event[1])
+          (@event_arg.nil? or @event_arg == event[1])
 =begin
         when :processing_instruction
           false
@@ -127,7 +128,7 @@ module REXML
         end
       end
 
-      def ==( other )
+      def ==(other)
         return false unless other.kind_of? Event
         @event_type == other.event_type and @event_arg == other.event_arg
       end

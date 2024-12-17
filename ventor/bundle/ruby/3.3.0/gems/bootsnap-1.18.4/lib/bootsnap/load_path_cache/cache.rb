@@ -104,7 +104,7 @@ module Bootsnap
         # cases where the file doesn't appear to be on the load path. We should
         # be able to detect newly-created files without rebooting the
         # application.
-        return FALLBACK_SCAN if @development_mode
+        FALLBACK_SCAN if @development_mode
       end
 
       def unshift_paths(sender, *paths)
@@ -131,114 +131,113 @@ module Bootsnap
       end
 
       private
+        def dir_changed?
+          @prev_dir ||= Dir.pwd
+          if @prev_dir == Dir.pwd
+            false
+          else
+            @prev_dir = Dir.pwd
+            true
+          end
+        end
 
-      def dir_changed?
-        @prev_dir ||= Dir.pwd
-        if @prev_dir == Dir.pwd
-          false
+        def push_paths_locked(*paths)
+          @store.transaction do
+            paths.map(&:to_s).each do |path|
+              p = Path.new(path)
+              @has_relative_paths = true if p.relative?
+              next if p.non_directory?
+
+              p = p.to_realpath
+
+              expanded_path = p.expanded_path
+              entries, dirs = p.entries_and_dirs(@store)
+              # push -> low precedence -> set only if unset
+              dirs.each    { |dir| @dirs[dir] ||= path }
+              entries.each { |rel| @index[rel] ||= expanded_path }
+            end
+          end
+        end
+
+        def unshift_paths_locked(*paths)
+          @store.transaction do
+            paths.map(&:to_s).reverse_each do |path|
+              p = Path.new(path)
+              next if p.non_directory?
+
+              p = p.to_realpath
+
+              expanded_path = p.expanded_path
+              entries, dirs = p.entries_and_dirs(@store)
+              # unshift -> high precedence -> unconditional set
+              dirs.each    { |dir| @dirs[dir]  = path }
+              entries.each { |rel| @index[rel] = expanded_path }
+            end
+          end
+        end
+
+        def expand_path(feature)
+          maybe_append_extension(File.expand_path(feature))
+        end
+
+        def stale?
+          @development_mode && @generated_at + AGE_THRESHOLD < now
+        end
+
+        def now
+          Process.clock_gettime(Process::CLOCK_MONOTONIC).to_i
+        end
+
+        if DLEXT2
+          def search_index(feature)
+            try_index(feature + DOT_RB) ||
+              try_index(feature + DLEXT) ||
+              try_index(feature + DLEXT2) ||
+              try_index(feature)
+          end
+
+          def maybe_append_extension(feature)
+            try_ext(feature + DOT_RB) ||
+              try_ext(feature + DLEXT) ||
+              try_ext(feature + DLEXT2) ||
+              feature
+          end
         else
-          @prev_dir = Dir.pwd
-          true
-        end
-      end
+          def search_index(feature)
+            try_index(feature + DOT_RB) || try_index(feature + DLEXT) || try_index(feature)
+          end
 
-      def push_paths_locked(*paths)
-        @store.transaction do
-          paths.map(&:to_s).each do |path|
-            p = Path.new(path)
-            @has_relative_paths = true if p.relative?
-            next if p.non_directory?
-
-            p = p.to_realpath
-
-            expanded_path = p.expanded_path
-            entries, dirs = p.entries_and_dirs(@store)
-            # push -> low precedence -> set only if unset
-            dirs.each    { |dir| @dirs[dir] ||= path }
-            entries.each { |rel| @index[rel] ||= expanded_path }
+          def maybe_append_extension(feature)
+            try_ext(feature + DOT_RB) || try_ext(feature + DLEXT) || feature
           end
         end
-      end
 
-      def unshift_paths_locked(*paths)
-        @store.transaction do
-          paths.map(&:to_s).reverse_each do |path|
-            p = Path.new(path)
-            next if p.non_directory?
-
-            p = p.to_realpath
-
-            expanded_path = p.expanded_path
-            entries, dirs = p.entries_and_dirs(@store)
-            # unshift -> high precedence -> unconditional set
-            dirs.each    { |dir| @dirs[dir]  = path }
-            entries.each { |rel| @index[rel] = expanded_path }
-          end
-        end
-      end
-
-      def expand_path(feature)
-        maybe_append_extension(File.expand_path(feature))
-      end
-
-      def stale?
-        @development_mode && @generated_at + AGE_THRESHOLD < now
-      end
-
-      def now
-        Process.clock_gettime(Process::CLOCK_MONOTONIC).to_i
-      end
-
-      if DLEXT2
-        def search_index(feature)
-          try_index(feature + DOT_RB) ||
-            try_index(feature + DLEXT) ||
-            try_index(feature + DLEXT2) ||
-            try_index(feature)
-        end
-
-        def maybe_append_extension(feature)
-          try_ext(feature + DOT_RB) ||
-            try_ext(feature + DLEXT) ||
-            try_ext(feature + DLEXT2) ||
-            feature
-        end
-      else
-        def search_index(feature)
-          try_index(feature + DOT_RB) || try_index(feature + DLEXT) || try_index(feature)
-        end
-
-        def maybe_append_extension(feature)
-          try_ext(feature + DOT_RB) || try_ext(feature + DLEXT) || feature
-        end
-      end
-
-      s = rand.to_s.force_encoding(Encoding::US_ASCII).freeze
-      if s.respond_to?(:-@)
-        if ((-s).equal?(s) && (-s.dup).equal?(s)) || RUBY_VERSION >= "2.7"
-          def try_index(feature)
-            if (path = @index[feature])
-              -File.join(path, feature).freeze
+        s = rand.to_s.force_encoding(Encoding::US_ASCII).freeze
+        if s.respond_to?(:-@)
+          if ((-s).equal?(s) && (-s.dup).equal?(s)) || RUBY_VERSION >= "2.7"
+            def try_index(feature)
+              if (path = @index[feature])
+                -File.join(path, feature).freeze
+              end
+            end
+          else
+            def try_index(feature)
+              if (path = @index[feature])
+                -File.join(path, feature).untaint
+              end
             end
           end
         else
           def try_index(feature)
             if (path = @index[feature])
-              -File.join(path, feature).untaint
+              File.join(path, feature)
             end
           end
         end
-      else
-        def try_index(feature)
-          if (path = @index[feature])
-            File.join(path, feature)
-          end
-        end
-      end
 
-      def try_ext(feature)
-        feature if File.exist?(feature)
-      end
+        def try_ext(feature)
+          feature if File.exist?(feature)
+        end
     end
   end
 end

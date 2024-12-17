@@ -6,7 +6,7 @@ module ActionView
       def with_output_buffer_with_haml_xss(*args, &block)
         res = with_output_buffer_without_haml_xss(*args, &block)
         case res
-        when Array; res.map {|s| Haml::Util.html_safe(s)}
+        when Array; res.map { |s| Haml::Util.html_safe(s) }
         when String; Haml::Util.html_safe(res)
         else; res
         end
@@ -29,7 +29,7 @@ module ActionView
       def form_for_with_haml_xss(*args, &block)
         res = form_for_without_haml_xss(*args, &block)
         return Haml::Util.html_safe(res) if res.is_a?(String)
-        return res
+        res
       end
       alias_method :form_for_without_haml_xss, :form_for
       alias_method :form_for, :form_for_with_haml_xss

@@ -3,29 +3,27 @@
 ## copyright(c) 2006-2011 kuwata-lab.com all rights reserved.
 ##
 
-require 'erubis/engine'
-require 'erubis/enhancer'
+require "erubis/engine"
+require "erubis/enhancer"
 
 
 module Erubis
-
-
   module JavascriptGenerator
     include Generator
 
-    def self.supported_properties()   # :nodoc:
+    def self.supported_properties   # :nodoc:
       list = []
-      #list << [:indent,   '',       "indent spaces (ex. '  ')"]
-      #list << [:bufvar,      '_buf',   "output buffer variable name"]
+      # list << [:indent,   '',       "indent spaces (ex. '  ')"]
+      # list << [:bufvar,      '_buf',   "output buffer variable name"]
       list << [:docwrite, true,     "use 'document.write()' when true"]
-      return list
+      list
     end
 
-    def init_generator(properties={})
+    def init_generator(properties = {})
       super
-      @escapefunc ||= 'escape'
-      @indent = properties[:indent] || ''
-      @bufvar = properties[:bufvar] || '_buf'
+      @escapefunc ||= "escape"
+      @indent = properties[:indent] || ""
+      @bufvar = properties[:bufvar] || "_buf"
       @docwrite = properties[:docwrite] != false  # '!= false' will be removed in the next release
     end
 
@@ -35,11 +33,11 @@ module Erubis
 
     def escape_text(text)
       @@table_ ||= { "\r"=>"\\r", "\n"=>"\\n\\\n", "\t"=>"\\t", '"'=>'\\"', "\\"=>"\\\\" }
-      return text.gsub!(/[\r\n\t"\\]/) { |m| @@table_[m] } || text
+      text.gsub!(/[\r\n\t"\\]/) { |m| @@table_[m] } || text
     end
 
     def add_indent(src, indent)
-      src << (src.empty? || src[-1] == ?\n ? indent : ' ')
+      src << (src.empty? || src[-1] == ?\n ? indent : " ")
     end
 
     def add_text(src, text)
@@ -48,7 +46,7 @@ module Erubis
       src << @bufvar << '.push("'
       s = escape_text(text)
       if s[-1] == ?\n
-        s[-2, 2] = ''
+        s[-2, 2] = ""
         src << s << "\");\n"
       else
         src << s << "\");"
@@ -78,12 +76,11 @@ module Erubis
     def add_postamble(src)
       src << "\n" if src[-1] == ?;
       if @docwrite
-        src << @indent << 'document.write(' << @bufvar << ".join(\"\"));\n"
+        src << @indent << "document.write(" << @bufvar << ".join(\"\"));\n"
       else
         src << @indent << @bufvar << ".join(\"\");\n"
       end
     end
-
   end
 
 
@@ -100,20 +97,17 @@ module Erubis
   end
 
 
-  #class XmlEjavascript < Ejavascript
+  # class XmlEjavascript < Ejavascript
   #  include EscapeEnhancer
-  #end
+  # end
 
 
   class PI::Ejavascript < PI::Engine
     include JavascriptGenerator
 
-    def init_converter(properties={})
-      @pi = 'js'
+    def init_converter(properties = {})
+      @pi = "js"
       super(properties)
     end
-
   end
-
-
 end

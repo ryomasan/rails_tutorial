@@ -1,5 +1,6 @@
 # coding: US-ASCII
 # frozen_string_literal: false
+
 module REXML
   module Encoding
     # ID ---> Encoding name
@@ -17,7 +18,7 @@ module REXML
       if encoding
         @encoding = encoding.upcase
       else
-        @encoding = 'UTF-8'
+        @encoding = "UTF-8"
       end
       true
     end
@@ -31,21 +32,21 @@ module REXML
     end
 
     private
-    def find_encoding(name)
-      case name
-      when /\Ashift-jis\z/i
-        return "SHIFT_JIS"
-      when /\ACP-(\d+)\z/
-        name = "CP#{$1}"
-      when /\AUTF-8\z/i
-        return name
+      def find_encoding(name)
+        case name
+        when /\Ashift-jis\z/i
+          return "SHIFT_JIS"
+        when /\ACP-(\d+)\z/
+          name = "CP#{$1}"
+        when /\AUTF-8\z/i
+          return name
+        end
+        begin
+          ::Encoding::Converter.search_convpath(name, "UTF-8")
+        rescue ::Encoding::ConverterNotFoundError
+          return nil
+        end
+        name
       end
-      begin
-        ::Encoding::Converter.search_convpath(name, 'UTF-8')
-      rescue ::Encoding::ConverterNotFoundError
-        return nil
-      end
-      name
-    end
   end
 end

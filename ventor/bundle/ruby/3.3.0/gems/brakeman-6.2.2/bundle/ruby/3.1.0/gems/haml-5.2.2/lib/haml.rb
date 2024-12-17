@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'haml/version'
+require "haml/version"
 
 # The module that contains everything Haml-related:
 #
@@ -12,14 +12,12 @@ require 'haml/version'
 #
 # Also see the {file:REFERENCE.md full Haml reference}.
 module Haml
-
   def self.init_rails(*args)
     # Maintain this as a no-op for any libraries that may be depending on the
     # previous definition here.
   end
-
 end
 
-require 'haml/util'
-require 'haml/engine'
-require 'haml/railtie' if defined?(Rails::Railtie)
+require "haml/util"
+require "haml/engine"
+require "haml/railtie" if defined?(Rails::Railtie)

@@ -1,4 +1,5 @@
 # frozen_string_literal: false
+
 require_relative "parseexception"
 require_relative "formatters/pretty"
 require_relative "formatters/default"
@@ -24,29 +25,29 @@ module REXML
     # indent::
     #   *DEPRECATED* This parameter is now ignored.  See the formatters in the
     #   REXML::Formatters package for changing the output style.
-    def to_s indent=nil
+    def to_s(indent = nil)
       unless indent.nil?
-        Kernel.warn( "#{self.class.name}.to_s(indent) parameter is deprecated", uplevel: 1)
-        f = REXML::Formatters::Pretty.new( indent )
-        f.write( self, rv = "" )
+        Kernel.warn("#{self.class.name}.to_s(indent) parameter is deprecated", uplevel: 1)
+        f = REXML::Formatters::Pretty.new(indent)
+        f.write(self, rv = "")
       else
         f = REXML::Formatters::Default.new
-        f.write( self, rv = "" )
+        f.write(self, rv = "")
       end
-      return rv
+      rv
     end
 
-    def indent to, ind
-                        if @parent and @parent.context and not @parent.context[:indentstyle].nil? then
-                                indentstyle = @parent.context[:indentstyle]
-                        else
-                                indentstyle = '  '
-                        end
-                        to << indentstyle*ind unless ind<1
+    def indent(to, ind)
+      if @parent and @parent.context and not @parent.context[:indentstyle].nil? then
+        indentstyle = @parent.context[:indentstyle]
+      else
+        indentstyle = "  "
+      end
+      to << indentstyle*ind unless ind<1
     end
 
     def parent?
-      false;
+      false
     end
 
 
@@ -65,10 +66,10 @@ module REXML
     # Find (and return) first subnode (recursively) for which the block
     # evaluates to true. Returns +nil+ if none was found.
     def find_first_recursive(&block) # :yields: node
-      each_recursive {|node|
+      each_recursive { |node|
         return node if block.call(node)
       }
-      return nil
+      nil
     end
 
     # Returns the position that +self+ holds in its parent's array, indexed

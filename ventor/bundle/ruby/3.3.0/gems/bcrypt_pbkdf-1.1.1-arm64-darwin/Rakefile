@@ -1,11 +1,11 @@
-require 'rake/testtask'
-require 'rubygems/package_task'
-require 'bundler/gem_tasks'
-require 'rake/extensiontask'
-require 'rake/clean'
-require 'rdoc/task'
-require 'benchmark'
-require 'rake_compiler_dock'
+require "rake/testtask"
+require "rubygems/package_task"
+require "bundler/gem_tasks"
+require "rake/extensiontask"
+require "rake/clean"
+require "rdoc/task"
+require "benchmark"
+require "rake_compiler_dock"
 
 CLEAN.add("{ext,lib}/**/*.{o,so}", "pkg")
 
@@ -21,28 +21,28 @@ ENV["RUBY_CC_VERSION"] = cross_rubies.join(":")
 
 GEMSPEC = Gem::Specification.load("bcrypt_pbkdf.gemspec")
 
-task :default => [:compile, :spec]
+task default: [:compile, :spec]
 
 desc "Run all tests"
 Rake::TestTask.new do |t|
-  #t.pattern =
-  t.test_files = FileList['test/**/*_test.rb']
-  t.ruby_opts = ['-w']
+  # t.pattern =
+  t.test_files = FileList["test/**/*_test.rb"]
+  t.ruby_opts = ["-w"]
   t.libs << "test"
   t.verbose = true
 end
-task :spec => :test
+task spec: :test
 
-desc 'Generate RDoc'
+desc "Generate RDoc"
 RDoc::Task.new do |rdoc|
-  rdoc.rdoc_dir = 'doc/rdoc'
+  rdoc.rdoc_dir = "doc/rdoc"
   rdoc.options += GEMSPEC.rdoc_options
-  rdoc.template = ENV['TEMPLATE'] if ENV['TEMPLATE']
+  rdoc.template = ENV["TEMPLATE"] if ENV["TEMPLATE"]
   rdoc.rdoc_files.include(*GEMSPEC.extra_rdoc_files)
 end
 
 Rake::ExtensionTask.new("bcrypt_pbkdf_ext", GEMSPEC) do |ext|
-  ext.ext_dir = 'ext/mri'
+  ext.ext_dir = "ext/mri"
   ext.cross_compile = true
   ext.cross_platform = cross_platforms
   ext.cross_config_options << "--enable-cross-build" # so extconf.rb knows we're cross-compiling
@@ -90,10 +90,10 @@ end
 
 def change_version(&block)
   version = GEMSPEC.version
-  version_file = 'bcrypt_pbkdf.gemspec'
+  version_file = "bcrypt_pbkdf.gemspec"
   raise "No version found" if version.nil?
-  final = version.segments.take_while{ |i| i.is_a?(Integer) }.to_a
-  pre = version.segments.drop_while{ |i| i.is_a?(Integer) }.to_a.join("")
+  final = version.segments.take_while { |i| i.is_a?(Integer) }.to_a
+  pre = version.segments.drop_while { |i| i.is_a?(Integer) }.to_a.join("")
   pre = nil if pre.empty?
   tiny = final.last
   result = block[pre: pre, tiny: tiny]
@@ -113,7 +113,7 @@ def change_version(&block)
       if match
         prefix = match[1]
         postfix = match[2]
-        new_line = "#{prefix}#{new_version.to_s}#{postfix}"
+        new_line = "#{prefix}#{new_version}#{postfix}"
         puts "Changing:\n  - #{line}  + #{new_line}"
         line = new_line
         found = true

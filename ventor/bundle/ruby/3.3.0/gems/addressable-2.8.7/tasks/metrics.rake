@@ -7,8 +7,8 @@ namespace :metrics do
       f = File.open(file_name)
       while line = f.gets
         lines += 1
-        next if line =~ /^\s*$/
-        next if line =~ /^\s*#/
+        next if /^\s*$/.match?(line)
+        next if /^\s*#/.match?(line)
         codelines += 1
       end
       puts "L: #{sprintf("%4d", lines)}, " +

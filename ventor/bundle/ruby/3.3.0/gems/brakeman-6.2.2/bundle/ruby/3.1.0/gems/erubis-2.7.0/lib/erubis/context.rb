@@ -5,8 +5,6 @@
 
 
 module Erubis
-
-
   ##
   ## context object for Engine#evaluate
   ##
@@ -30,22 +28,22 @@ module Erubis
   class Context
     include Enumerable
 
-    def initialize(hash=nil)
+    def initialize(hash = nil)
       hash.each do |name, value|
         self[name] = value
       end if hash
     end
 
     def [](key)
-      return instance_variable_get("@#{key}")
+      instance_variable_get("@#{key}")
     end
 
     def []=(key, value)
-      return instance_variable_set("@#{key}", value)
+      instance_variable_set("@#{key}", value)
     end
 
     def keys
-      return instance_variables.collect { |name| name[1..-1] }
+      instance_variables.collect { |name| name[1..-1] }
     end
 
     def each
@@ -59,7 +57,7 @@ module Erubis
     def to_hash
       hash = {}
       self.keys.each { |key| hash[key] = self[key] }
-      return hash
+      hash
     end
 
     def update(context_or_hash)
@@ -76,8 +74,5 @@ module Erubis
         end
       end
     end
-
   end
-
-
 end

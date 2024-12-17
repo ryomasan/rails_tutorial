@@ -1,9 +1,10 @@
 # frozen_string_literal: false
+
 module REXML
   class ParseException < RuntimeError
     attr_accessor :source, :parser, :continued_exception
 
-    def initialize( message, source=nil, parser=nil, exception=nil )
+    def initialize(message, source = nil, parser = nil, exception = nil)
       super(message)
       @source = source
       @parser = parser
@@ -30,7 +31,7 @@ module REXML
         err << "Position: #{position}\n"
         err << "Last 80 unconsumed characters:\n"
         err.force_encoding("ASCII-8BIT")
-        err << @source.buffer[0..80].force_encoding("ASCII-8BIT").gsub(/\n/, ' ')
+        err << @source.buffer[0..80].force_encoding("ASCII-8BIT").gsub(/\n/, " ")
       end
 
       err

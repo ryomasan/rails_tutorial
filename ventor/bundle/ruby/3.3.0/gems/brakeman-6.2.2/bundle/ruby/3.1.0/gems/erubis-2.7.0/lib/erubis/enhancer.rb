@@ -5,8 +5,6 @@
 
 
 module Erubis
-
-
   ##
   ## switch '<%= ... %>' to escaped and '<%== ... %>' to unescaped
   ##
@@ -18,40 +16,38 @@ module Erubis
   ## this is language-indenedent.
   ##
   module EscapeEnhancer
-
     def self.desc   # :nodoc:
       "switch '<%= %>' to escaped and '<%== %>' to unescaped"
     end
 
     #--
-    #def self.included(klass)
+    # def self.included(klass)
     #  klass.class_eval <<-END
     #    alias _add_expr_literal add_expr_literal
     #    alias _add_expr_escaped add_expr_escaped
     #    alias add_expr_literal _add_expr_escaped
     #    alias add_expr_escaped _add_expr_literal
     #  END
-    #end
+    # end
     #++
 
     def add_expr(src, code, indicator)
       case indicator
-      when '='
+      when "="
         @escape ? add_expr_literal(src, code) : add_expr_escaped(src, code)
-      when '=='
+      when "=="
         @escape ? add_expr_escaped(src, code) : add_expr_literal(src, code)
-      when '==='
+      when "==="
         add_expr_debug(src, code)
       end
     end
-
   end
 
 
   #--
   ## (obsolete)
-  #module FastEnhancer
-  #end
+  # module FastEnhancer
+  # end
   #++
 
 
@@ -61,7 +57,6 @@ module Erubis
   ## this is only for Eruby.
   ##
   module StdoutEnhancer
-
     def self.desc   # :nodoc:
       "use $stdout instead of array buffer or string buffer"
     end
@@ -73,7 +68,6 @@ module Erubis
     def add_postamble(src)
       src << "\n''\n"
     end
-
   end
 
 
@@ -83,7 +77,6 @@ module Erubis
   ## this is only for Eruby.
   ##
   module PrintOutEnhancer
-
     def self.desc   # :nodoc:
       "use print statement instead of '_buf << ...'"
     end
@@ -106,7 +99,6 @@ module Erubis
     def add_postamble(src)
       src << "\n" unless src[-1] == ?\n
     end
-
   end
 
 
@@ -119,7 +111,6 @@ module Erubis
   ## this is only for Eruby.
   ##
   module PrintEnabledEnhancer
-
     def self.desc   # :nodoc:
       "enable to use print function in '<% %>'"
     end
@@ -135,7 +126,7 @@ module Erubis
       end
     end
 
-    def evaluate(context=nil)
+    def evaluate(context = nil)
       _src = @src
       if context.is_a?(Hash)
         context.each do |key, val| instance_variable_set("@#{key}", val) end
@@ -144,9 +135,8 @@ module Erubis
           instance_variable_set(name, context.instance_variable_get(name))
         end
       end
-      return instance_eval(_src, (@filename || '(erubis)'))
+      instance_eval(_src, (@filename || "(erubis)"))
     end
-
   end
 
 
@@ -156,7 +146,6 @@ module Erubis
   ## this is only for Eruby.
   ##
   module ArrayEnhancer
-
     def self.desc   # :nodoc:
       "return array instead of string"
     end
@@ -169,7 +158,6 @@ module Erubis
       src << "\n" unless src[-1] == ?\n
       src << "#{@bufvar}\n"
     end
-
   end
 
 
@@ -179,7 +167,6 @@ module Erubis
   ## this is only for Eruby.
   ##
   module ArrayBufferEnhancer
-
     def self.desc   # :nodoc:
       "use an Array object for buffering (included in Eruby class)"
     end
@@ -192,7 +179,6 @@ module Erubis
       src << "\n" unless src[-1] == ?\n
       src << "_buf.join\n"
     end
-
   end
 
 
@@ -202,7 +188,6 @@ module Erubis
   ## this is only for Eruby.
   ##
   module StringBufferEnhancer
-
     def self.desc   # :nodoc:
       "use a String object for buffering"
     end
@@ -215,7 +200,6 @@ module Erubis
       src << "\n" unless src[-1] == ?\n
       src << "#{@bufvar}.to_s\n"
     end
-
   end
 
 
@@ -225,7 +209,6 @@ module Erubis
   ## this is only for Eruby.
   ##
   module StringIOEnhancer  # :nodoc:
-
     def self.desc   # :nodoc:
       "use a StringIO object for buffering"
     end
@@ -238,7 +221,6 @@ module Erubis
       src << "\n" unless src[-1] == ?\n
       src << "#{@bufvar}.string\n"
     end
-
   end
 
 
@@ -248,7 +230,6 @@ module Erubis
   ## this is only for Eruby.
   ##
   module ErboutEnhancer
-
     def self.desc   # :nodoc:
       "set '_erbout = _buf = \"\";' to be compatible with ERB."
     end
@@ -261,7 +242,6 @@ module Erubis
       src << "\n" unless src[-1] == ?\n
       src << "#{@bufvar}.to_s\n"
     end
-
   end
 
 
@@ -274,7 +254,6 @@ module Erubis
   ## this is language independent.
   ##
   module NoTextEnhancer
-
     def self.desc   # :nodoc:
       "remove text and leave code (useful when debugging)"
     end
@@ -283,10 +262,9 @@ module Erubis
       src << ("\n" * text.count("\n"))
       if text[-1] != ?\n
         text =~ /^(.*?)\z/
-        src << (' ' * $1.length)
+        src << (" " * $1.length)
       end
     end
-
   end
 
 
@@ -299,7 +277,6 @@ module Erubis
   ## this is language independent.
   ##
   module NoCodeEnhancer
-
     def self.desc   # :nodoc:
       "remove code and leave text (useful when validating HTML)"
     end
@@ -321,7 +298,6 @@ module Erubis
     def add_stmt(src, code)
       src << "\n" * code.count("\n")
     end
-
   end
 
 
@@ -331,18 +307,17 @@ module Erubis
   ## this is language-independent.
   ##
   module SimplifyEnhancer
-
     def self.desc   # :nodoc:
       "get convert faster but leave spaces around '<% %>'"
     end
 
-    #DEFAULT_REGEXP = /(^[ \t]*)?<%(=+|\#)?(.*?)-?%>([ \t]*\r?\n)?/m
+    # DEFAULT_REGEXP = /(^[ \t]*)?<%(=+|\#)?(.*?)-?%>([ \t]*\r?\n)?/m
     SIMPLE_REGEXP = /<%(=+|\#)?(.*?)-?%>/m
 
     def convert(input)
       src = ""
       add_preamble(src)
-      #regexp = pattern_regexp(@pattern)
+      # regexp = pattern_regexp(@pattern)
       pos = 0
       input.scan(SIMPLE_REGEXP) do |indicator, code|
         match = Regexp.last_match
@@ -359,13 +334,12 @@ module Erubis
           add_expr(src, code, indicator)
         end
       end
-      #rest = $' || input                      # ruby1.8
+      # rest = $' || input                      # ruby1.8
       rest = pos == 0 ? input : input[pos..-1]  # ruby1.9
       add_text(src, rest)
       add_postamble(src)
-      return src
+      src
     end
-
   end
 
 
@@ -400,12 +374,11 @@ module Erubis
   ## this is language independent.
   ##
   module BiPatternEnhancer
-
     def self.desc   # :nodoc:
       "another embedded expression pattern (default '\[= =\]')."
     end
 
-    def initialize(input, properties={})
+    def initialize(input, properties = {})
       self.bipattern = properties[:bipattern]    # or '\$\{ \}'
       super
     end
@@ -423,13 +396,12 @@ module Erubis
       text.scan(@bipattern_regexp) do |txt, indicator, code|
         m = Regexp.last_match
         super(src, txt)
-        add_expr(src, code, '=' + indicator)
+        add_expr(src, code, "=" + indicator)
       end
-      #rest = $' || text                    # ruby1.8
+      # rest = $' || text                    # ruby1.8
       rest = m ? text[m.end(0)..-1] : text  # ruby1.9
       super(src, rest)
     end
-
   end
 
 
@@ -441,27 +413,26 @@ module Erubis
   ## this is language-independent.
   ##
   module PrefixedLineEnhancer
-
     def self.desc   # :nodoc:
       "regard lines matched to '^[ \t]*%' as program code"
     end
 
-    def init_generator(properties={})
+    def init_generator(properties = {})
       super
       @prefixchar = properties[:prefixchar]
     end
 
     def add_text(src, text)
       unless @prefixrexp
-        @prefixchar ||= '%'
+        @prefixchar ||= "%"
         @prefixrexp = Regexp.compile("^([ \\t]*)\\#{@prefixchar}(.*?\\r?\\n)")
       end
       pos = 0
-      text2 = ''
+      text2 = ""
       text.scan(@prefixrexp) do
         space = $1
         line  = $2
-        space, line = '', $1 unless $2
+        space, line = "", $1 unless $2
         match = Regexp.last_match
         len   = match.begin(0) - pos
         str   = text[pos, len]
@@ -475,11 +446,11 @@ module Erubis
           text2 << space << line
         else
           super(src, text2)
-          text2 = ''
+          text2 = ""
           add_stmt(src, space + line)
         end
       end
-      #rest = pos == 0 ? text : $'             # ruby1.8
+      # rest = pos == 0 ? text : $'             # ruby1.8
       rest = pos == 0 ? text : text[pos..-1]   # ruby1.9
       unless text2.empty?
         text2 << rest if rest
@@ -487,7 +458,6 @@ module Erubis
       end
       super(src, rest)
     end
-
   end
 
 
@@ -506,21 +476,20 @@ module Erubis
     end
 
     #--
-    #def init_generator(properties={})
+    # def init_generator(properties={})
     #  super
     #  @prefixchar = '%'
     #  @prefixrexp = /^\%(.*?\r?\n)/
-    #end
+    # end
     #++
 
     def add_text(src, text)
       unless @prefixrexp
-        @prefixchar = '%'
+        @prefixchar = "%"
         @prefixrexp = /^\%(.*?\r?\n)/
       end
       super(src, text)
     end
-
   end
 
 
@@ -575,7 +544,6 @@ module Erubis
   ## this is language-independent.
   ##
   module HeaderFooterEnhancer
-
     def self.desc   # :nodoc:
       "allow header/footer in document (ex. '<!--#header: #-->')"
     end
@@ -593,7 +561,7 @@ module Erubis
         instance_variable_set("@#{word}", content)
         super(src, rspace) if !flag_trim && rspace
       end
-      #rest = $' || text                    # ruby1.8
+      # rest = $' || text                    # ruby1.8
       rest = m ? text[m.end(0)..-1] : text  # ruby1.9
       super(src, rest)
     end
@@ -602,9 +570,8 @@ module Erubis
 
     def convert(input)
       source = super
-      return @src = "#{@header}#{source}#{@footer}"
+      @src = "#{@header}#{source}#{@footer}"
     end
-
   end
 
 
@@ -614,16 +581,14 @@ module Erubis
   ## this is language-independent.
   ##
   module DeleteIndentEnhancer
-
     def self.desc   # :nodoc:
       "delete indentation of HTML."
     end
 
     def convert_input(src, input)
-      input = input.gsub(/^[ \t]+</, '<')
+      input = input.gsub(/^[ \t]+</, "<")
       super(src, input)
     end
-
   end
 
 
@@ -633,17 +598,16 @@ module Erubis
   ## this is only for Eruby.
   ##
   module InterpolationEnhancer
-
     def self.desc   # :nodoc:
       "convert '<p><%=text%></p>' into '_buf << %Q`<p>\#{text}</p>`'"
     end
 
     def convert_input(src, input)
       pat = @pattern
-      regexp = pat.nil? || pat == '<% %>' ? Basic::Converter::DEFAULT_REGEXP : pattern_regexp(pat)
+      regexp = pat.nil? || pat == "<% %>" ? Basic::Converter::DEFAULT_REGEXP : pattern_regexp(pat)
       pos = 0
       is_bol = true     # is beginning of line
-      str = ''
+      str = ""
       input.scan(regexp) do |indicator, code, tailch, rspace|
         match = Regexp.last_match()
         len  = match.begin(0) - pos
@@ -664,30 +628,30 @@ module Erubis
           n = code.count("\n") + (rspace ? 1 : 0)
           if @trim && lspace && rspace
             add_text(src, str)
-            str = ''
+            str = ""
             add_stmt(src, "\n" * n)
           else
             str << lspace if lspace
             add_text(src, str)
-            str = ''
+            str = ""
             add_stmt(src, "\n" * n)
             str << rspace if rspace
           end
         else                     # <% %>
           if @trim && lspace && rspace
             add_text(src, str)
-            str = ''
+            str = ""
             add_stmt(src, "#{lspace}#{code}#{rspace}")
           else
             str << lspace if lspace
             add_text(src, str)
-            str = ''
+            str = ""
             add_stmt(src, code)
             str << rspace if rspace
           end
         end
       end
-      #rest = $' || input                       # ruby1.8
+      # rest = $' || input                       # ruby1.8
       rest = pos == 0 ? input : input[pos..-1]  # ruby1.9
       _add_text_to_str(str, rest)
       add_text(src, str)
@@ -695,7 +659,7 @@ module Erubis
 
     def add_text(src, text)
       return if !text || text.empty?
-      #src << " _buf << %Q`" << text << "`;"
+      # src << " _buf << %Q`" << text << "`;"
       if text[-1] == ?\n
         text[-1] = "\\n"
         src << " #{@bufvar} << %Q`#{text}`\n"
@@ -716,8 +680,5 @@ module Erubis
     def add_expr_literal(str, code)
       str << "\#{#{code}}"
     end
-
   end
-
-
 end

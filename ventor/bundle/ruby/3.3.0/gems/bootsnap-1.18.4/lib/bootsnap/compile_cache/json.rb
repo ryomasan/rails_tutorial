@@ -58,11 +58,10 @@ module Bootsnap
         end
 
         private
-
-        def supports_freeze?
-          ::JSON.parse('["foo"]', freeze: true).first.frozen? &&
-            MessagePack.load(MessagePack.dump("foo"), freeze: true).frozen?
-        end
+          def supports_freeze?
+            ::JSON.parse('["foo"]', freeze: true).first.frozen? &&
+              MessagePack.load(MessagePack.dump("foo"), freeze: true).frozen?
+          end
       end
 
       module Patch

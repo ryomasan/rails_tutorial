@@ -79,7 +79,7 @@ module Haml
       end
 
       # Input is escaped
-      def haml_internal_concat_with_haml_xss(text="", newline=true, indent=true)
+      def haml_internal_concat_with_haml_xss(text = "", newline = true, indent = true)
         haml_internal_concat_without_haml_xss(haml_xss_html_escape(text), newline, indent)
       end
       private :haml_internal_concat_with_haml_xss
@@ -95,13 +95,12 @@ module Haml
       end
 
       private
-
-      # Escapes the HTML in the text if and only if
-      # Rails XSS protection is enabled *and* the `:escape_html` option is set.
-      def haml_xss_html_escape(text)
-        return text unless Haml::Util.rails_xss_safe? && haml_buffer.options[:escape_html]
-        html_escape(text)
-      end
+        # Escapes the HTML in the text if and only if
+        # Rails XSS protection is enabled *and* the `:escape_html` option is set.
+        def haml_xss_html_escape(text)
+          return text unless Haml::Util.rails_xss_safe? && haml_buffer.options[:escape_html]
+          html_escape(text)
+        end
     end
 
     class ErrorReturn

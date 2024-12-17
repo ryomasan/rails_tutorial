@@ -1,4 +1,5 @@
 # frozen_string_literal: false
+
 require_relative "../child"
 module REXML
   module DTD
@@ -11,23 +12,23 @@ module REXML
       PERCENT = /^\s*#{START}\s+%\s+(\w+)\s+((["']).*?\3)\s*>/um
       # <!ENTITY name SYSTEM "...">
       # <!ENTITY name "...">
-      def initialize src
+      def initialize(src)
         super()
         md = nil
-        if src.match( PUBLIC )
-          md = src.match( PUBLIC, true )
+        if src.match(PUBLIC)
+          md = src.match(PUBLIC, true)
           @middle = "PUBLIC"
           @content = "#{md[2]} #{md[4]}"
-        elsif src.match( SYSTEM )
-          md = src.match( SYSTEM, true )
+        elsif src.match(SYSTEM)
+          md = src.match(SYSTEM, true)
           @middle = "SYSTEM"
           @content = md[2]
-        elsif src.match( PLAIN )
-          md = src.match( PLAIN, true )
+        elsif src.match(PLAIN)
+          md = src.match(PLAIN, true)
           @middle = ""
           @content = md[2]
-        elsif src.match( PERCENT )
-          md = src.match( PERCENT, true )
+        elsif src.match(PERCENT)
+          md = src.match(PERCENT, true)
           @middle = ""
           @content = md[2]
         end
@@ -42,13 +43,13 @@ module REXML
         rv
       end
 
-      def write( output, indent )
-        indent( output, indent )
+      def write(output, indent)
+        indent(output, indent)
         output << to_s
       end
 
-      def EntityDecl.parse_source source, listener
-        md = source.match( PATTERN_RE, true )
+      def EntityDecl.parse_source(source, listener)
+        md = source.match(PATTERN_RE, true)
         thing = md[0].squeeze(" \t\n\r")
         listener.send inspect.downcase, thing
       end

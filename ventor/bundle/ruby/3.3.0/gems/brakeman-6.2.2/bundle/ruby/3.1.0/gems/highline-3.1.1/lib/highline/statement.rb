@@ -50,39 +50,38 @@ class HighLine
     end
 
     private
-
-    def stringfy(template_string)
-      String(template_string || "").dup
-    end
-
-    def format_statement
-      return template_string if template_string.empty?
-
-      statement = render_template
-
-      statement = HighLine::Wrapper.wrap(statement, highline.wrap_at)
-      statement = HighLine::Paginator.new(highline).page_print(statement)
-
-      statement = statement.gsub(/\n(?!$)/, "\n#{highline.indentation}") if
-        highline.multi_indent
-
-      statement
-    end
-
-    def render_template
-      # Assigning to a local var so it may be
-      # used inside instance eval block
-
-      template_renderer = TemplateRenderer.new(template, source, highline)
-      template_renderer.render
-    end
-
-    def template
-      @template ||= if ERB.instance_method(:initialize).parameters.assoc(:key) # Ruby 2.6+
-        ERB.new(template_string, trim_mode: "%")
-      else
-        ERB.new(template_string, nil, "%")
+      def stringfy(template_string)
+        String(template_string || "").dup
       end
-    end
+
+      def format_statement
+        return template_string if template_string.empty?
+
+        statement = render_template
+
+        statement = HighLine::Wrapper.wrap(statement, highline.wrap_at)
+        statement = HighLine::Paginator.new(highline).page_print(statement)
+
+        statement = statement.gsub(/\n(?!$)/, "\n#{highline.indentation}") if
+          highline.multi_indent
+
+        statement
+      end
+
+      def render_template
+        # Assigning to a local var so it may be
+        # used inside instance eval block
+
+        template_renderer = TemplateRenderer.new(template, source, highline)
+        template_renderer.render
+      end
+
+      def template
+        @template ||= if ERB.instance_method(:initialize).parameters.assoc(:key) # Ruby 2.6+
+          ERB.new(template_string, trim_mode: "%")
+        else
+          ERB.new(template_string, trim_mode: "%")
+        end
+      end
   end
 end

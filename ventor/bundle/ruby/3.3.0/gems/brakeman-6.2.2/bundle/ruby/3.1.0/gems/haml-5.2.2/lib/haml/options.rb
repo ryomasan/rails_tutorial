@@ -13,7 +13,7 @@ module Haml
       # The default option values.
       # @return Hash
       def defaults
-        @defaults ||= Haml::TempleEngine.options.to_hash.merge(encoding: 'UTF-8')
+        @defaults ||= Haml::TempleEngine.options.to_hash.merge(encoding: "UTF-8")
       end
 
       # An array of valid values for the `:format` option.
@@ -172,8 +172,8 @@ module Haml
     attr_accessor :filters
 
     def initialize(values = {})
-      defaults.each {|k, v| instance_variable_set :"@#{k}", v}
-      values.each {|k, v| send("#{k}=", v) if defaults.has_key?(k) && !v.nil?}
+      defaults.each { |k, v| instance_variable_set :"@#{k}", v }
+      values.each { |k, v| send("#{k}=", v) if defaults.has_key?(k) && !v.nil? }
       yield if block_given?
     end
 
@@ -265,9 +265,8 @@ module Haml
     end
 
     private
-
-    def defaults
-      self.class.defaults
-    end
+      def defaults
+        self.class.defaults
+      end
   end
 end

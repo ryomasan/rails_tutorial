@@ -2,8 +2,8 @@ begin
   # Ignore warning `Add fiddle to your Gemfile or gemspec` in Ruby 3.4.
   # terminfo.rb and ansi.rb supports fiddle unavailable environment.
   verbose, $VERBOSE = $VERBOSE, nil
-  require 'fiddle'
-  require 'fiddle/import'
+  require "fiddle"
+  require "fiddle/import"
 rescue LoadError
   module Reline::Terminfo
     def self.curses_dl
@@ -53,33 +53,33 @@ end if not Reline.const_defined?(:Terminfo) or not Reline::Terminfo.respond_to?(
 
 module Reline::Terminfo
   dlload curses_dl
-  #extern 'int setupterm(char *term, int fildes, int *errret)'
-  @setupterm = Fiddle::Function.new(curses_dl['setupterm'], [Fiddle::TYPE_VOIDP, Fiddle::TYPE_INT, Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
-  #extern 'char *tigetstr(char *capname)'
-  @tigetstr = Fiddle::Function.new(curses_dl['tigetstr'], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_VOIDP)
+  # extern 'int setupterm(char *term, int fildes, int *errret)'
+  @setupterm = Fiddle::Function.new(curses_dl["setupterm"], [Fiddle::TYPE_VOIDP, Fiddle::TYPE_INT, Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
+  # extern 'char *tigetstr(char *capname)'
+  @tigetstr = Fiddle::Function.new(curses_dl["tigetstr"], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_VOIDP)
   begin
-    #extern 'char *tiparm(const char *str, ...)'
-    @tiparm = Fiddle::Function.new(curses_dl['tiparm'], [Fiddle::TYPE_VOIDP, Fiddle::TYPE_VARIADIC], Fiddle::TYPE_VOIDP)
+    # extern 'char *tiparm(const char *str, ...)'
+    @tiparm = Fiddle::Function.new(curses_dl["tiparm"], [Fiddle::TYPE_VOIDP, Fiddle::TYPE_VARIADIC], Fiddle::TYPE_VOIDP)
   rescue Fiddle::DLError
     # OpenBSD lacks tiparm
-    #extern 'char *tparm(const char *str, ...)'
-    @tiparm = Fiddle::Function.new(curses_dl['tparm'], [Fiddle::TYPE_VOIDP, Fiddle::TYPE_VARIADIC], Fiddle::TYPE_VOIDP)
+    # extern 'char *tparm(const char *str, ...)'
+    @tiparm = Fiddle::Function.new(curses_dl["tparm"], [Fiddle::TYPE_VOIDP, Fiddle::TYPE_VARIADIC], Fiddle::TYPE_VOIDP)
   end
   begin
-    #extern 'int tigetflag(char *str)'
-    @tigetflag = Fiddle::Function.new(curses_dl['tigetflag'], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
+    # extern 'int tigetflag(char *str)'
+    @tigetflag = Fiddle::Function.new(curses_dl["tigetflag"], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
   rescue Fiddle::DLError
     # OpenBSD lacks tigetflag
-    #extern 'int tgetflag(char *str)'
-    @tigetflag = Fiddle::Function.new(curses_dl['tgetflag'], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
+    # extern 'int tgetflag(char *str)'
+    @tigetflag = Fiddle::Function.new(curses_dl["tgetflag"], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
   end
   begin
-    #extern 'int tigetnum(char *str)'
-    @tigetnum = Fiddle::Function.new(curses_dl['tigetnum'], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
+    # extern 'int tigetnum(char *str)'
+    @tigetnum = Fiddle::Function.new(curses_dl["tigetnum"], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
   rescue Fiddle::DLError
     # OpenBSD lacks tigetnum
-    #extern 'int tgetnum(char *str)'
-    @tigetnum = Fiddle::Function.new(curses_dl['tgetnum'], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
+    # extern 'int tgetnum(char *str)'
+    @tigetnum = Fiddle::Function.new(curses_dl["tgetnum"], [Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
   end
 
   def self.setupterm(term, fildes)
