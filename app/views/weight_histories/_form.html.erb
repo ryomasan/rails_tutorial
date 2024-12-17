@@ -26,6 +26,6 @@
   </div>
 
   <div>
-    <%= form.submit %>
+    <%= form.submit weight_history.new_record? ? "Create Weight history" : "Update Weight history" %>
   </div>
 <% end %>
